@@ -1,43 +1,99 @@
-'use strict';
+/* eslint-env jest */
 
-var tap          = require('tap');
-var intersection = require('../src/segment_intersection');
+const intersection = require('../src/segment_intersection')
 
-tap.test('intersection', function (t) {
+describe('intersection', () => {
+  test('null if no intersections 1', () =>
+    expect(intersection([0, 0], [1, 1], [1, 0], [2, 2])).toBeNull())
 
-  t.strictSame(intersection([0, 0], [1, 1], [1, 0], [2, 2]), null, 'null if no intersections');
-  t.strictSame(intersection([0, 0], [1, 1], [1, 0], [10, 2]), null, 'null if no intersections');
-  t.strictSame(intersection([2, 2], [3, 3], [0, 6], [2, 4]), null, 'null if no intersections');
+  test('null if no intersections 2', () =>
+    expect(intersection([0, 0], [1, 1], [1, 0], [10, 2])).toBeNull())
 
-  t.strictSame(intersection([0, 0], [1, 1], [1, 0], [0, 1]), [[0.5, 0.5]], '1 intersection');
-  t.strictSame(intersection([0, 0], [1, 1], [0, 1], [0, 0]), [[0, 0]], 'shared point 1');
-  t.strictSame(intersection([0, 0], [1, 1], [0, 1], [1, 1]), [[1, 1]], 'shared point 2');
+  test('null if no intersections 3', () =>
+    expect(intersection([2, 2], [3, 3], [0, 6], [2, 4])).toBeNull())
 
-  t.strictSame(intersection([0, 0], [1, 1], [0.5, 0.5], [1, 0]), [[0.5, 0.5]], 'T-crossing');
+  test('1 intersection', () =>
+    expect(intersection([0, 0], [1, 1], [1, 0], [0, 1])).toEqual([[0.5, 0.5]]))
 
-  t.strictSame(intersection([0, 0], [10, 10], [1, 1], [5, 5]), [[1, 1], [5, 5]], 'full overlap');
-  t.strictSame(intersection([1, 1], [10, 10], [1, 1], [5, 5]), [[1, 1], [5, 5]], 'shared point + overlap');
-  t.strictSame(intersection([3, 3], [10, 10], [0, 0], [5, 5]), [[3, 3], [5, 5]], 'mutual overlap');
-  t.strictSame(intersection([0, 0], [1, 1], [0, 0], [1, 1]), [[0, 0], [1, 1]], 'full overlap');
-  t.strictSame(intersection([1, 1], [0, 0], [0, 0], [1, 1]), [[1, 1], [0, 0]], 'full overlap, orientation');
+  test('shared point 1', () =>
+    expect(intersection([0, 0], [1, 1], [0, 1], [0, 0])).toEqual([[0, 0]]))
 
-  t.strictSame(intersection([0, 0], [1, 1], [1, 1], [2, 2]), [[1, 1]], 'collinear, shared point');
-  t.strictSame(intersection([1, 1], [0, 0], [1, 1], [2, 2]), [[1, 1]], 'collinear, shared other point');
-  t.strictSame(intersection([0, 0], [1, 1], [2, 2], [4, 4]), null, 'collinear, no overlap');
-  t.strictSame(intersection([0, 0], [1, 1], [0, -1], [1, 0]), null, 'parallel');
-  t.strictSame(intersection([1, 1], [0, 0], [0, -1], [1, 0]), null, 'parallel, orientation');
-  t.strictSame(intersection([0, -1], [1, 0], [0, 0], [1, 1]), null, 'parallel, position');
+  test('shared point 2', () =>
+    expect(intersection([0, 0], [1, 1], [0, 1], [1, 1])).toEqual([[1, 1]]))
 
-  t.strictSame(intersection([0, 0], [1, 1], [0, 1], [0, 0], true), null, 'shared point 1, skip touches');
-  t.strictSame(intersection([0, 0], [1, 1], [0, 1], [1, 1], true), null, 'shared point 2, skip touches');
+  test('T-crossing', () =>
+    expect(intersection([0, 0], [1, 1], [0.5, 0.5], [1, 0])).toEqual([
+      [0.5, 0.5]
+    ]))
 
-  t.strictSame(intersection([0, 0], [1, 1], [1, 1], [2, 2], true), null, 'collinear, shared point, skip touches');
-  t.strictSame(intersection([1, 1], [0, 0], [1, 1], [2, 2], true), null, 'collinear, shared other point, skip touches');
+  test('full overlap', () =>
+    expect(intersection([0, 0], [10, 10], [1, 1], [5, 5])).toEqual([
+      [1, 1],
+      [5, 5]
+    ]))
 
-  t.strictSame(intersection([0, 0], [1, 1], [0, 0], [1, 1], true), null, 'full overlap, skip touches');
-  t.strictSame(intersection([1, 1], [0, 0], [0, 0], [1, 1], true), null, 'full overlap, orientation, skip touches');
+  test('shared point + overlap', () =>
+    expect(intersection([1, 1], [10, 10], [1, 1], [5, 5])).toEqual([
+      [1, 1],
+      [5, 5]
+    ]))
 
-  t.strictSame(intersection([0, 0], [1, 1], [1, 0], [0, 1], true), [[0.5, 0.5]], '1 intersection, skip touches');
+  test('mutual overlap', () =>
+    expect(intersection([3, 3], [10, 10], [0, 0], [5, 5])).toEqual([
+      [3, 3],
+      [5, 5]
+    ]))
 
-  t.end();
-});
+  test('full overlap', () =>
+    expect(intersection([0, 0], [1, 1], [0, 0], [1, 1])).toEqual([
+      [0, 0],
+      [1, 1]
+    ]))
+
+  test('full overlap, orientation', () =>
+    expect(intersection([1, 1], [0, 0], [0, 0], [1, 1])).toEqual([
+      [1, 1],
+      [0, 0]
+    ]))
+
+  test('collinear, shared point', () =>
+    expect(intersection([0, 0], [1, 1], [1, 1], [2, 2])).toEqual([[1, 1]]))
+
+  test('collinear, shared other point', () =>
+    expect(intersection([1, 1], [0, 0], [1, 1], [2, 2])).toEqual([[1, 1]]))
+
+  test('collinear, no overlap', () =>
+    expect(intersection([0, 0], [1, 1], [2, 2], [4, 4])).toBeNull())
+
+  test('parallel', () =>
+    expect(intersection([0, 0], [1, 1], [0, -1], [1, 0])).toBeNull())
+
+  test('parallel, orientation', () =>
+    expect(intersection([1, 1], [0, 0], [0, -1], [1, 0])).toBeNull())
+
+  test('parallel, position', () =>
+    expect(intersection([0, -1], [1, 0], [0, 0], [1, 1])).toBeNull())
+
+  test('shared point 1, skip touches', () =>
+    expect(intersection([0, 0], [1, 1], [0, 1], [0, 0], true)).toBeNull())
+
+  test('shared point 2, skip touches', () =>
+    expect(intersection([0, 0], [1, 1], [0, 1], [1, 1], true)).toBeNull())
+
+  test('collinear, shared point, skip touches', () =>
+    expect(intersection([0, 0], [1, 1], [1, 1], [2, 2], true)).toBeNull())
+
+  test('collinear, shared other point, skip touches', () =>
+    expect(intersection([1, 1], [0, 0], [1, 1], [2, 2], true)).toBeNull())
+
+  test('full overlap, skip touches', () =>
+    expect(intersection([0, 0], [1, 1], [0, 0], [1, 1], true)).toBeNull())
+
+  test('full overlap, orientation, skip touches', () =>
+    expect(intersection([1, 1], [0, 0], [0, 0], [1, 1], true)).toBeNull())
+
+  test('1 intersection, skip touches', () =>
+    expect(intersection([0, 0], [1, 1], [1, 0], [0, 1], true)).toEqual([
+      [0.5, 0.5]
+    ]))
+})

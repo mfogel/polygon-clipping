@@ -4,7 +4,11 @@
   "description": "Apply boolean Polygon clipping operations (intersection, union, difference, xor) to your Polygons & MultiPolygons.",
   "main": "src/index.js",
   "scripts": {
-    "test": "tap test/*.test.js -R spec"
+    "test": "jest",
+    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "keywords": [
     "polygon",
@@ -21,8 +25,8 @@
   "author": "Mike Fogel <mike@fogel.ca>",
   "license": "MIT",
   "devDependencies": {
-    "load-json-file": "^2.0.0",
-    "tap": "^6.2.0"
+    "jest": "^22.1.4",
+    "load-json-file": "^2.0.0"
   },
   "dependencies": {
     "avl": "^1.4.1",

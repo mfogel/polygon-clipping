@@ -1,58 +1,98 @@
-'use strict';
+/* eslint-env jest */
 
-var tap      = require('tap');
-var path     = require('path');
-var load     = require('load-json-file');
-var martinez = require('../src/');
+const path = require('path')
+const load = require('load-json-file')
+const martinez = require('../src/')
 
-var clipping = load.sync(path.join(__dirname, 'featureTypes', 'clippingPoly.geojson'));
-var outDir = path.join(__dirname, 'featureTypes', 'out');
+const clipping = load.sync(
+  path.join(__dirname, 'featureTypes', 'clippingPoly.geojson')
+)
+const outDir = path.join(__dirname, 'featureTypes', 'out')
 
-var testScenarios = [
+const testScenarios = [
   {
     testName: 'polyToClipping',
-    subjectPoly: 'poly',
+    subjectPoly: 'poly'
   },
   {
     testName: 'polyWithHoleToClipping',
-    subjectPoly: 'polyWithHole',
+    subjectPoly: 'polyWithHole'
   },
   {
     testName: 'multiPolyToClipping',
-    subjectPoly: 'multiPoly',
+    subjectPoly: 'multiPoly'
   },
   {
     testName: 'multiPolyWithHoleToClipping',
-    subjectPoly: 'multiPolyWithHole',
+    subjectPoly: 'multiPolyWithHole'
   }
-];
+]
 
-testScenarios.forEach(function (ts) {
-  var subject = load.sync(path.join(__dirname, 'featureTypes', ts.subjectPoly + '.geojson'));
-  tap.test(ts.testName, function (t) {
+testScenarios.forEach(ts => {
+  const subject = load.sync(
+    path.join(__dirname, 'featureTypes', ts.subjectPoly + '.geojson')
+  )
 
-    var expectedIntResult = load.sync(path.join(outDir, 'intersection', t._name + '.geojson'))
-    if (expectedIntResult.geometry.type === 'Polygon') expectedIntResult.geometry.coordinates = [expectedIntResult.geometry.coordinates]
-    var intResult = martinez.intersection(subject.geometry.coordinates, clipping.geometry.coordinates);
-    t.same(intResult, expectedIntResult.geometry.coordinates, ts.testName + ' - Intersect');
+  const pInter = path.join(outDir, 'intersection', ts.testName + '.geojson')
+  const pXor = path.join(outDir, 'xor', ts.testName + '.geojson')
+  const pDiff = path.join(outDir, 'difference', ts.testName + '.geojson')
+  const pUnion = path.join(outDir, 'union', ts.testName + '.geojson')
 
-    var expectedXorResult = load.sync(path.join(outDir, 'xor', t._name + '.geojson'))
-    if (expectedXorResult.geometry.type === 'Polygon') expectedXorResult.geometry.coordinates = [expectedXorResult.geometry.coordinates]
-    var xorResult = martinez.xor(subject.geometry.coordinates, clipping.geometry.coordinates);
-    t.same(xorResult, expectedXorResult.geometry.coordinates, ts.testName + ' - XOR');
+  describe(ts.testName, () => {
+    test('intersection', () => {
+      const expectedIntResult = load.sync(pInter)
+      if (expectedIntResult.geometry.type === 'Polygon') {
+        expectedIntResult.geometry.coordinates = [
+          expectedIntResult.geometry.coordinates
+        ]
+      }
+      const intResult = martinez.intersection(
+        subject.geometry.coordinates,
+        clipping.geometry.coordinates
+      )
+      expect(intResult).toEqual(expectedIntResult.geometry.coordinates)
+    })
 
-    var expectedDiffResult = load.sync(path.join(outDir, 'difference', t._name + '.geojson'))
-    if (expectedDiffResult.geometry.type === 'Polygon') expectedDiffResult.geometry.coordinates = [expectedDiffResult.geometry.coordinates]
-    var diffResult = martinez.diff(subject.geometry.coordinates, clipping.geometry.coordinates);
-    t.same(diffResult, expectedDiffResult.geometry.coordinates, ts.testName + ' - Difference');
+    test('xor', () => {
+      const expectedXorResult = load.sync(pXor)
+      if (expectedXorResult.geometry.type === 'Polygon') {
+        expectedXorResult.geometry.coordinates = [
+          expectedXorResult.geometry.coordinates
+        ]
+      }
+      const xorResult = martinez.xor(
+        subject.geometry.coordinates,
+        clipping.geometry.coordinates
+      )
+      expect(xorResult).toEqual(expectedXorResult.geometry.coordinates)
+    })
 
-    var expectedUnionResult = load.sync(path.join(outDir, 'union', t._name + '.geojson'))
-    if (expectedUnionResult.geometry.type === 'Polygon') expectedUnionResult.geometry.coordinates = [expectedUnionResult.geometry.coordinates]
-    var unionResult = martinez.union(subject.geometry.coordinates, clipping.geometry.coordinates);
-    t.same(unionResult, expectedUnionResult.geometry.coordinates, ts.testName + ' - Union');
+    test('difference', () => {
+      const expectedDiffResult = load.sync(pDiff)
+      if (expectedDiffResult.geometry.type === 'Polygon') {
+        expectedDiffResult.geometry.coordinates = [
+          expectedDiffResult.geometry.coordinates
+        ]
+      }
+      const diffResult = martinez.diff(
+        subject.geometry.coordinates,
+        clipping.geometry.coordinates
+      )
+      expect(diffResult).toEqual(expectedDiffResult.geometry.coordinates)
+    })
 
-    t.end();
-  });
-
-});
-
+    test('Union', () => {
+      const expectedUnionResult = load.sync(pUnion)
+      if (expectedUnionResult.geometry.type === 'Polygon') {
+        expectedUnionResult.geometry.coordinates = [
+          expectedUnionResult.geometry.coordinates
+        ]
+      }
+      const unionResult = martinez.union(
+        subject.geometry.coordinates,
+        clipping.geometry.coordinates
+      )
+      expect(unionResult).toEqual(expectedUnionResult.geometry.coordinates)
+    })
+  })
+})

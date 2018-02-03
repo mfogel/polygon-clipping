@@ -1,54 +1,48 @@
-'use strict';
+/* eslint-env jest */
 
-var tap        = require('tap');
-var SweepEvent = require('../src/sweep_event');
+const SweepEvent = require('../src/sweep_event')
 
-tap.test('sweep event', function (main) {
+describe('sweep event', () => {
+  test('isBelow', () => {
+    const s1 = new SweepEvent([0, 0], true, new SweepEvent([1, 1], false))
+    const s2 = new SweepEvent([0, 1], false, new SweepEvent([0, 0], false))
 
-  main.test('isBelow', function (t) {
-    var s1 = new SweepEvent([0, 0], true, new SweepEvent([1, 1], false));
-    var s2 = new SweepEvent([0, 1], false, new SweepEvent([0, 0], false));
+    expect(s1.isBelow([0, 1])).toBeTruthy()
+    expect(s1.isBelow([1, 2])).toBeTruthy()
+    expect(s1.isBelow([0, 0])).toBeFalsy()
+    expect(s1.isBelow([5, -1])).toBeFalsy()
 
-    t.ok(s1.isBelow([0, 1]));
-    t.ok(s1.isBelow([1, 2]));
-    t.notOk(s1.isBelow([0, 0]));
-    t.notOk(s1.isBelow([5, -1]));
+    expect(s2.isBelow([0, 1])).toBeFalsy()
+    expect(s2.isBelow([1, 2])).toBeFalsy()
+    expect(s2.isBelow([0, 0])).toBeFalsy()
+    expect(s2.isBelow([5, -1])).toBeFalsy()
+  })
 
-    t.notOk(s2.isBelow([0, 1]));
-    t.notOk(s2.isBelow([1, 2]));
-    t.notOk(s2.isBelow([0, 0]));
-    t.notOk(s2.isBelow([5, -1]));
+  test('isAbove', () => {
+    const s1 = new SweepEvent([0, 0], true, new SweepEvent([1, 1], false))
+    const s2 = new SweepEvent([0, 1], false, new SweepEvent([0, 0], false))
 
-    t.end();
-  });
+    expect(s1.isAbove([0, 1])).toBeFalsy()
+    expect(s1.isAbove([1, 2])).toBeFalsy()
+    expect(s1.isAbove([0, 0])).toBeTruthy()
+    expect(s1.isAbove([5, -1])).toBeTruthy()
 
+    expect(s2.isAbove([0, 1])).toBeTruthy()
+    expect(s2.isAbove([1, 2])).toBeTruthy()
+    expect(s2.isAbove([0, 0])).toBeTruthy()
+    expect(s2.isAbove([5, -1])).toBeTruthy()
+  })
 
-  main.test('isAbove', function (t) {
-
-    var s1 = new SweepEvent([0, 0], true, new SweepEvent([1, 1], false));
-    var s2 = new SweepEvent([0, 1], false, new SweepEvent([0, 0], false));
-
-    t.notOk(s1.isAbove([0, 1]));
-    t.notOk(s1.isAbove([1, 2]));
-    t.ok(s1.isAbove([0, 0]));
-    t.ok(s1.isAbove([5, -1]));
-
-    t.ok(s2.isAbove([0, 1]));
-    t.ok(s2.isAbove([1, 2]));
-    t.ok(s2.isAbove([0, 0]));
-    t.ok(s2.isAbove([5, -1]));
-
-    t.end();
-  });
-
-
-  main.test('isVertical', function (t) {
-    t.ok(new SweepEvent([0, 0], true, new SweepEvent([0, 1], false)).isVertical());
-    t.notOk(new SweepEvent([0, 0], true, new SweepEvent([0.0001, 1], false)).isVertical());
-
-    t.end();
-  });
-
-
-  main.end();
-});
+  test('isVertical', () => {
+    expect(
+      new SweepEvent([0, 0], true, new SweepEvent([0, 1], false)).isVertical()
+    ).toBeTruthy()
+    expect(
+      new SweepEvent(
+        [0, 0],
+        true,
+        new SweepEvent([0.0001, 1], false)
+      ).isVertical()
+    ).toBeFalsy()
+  })
+})

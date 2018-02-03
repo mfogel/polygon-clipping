@@ -1,163 +1,118 @@
-'use strict';
+/* eslint-env jest */
 
-var tap       = require('tap');
-var path      = require('path');
-var load      = require('load-json-file');
-var martinez  = require('../src/');
-var fillQueue = require('../src/fill_queue');
+const path = require('path')
+const load = require('load-json-file')
+const fillQueue = require('../src/fill_queue')
 
 // GeoJSON Data
-var data = load.sync(path.join(__dirname, 'fixtures', 'two_triangles.geojson'));
+const data = load.sync(
+  path.join(__dirname, 'fixtures', 'two_triangles.geojson')
+)
+const s = [data.features[0].geometry.coordinates]
+const c = [data.features[1].geometry.coordinates]
+const sbbox = [Infinity, Infinity, -Infinity, -Infinity]
+const cbbox = [Infinity, Infinity, -Infinity, -Infinity]
+const q = fillQueue(s, c, sbbox, cbbox)
 
-var subject  = data.features[0];
-var clipping = data.features[1];
+describe('fill event queue', () => {
+  test('bboxes', () => {
+    expect(sbbox).toEqual([20, -113.5, 226.5, 74])
+    expect(cbbox).toEqual([54.5, -198, 239.5, 33.5])
+  })
 
-tap.test('fill event queue', function(main) {
-  var s = [subject.geometry.coordinates];
-  var c = [clipping.geometry.coordinates];
+  test('point 0', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([20, -23.5]) /* s[0][0] */
+    expect(currentPoint.left).toBeTruthy()
+    expect(currentPoint.otherEvent.point).toEqual([226.5, -113.5]) /* s[0][2] */
+    expect(currentPoint.otherEvent.left).toBeFalsy()
+  })
 
-  var sbbox = [Infinity, Infinity, -Infinity, -Infinity];
-  var cbbox = [Infinity, Infinity, -Infinity, -Infinity];
-  var q = fillQueue(s, c, sbbox, cbbox);
-  var currentPoint;
+  test('point 1', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([20, -23.5]) /* s[0][0] */
+    expect(currentPoint.left).toBeTruthy()
+    expect(currentPoint.otherEvent.point).toEqual([170, 74]) /* s[0][1] */
+    expect(currentPoint.otherEvent.left).toBeFalsy()
+  })
 
-  main.test('bboxes', function (t) {
-    t.strictSame(sbbox, [20, -113.5, 226.5, 74], 'subject bbox');
-    t.strictSame(cbbox, [54.5, -198, 239.5, 33.5], 'clipping bbox');
-    t.end();
-  });
+  test('point 2', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([54.5, -170.5]) /* c[0][0] */
+    expect(currentPoint.left).toBeTruthy()
+    expect(currentPoint.otherEvent.point).toEqual([239.5, -198]) /* c[0][2] */
+    expect(currentPoint.otherEvent.left).toBeFalsy()
+  })
 
-  main.test('point 0', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [20, -23.5]); /* s[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [226.5, -113.5], 'other event'); /* s[0][2] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
+  test('point 3', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([54.5, -170.5]) /* c[0][0] */
+    expect(currentPoint.left).toBeTruthy()
+    expect(currentPoint.otherEvent.point).toEqual([140.5, 33.5]) /* c[0][1] */
+    expect(currentPoint.otherEvent.left).toBeFalsy()
+  })
 
-    t.end();
-  });
+  test('point 4', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([140.5, 33.5]) /* c[0][0] */
+    expect(currentPoint.left).toBeFalsy()
+    expect(currentPoint.otherEvent.point).toEqual([54.5, -170.5]) /* c[0][1] */
+    expect(currentPoint.otherEvent.left).toBeTruthy()
+  })
 
+  test('point 5', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([140.5, 33.5]) /* c[0][0] */
+    expect(currentPoint.left).toBeTruthy()
+    expect(currentPoint.otherEvent.point).toEqual([239.5, -198]) /* c[0][1] */
+    expect(currentPoint.otherEvent.left).toBeFalsy()
+  })
 
-  main.test('point 1', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [20, -23.5]); /* s[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [170, 74], 'other event'); /* s[0][1] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
+  test('point 6', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([170, 74]) /* s[0][1] */
+    expect(currentPoint.left).toBeFalsy()
+    expect(currentPoint.otherEvent.point).toEqual([20, -23.5]) /* s[0][0] */
+    expect(currentPoint.otherEvent.left).toBeTruthy()
+  })
 
-    t.end();
-  });
+  test('point 7', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([170, 74]) /* s[0][1] */
+    expect(currentPoint.left).toBeTruthy()
+    expect(currentPoint.otherEvent.point).toEqual([226.5, -113.5]) /* s[0][3] */
+    expect(currentPoint.otherEvent.left).toBeFalsy()
+  })
 
+  test('point 8', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([226.5, -113.5]) /* s[0][1] */
+    expect(currentPoint.left).toBeFalsy()
+    expect(currentPoint.otherEvent.point).toEqual([20, -23.5]) /* s[0][0] */
+    expect(currentPoint.otherEvent.left).toBeTruthy()
+  })
 
-  main.test('point 2', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [54.5, -170.5]); /* c[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [239.5, -198], 'other event'); /* c[0][2] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
+  test('point 9', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([226.5, -113.5]) /* s[0][1] */
+    expect(currentPoint.left).toBeFalsy()
+    expect(currentPoint.otherEvent.point).toEqual([170, 74]) /* s[0][0] */
+    expect(currentPoint.otherEvent.left).toBeTruthy()
+  })
 
-    t.end();
-  });
+  test('point 10', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([239.5, -198]) /* c[0][2] */
+    expect(currentPoint.left).toBeFalsy()
+    expect(currentPoint.otherEvent.point).toEqual([54.5, -170.5]) /* c[0][0] */
+    expect(currentPoint.otherEvent.left).toBeTruthy()
+  })
 
-
-  main.test('point 3', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [54.5, -170.5]); /* c[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [140.5, 33.5], 'other event'); /* c[0][1] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 4', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [140.5, 33.5]); /* c[0][0] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [54.5, -170.5], 'other event'); /* c[0][1] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 5', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [140.5, 33.5]); /* c[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [239.5, -198], 'other event'); /* c[0][1] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 6', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [170, 74]); /* s[0][1] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [20, -23.5], 'other event'); /* s[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 7', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [170, 74]); /* s[0][1] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [226.5, -113.5], 'other event'); /* s[0][3] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 8', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [226.5, -113.5]); /* s[0][1] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [20, -23.5], 'other event'); /* s[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 9', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [226.5, -113.5]); /* s[0][1] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [170, 74], 'other event'); /* s[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 10', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [239.5, -198]); /* c[0][2] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [54.5, -170.5], 'other event'); /* c[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 11', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [239.5, -198]); /* c[0][2] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [140.5, 33.5], 'other event'); /* s[0][1] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-  main.end();
-});
-
+  test('point 11', () => {
+    const currentPoint = q.pop()
+    expect(currentPoint.point).toEqual([239.5, -198]) /* c[0][2] */
+    expect(currentPoint.left).toBeFalsy()
+    expect(currentPoint.otherEvent.point).toEqual([140.5, 33.5]) /* s[0][1] */
+    expect(currentPoint.otherEvent.left).toBeTruthy()
+  })
+})

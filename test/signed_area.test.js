@@ -1,16 +1,25 @@
-'use strict';
+/* eslint-env jest */
 
-var tap        = require('tap');
-var signedArea = require('../src/signed_area');
+const signedArea = require('../src/signed_area')
 
-tap.test('analytical signed area', function (t) {
+describe('analytical signed area', () => {
+  test('negative area', () => {
+    expect(signedArea([0, 0], [0, 1], [1, 1])).toBe(-1)
+  })
 
-  t.equals(signedArea([0, 0], [0, 1], [1, 1]), -1, 'negative area');
-  t.equals(signedArea([0, 1], [0, 0], [1, 0]),  1, 'positive area');
-  t.equals(signedArea([0, 0], [1, 1], [2, 2]),  0, 'collinear, 0 area');
+  test('positive area', () => {
+    expect(signedArea([0, 1], [0, 0], [1, 0])).toBe(1)
+  })
 
-  t.equals(signedArea([-1, 0], [2, 3], [0, 1]), 0, 'point on segment');
-  t.equals(signedArea([2, 3], [-1, 0], [0, 1]), 0, 'point on segment');
+  test('collinear, 0 area', () => {
+    expect(signedArea([0, 0], [1, 1], [2, 2])).toBe(0)
+  })
 
-  t.end();
-});
+  test('point on segment 1', () => {
+    expect(signedArea([-1, 0], [2, 3], [0, 1])).toBe(0)
+  })
+
+  test('point on segment 2', () => {
+    expect(signedArea([2, 3], [-1, 0], [0, 1])).toBe(0)
+  })
+})

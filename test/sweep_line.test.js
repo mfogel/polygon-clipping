@@ -1,60 +1,73 @@
-'use strict';
+/* eslint-env jest */
 
-var tap             = require('tap');
-var path            = require('path');
-var Tree            = require('avl');
-var load            = require('load-json-file');
-var compareSegments = require('../src/compare_segments');
-var SweepEvent      = require('../src/sweep_event');
+const path = require('path')
+const Tree = require('avl')
+const load = require('load-json-file')
+const compareSegments = require('../src/compare_segments')
+const SweepEvent = require('../src/sweep_event')
 
-// GeoJSON Data
-var data = load.sync(path.join(__dirname, 'fixtures', 'two_triangles.geojson'));
+describe('sweep line', () => {
+  // GeoJSON Data
+  const data = load.sync(
+    path.join(__dirname, 'fixtures', 'two_triangles.geojson')
+  )
 
-var subject  = data.features[0];
-var clipping = data.features[1];
+  const s = data.features[0].geometry.coordinates
+  const c = data.features[1].geometry.coordinates
 
-tap.test('sweep line', function (t) {
+  test('general', () => {
+    const EF = new SweepEvent(
+      s[0][0],
+      true,
+      new SweepEvent(s[0][2], false),
+      true
+    )
+    EF.name = 'EF'
 
-  var s = subject.geometry.coordinates;
-  var c = clipping.geometry.coordinates;
+    const EG = new SweepEvent(
+      s[0][0],
+      true,
+      new SweepEvent(s[0][1], false),
+      true
+    )
+    EG.name = 'EG'
 
-  var EF = new SweepEvent(s[0][0], true, new SweepEvent(s[0][2], false), true);
-  EF.name = 'EF';
-  var EG = new SweepEvent(s[0][0], true, new SweepEvent(s[0][1], false), true);
-  EG.name = 'EG';
+    const tree = new Tree(compareSegments)
+    tree.insert(EF)
+    tree.insert(EG)
 
-  var tree = new Tree(compareSegments);
-  tree.insert(EF);
-  tree.insert(EG);
+    expect(tree.find(EF).key).toBe(EF)
+    expect(tree.minNode().key).toBe(EF)
+    expect(tree.maxNode().key).toBe(EG)
 
+    let it = tree.find(EF)
+    expect(tree.next(it).key).toBe(EG)
+    it = tree.find(EG)
+    expect(tree.prev(it).key).toBe(EF)
 
-  t.equals(tree.find(EF).key, EF, 'able to retrieve node');
-  t.equals(tree.minNode().key, EF, 'EF is at the begin');
-  t.equals(tree.maxNode().key, EG, 'EG is at the end');
+    const DA = new SweepEvent(
+      c[0][0],
+      true,
+      new SweepEvent(c[0][2], false),
+      true
+    )
+    const DC = new SweepEvent(
+      c[0][0],
+      true,
+      new SweepEvent(c[0][1], false),
+      true
+    )
 
-  var it = tree.find(EF);
+    tree.insert(DA)
+    tree.insert(DC)
 
-  t.equals(tree.next(it).key, EG);
-
-  it = tree.find(EG);
-
-  t.equals(tree.prev(it).key, EF);
-
-  var DA = new SweepEvent(c[0][0], true, new SweepEvent(c[0][2], false), true);
-  var DC = new SweepEvent(c[0][0], true, new SweepEvent(c[0][1], false), true);
-
-  tree.insert(DA);
-  tree.insert(DC);
-
-  var begin = tree.minNode();
-
-  t.equals(begin.key, DA, 'DA');
-  begin = tree.next(begin);
-  t.equals(begin.key, DC, 'DC');
-  begin = tree.next(begin);
-  t.equals(begin.key, EF, 'EF');
-  begin = tree.next(begin);
-  t.equals(begin.key, EG, 'EG');
-
-  t.end();
-});
+    let node = tree.minNode()
+    expect(node.key).toBe(DA)
+    node = tree.next(node)
+    expect(node.key).toBe(DC)
+    node = tree.next(node)
+    expect(node.key).toBe(EF)
+    node = tree.next(node)
+    expect(node.key).toBe(EG)
+  })
+})
