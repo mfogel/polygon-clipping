@@ -8,6 +8,7 @@
     "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
   },
   "jest": {
+    "collectCoverage": true,
     "testEnvironment": "node"
   },
   "keywords": [
@@ -25,6 +26,7 @@
   "author": "Mike Fogel <mike@fogel.ca>",
   "license": "MIT",
   "devDependencies": {
+    "coveralls": "^3.0.0",
     "jest": "^22.1.4",
     "load-json-file": "^2.0.0"
   },
