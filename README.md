@@ -67,6 +67,8 @@ Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing P
 * rings will be self-closing
 * rings will not be self-intersecting
 
+In the event that the result of the operation is the empty set, the output will be an empty array: `[]`.
+
 ## Correctness / Tests
 
 Run: `npm test`

@@ -34,10 +34,7 @@ describe('end to end', () => {
           return
         }
         test(op, () => {
-          const expected =
-            resultGeojson.geometry.coordinates.length > 0
-              ? resultGeojson.geometry.coordinates
-              : null
+          const expected = resultGeojson.geometry.coordinates
           const result = polygonClipping[op](...args)
           expect(result).toEqual(expected)
         })
