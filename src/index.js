@@ -1,8 +1,8 @@
 'use strict';
 
-var subdivideSegments = require('./subdivide_segments');
-var connectEdges      = require('./connect_edges');
-var fillQueue         = require('./fill_queue');
+var subdivideSegments = require('./subdivide-segments');
+var connectEdges      = require('./connect-edges');
+var fillQueue         = require('./fill-queue');
 var operations        = require('./operation');
 
 var EMPTY = [];

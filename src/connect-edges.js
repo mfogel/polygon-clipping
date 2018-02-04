@@ -1,7 +1,7 @@
 'use strict';
 
 // var equals = require('./equals');
-var compareEvents = require('./compare_events');
+var compareEvents = require('./compare-events');
 var operationType = require('./operation');
 
 /**

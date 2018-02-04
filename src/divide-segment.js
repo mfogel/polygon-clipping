@@ -1,8 +1,8 @@
 'use strict';
 
-var SweepEvent    = require('./sweep_event');
+var SweepEvent    = require('./sweep-event');
 var equals        = require('./equals');
-var compareEvents = require('./compare_events');
+var compareEvents = require('./compare-events');
 
 /**
  * @param  {SweepEvent} se

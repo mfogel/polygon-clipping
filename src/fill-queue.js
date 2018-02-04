@@ -1,8 +1,8 @@
 'use strict';
 
 var Queue           = require('tinyqueue');
-var SweepEvent      = require('./sweep_event');
-var compareEvents   = require('./compare_events');
+var SweepEvent      = require('./sweep-event');
+var compareEvents   = require('./compare-events');
 var operations      = require('./operation');
 
 var max = Math.max;

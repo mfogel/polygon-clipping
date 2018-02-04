@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
 const Tree = require('avl')
-const compareSegments = require('../src/compare_segments')
-const compareEvents = require('../src/compare_events')
-const SweepEvent = require('../src/sweep_event')
+const compareSegments = require('../src/compare-segments')
+const compareEvents = require('../src/compare-events')
+const SweepEvent = require('../src/sweep-event')
 
 describe('compare segments are not collinear', () => {
   test('shared left point - right point first', () => {

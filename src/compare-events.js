@@ -1,6 +1,6 @@
 'use strict';
 
-var signedArea = require('./signed_area');
+var signedArea = require('./signed-area');
 // var equals = require('./equals');
 
 /**

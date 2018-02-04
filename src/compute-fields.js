@@ -1,6 +1,6 @@
 'use strict';
 
-var edgeType = require('./edge_type');
+var edgeType = require('./edge-type');
 var operationType = require('./operation');
 
 var INTERSECTION = operationType.INTERSECTION;

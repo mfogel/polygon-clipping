@@ -1,7 +1,7 @@
 'use strict';
 
-//var signedArea = require('./signed_area');
-var EdgeType   = require('./edge_type');
+//var signedArea = require('./signed-area');
+var EdgeType   = require('./edge-type');
 
 /**
  * Sweepline event

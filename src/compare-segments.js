@@ -1,7 +1,7 @@
 'use strict';
 
-var signedArea    = require('./signed_area');
-var compareEvents = require('./compare_events');
+var signedArea    = require('./signed-area');
+var compareEvents = require('./compare-events');
 var equals        = require('./equals');
 
 

@@ -1,6 +1,6 @@
 'use strict';
 
-var intersection  = require('./segment_intersection');
+var intersection  = require('./segment-intersection');
 
 /**
  * Signed area of the triangle (p0, p1, p2)

@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const SweepEvent = require('../src/sweep_event')
+const SweepEvent = require('../src/sweep-event')
 
 describe('sweep event', () => {
   test('isBelow', () => {

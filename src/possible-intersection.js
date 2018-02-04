@@ -1,10 +1,10 @@
 'use strict';
 
-var divideSegment = require('./divide_segment');
-var intersection  = require('./segment_intersection');
+var divideSegment = require('./divide-segment');
+var intersection  = require('./segment-intersection');
 var equals        = require('./equals');
-var compareEvents = require('./compare_events');
-var edgeType      = require('./edge_type');
+var compareEvents = require('./compare-events');
+var edgeType      = require('./edge-type');
 
 /**
  * @param  {SweepEvent} se1

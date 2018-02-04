@@ -3,8 +3,8 @@
 const path = require('path')
 const Tree = require('avl')
 const load = require('load-json-file')
-const compareSegments = require('../src/compare_segments')
-const SweepEvent = require('../src/sweep_event')
+const compareSegments = require('../src/compare-segments')
+const SweepEvent = require('../src/sweep-event')
 
 describe('sweep line', () => {
   // GeoJSON Data

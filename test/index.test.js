@@ -2,7 +2,7 @@
 
 const path = require('path')
 const load = require('load-json-file')
-const fillQueue = require('../src/fill_queue')
+const fillQueue = require('../src/fill-queue')
 
 // GeoJSON Data
 const data = load.sync(

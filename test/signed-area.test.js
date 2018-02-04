@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const signedArea = require('../src/signed_area')
+const signedArea = require('../src/signed-area')
 
 describe('analytical signed area', () => {
   test('negative area', () => {

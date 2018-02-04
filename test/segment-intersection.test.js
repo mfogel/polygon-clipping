@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const intersection = require('../src/segment_intersection')
+const intersection = require('../src/segment-intersection')
 
 describe('intersection', () => {
   test('null if no intersections 1', () =>

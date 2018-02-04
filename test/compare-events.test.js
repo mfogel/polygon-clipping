@@ -1,8 +1,8 @@
 /* eslint-env jest */
 
 const Queue = require('tinyqueue')
-const sweepEventsComp = require('../src/compare_events')
-const SweepEvent = require('../src/sweep_event')
+const sweepEventsComp = require('../src/compare-events')
+const SweepEvent = require('../src/sweep-event')
 
 describe('queue', () => {
   test('queue should process lest(by x) sweep event first', () => {

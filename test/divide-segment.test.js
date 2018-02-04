@@ -3,20 +3,20 @@
 const path = require('path')
 const Queue = require('tinyqueue')
 const load = require('load-json-file')
-const SweepEvent = require('../src/sweep_event')
-const compareEvents = require('../src/compare_events')
-const intersection = require('../src/segment_intersection')
+const SweepEvent = require('../src/sweep-event')
+const compareEvents = require('../src/compare-events')
+const intersection = require('../src/segment-intersection')
 const equals = require('../src/equals')
-const fillQueue = require('../src/fill_queue')
-const divideSegment = require('../src/divide_segment')
-const subdivideSegments = require('../src/subdivide_segments')
-const possibleIntersection = require('../src/possible_intersection')
+const fillQueue = require('../src/fill-queue')
+const divideSegment = require('../src/divide-segment')
+const subdivideSegments = require('../src/subdivide-segments')
+const possibleIntersection = require('../src/possible-intersection')
 
 // GeoJSON Data
 const shapes = load.sync(path.join(__dirname, 'fixtures', 'two_shapes.geojson'))
 
 const Tree = require('avl')
-const compareSegments = require('../src/compare_segments')
+const compareSegments = require('../src/compare-segments')
 
 const subject = shapes.features[0]
 const clipping = shapes.features[1]
