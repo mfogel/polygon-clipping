@@ -1,8 +1,8 @@
 /* eslint-env jest */
 
-const martinez = require('../src/')
-const load = require('load-json-file')
 const path = require('path')
+const load = require('load-json-file')
+const { union, intersection, difference } = require('../src/')
 
 describe('touching hourglasses', () => {
   const shapes = load.sync(
@@ -12,7 +12,7 @@ describe('touching hourglasses', () => {
   const clipping = shapes.features[1]
 
   test('intersection', () => {
-    const result = martinez.intersection(
+    const result = intersection(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -23,7 +23,7 @@ describe('touching hourglasses', () => {
   })
 
   test('union', () => {
-    const result = martinez.union(
+    const result = union(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -56,7 +56,7 @@ describe('touching hourglasses', () => {
   })
 
   test('difference', () => {
-    const result = martinez.difference(
+    const result = difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -67,7 +67,7 @@ describe('touching hourglasses', () => {
   })
 
   test('difference 2', () => {
-    const result = martinez.difference(
+    const result = difference(
       clipping.geometry.coordinates,
       subject.geometry.coordinates
     )
@@ -86,7 +86,7 @@ describe('polygon + trapezoid', () => {
   const clipping = shapes.features[1]
 
   test('intersection', () => {
-    const result = martinez.intersection(
+    const result = intersection(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -96,7 +96,7 @@ describe('polygon + trapezoid', () => {
   })
 
   test('union', () => {
-    const result = martinez.union(
+    const result = union(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -120,7 +120,7 @@ describe('polygon + trapezoid', () => {
   })
 
   test('difference', () => {
-    const result = martinez.difference(
+    const result = difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -139,7 +139,7 @@ describe('overlapping edge + one inside', () => {
   const clipping = shapes.features[1]
 
   test('intersection', () => {
-    const result = martinez.intersection(
+    const result = intersection(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -157,7 +157,7 @@ describe('overlapping edge + one inside', () => {
   })
 
   test('union', () => {
-    const result = martinez.union(
+    const result = union(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -177,7 +177,7 @@ describe('overlapping edge + one inside', () => {
   })
 
   test('difference', () => {
-    const result = martinez.difference(
+    const result = difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -193,7 +193,7 @@ describe('overlapping Y shift', () => {
   const clipping = shapes.features[1]
 
   test('intersection', () => {
-    const result = martinez.intersection(
+    const result = intersection(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -203,7 +203,7 @@ describe('overlapping Y shift', () => {
   })
 
   test('union', () => {
-    const result = martinez.union(
+    const result = union(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -225,7 +225,7 @@ describe('overlapping Y shift', () => {
   })
 
   test('difference', () => {
-    const result = martinez.difference(
+    const result = difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -241,7 +241,7 @@ describe('touching boxes', () => {
   const clipping = shapes.features[1]
 
   test('intersection', () => {
-    const result = martinez.intersection(
+    const result = intersection(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -249,7 +249,7 @@ describe('touching boxes', () => {
   })
 
   test('union', () => {
-    const result = martinez.union(
+    const result = union(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -259,7 +259,7 @@ describe('touching boxes', () => {
   })
 
   test('difference', () => {
-    const result = martinez.difference(
+    const result = difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -296,7 +296,7 @@ test('disjoint union nesting', () => {
     ],
     [[4.75, 2.25], [4.75, 2.75], [4.25, 2.75], [4.25, 2.25], [4.75, 2.25]]
   ]
-  expect(martinez.union(p1, p2)).toEqual([
+  expect(union(p1, p2)).toEqual([
     [
       [[[[4.25, 2.25], [4.75, 2.25], [4.75, 2.75], [4.25, 2.75], [4.25, 2.25]]]]
     ],
@@ -357,7 +357,7 @@ test('no rounding error between intersection calculation and triangle area', () 
     ]
   ]
 
-  expect(martinez.difference(p1, p2)).toEqual(expected)
+  expect(difference(p1, p2)).toEqual(expected)
 })
 
 test('collapsed edges removed', () => {
@@ -385,7 +385,7 @@ test('collapsed edges removed', () => {
     ]
   ]
 
-  expect(martinez.intersection(p1, p2)).toEqual([
+  expect(intersection(p1, p2)).toEqual([
     [[[291, 197], [330, 230], [353, 205], [384, 237], [420, 202], [355, 139]]]
   ])
 })
@@ -395,7 +395,7 @@ test('overlapping edges difference', () => {
   const p1 = [[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]]]
   const p2 = [[[1, 0], [2, 0], [2, 4], [1, 4], [1, 0]]]
 
-  const result = martinez.difference(p1, p2)
+  const result = difference(p1, p2)
   expect(result).toEqual([
     [[[0, 0], [1, 0], [1, 3], [0, 3], [0, 0]]],
     [[[2, 0], [3, 0], [3, 3], [2, 3], [2, 0]]]

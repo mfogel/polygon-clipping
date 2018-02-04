@@ -1,105 +1,91 @@
-'use strict';
+const subdivideSegments = require('./subdivide-segments')
+const connectEdges = require('./connect-edges')
+const fillQueue = require('./fill-queue')
+const operations = require('./operation')
 
-var subdivideSegments = require('./subdivide-segments');
-var connectEdges      = require('./connect-edges');
-var fillQueue         = require('./fill-queue');
-var operations        = require('./operation');
+const EMPTY = []
 
-var EMPTY = [];
-
-
-function trivialOperation(subject, clipping, operation) {
-  var result = null;
+const trivialOperation = (subject, clipping, operation) => {
+  let result = null
   if (subject.length * clipping.length === 0) {
-    if        (operation === operations.INTERSECTION) {
-      result = EMPTY;
+    if (operation === operations.INTERSECTION) {
+      result = EMPTY
     } else if (operation === operations.DIFFERENCE) {
-      result = subject;
-    } else if (operation === operations.UNION ||
-               operation === operations.XOR) {
-      result = (subject.length === 0) ? clipping : subject;
+      result = subject
+    } else if (operation === operations.UNION || operation === operations.XOR) {
+      result = subject.length === 0 ? clipping : subject
     }
   }
-  return result;
+  return result
 }
 
-
-function compareBBoxes(subject, clipping, sbbox, cbbox, operation) {
-  var result = null;
-  if (sbbox[0] > cbbox[2] ||
-      cbbox[0] > sbbox[2] ||
-      sbbox[1] > cbbox[3] ||
-      cbbox[1] > sbbox[3]) {
-    if        (operation === operations.INTERSECTION) {
-      result = EMPTY;
+const compareBBoxes = (subject, clipping, sbbox, cbbox, operation) => {
+  let result = null
+  if (
+    sbbox[0] > cbbox[2] ||
+    cbbox[0] > sbbox[2] ||
+    sbbox[1] > cbbox[3] ||
+    cbbox[1] > sbbox[3]
+  ) {
+    if (operation === operations.INTERSECTION) {
+      result = EMPTY
     } else if (operation === operations.DIFFERENCE) {
-      result = subject;
-    } else if (operation === operations.UNION ||
-               operation === operations.XOR) {
-      result = subject.concat(clipping);
+      result = subject
+    } else if (operation === operations.UNION || operation === operations.XOR) {
+      result = subject.concat(clipping)
     }
   }
-  return result;
+  return result
 }
 
-
-function boolean(subject, clipping, operation) {
+const booleanOp = (subject, clipping, operation) => {
   if (typeof subject[0][0][0] === 'number') {
-    subject = [subject];
+    subject = [subject]
   }
   if (typeof clipping[0][0][0] === 'number') {
-    clipping = [clipping];
+    clipping = [clipping]
   }
-  var trivial = trivialOperation(subject, clipping, operation);
+  let trivial = trivialOperation(subject, clipping, operation)
   if (trivial) {
-    return trivial === EMPTY ? null : trivial;
+    return trivial === EMPTY ? null : trivial
   }
-  var sbbox = [Infinity, Infinity, -Infinity, -Infinity];
-  var cbbox = [Infinity, Infinity, -Infinity, -Infinity];
+  const sbbox = [Infinity, Infinity, -Infinity, -Infinity]
+  const cbbox = [Infinity, Infinity, -Infinity, -Infinity]
 
-  //console.time('fill queue');
-  var eventQueue = fillQueue(subject, clipping, sbbox, cbbox, operation);
-  //console.timeEnd('fill queue');
+  // console.time('fill queue');
+  const eventQueue = fillQueue(subject, clipping, sbbox, cbbox, operation)
+  // console.timeEnd('fill queue');
 
-  trivial = compareBBoxes(subject, clipping, sbbox, cbbox, operation);
+  trivial = compareBBoxes(subject, clipping, sbbox, cbbox, operation)
   if (trivial) {
-    return trivial === EMPTY ? null : trivial;
+    return trivial === EMPTY ? null : trivial
   }
-  //console.time('subdivide edges');
-  var sortedEvents = subdivideSegments(eventQueue, subject, clipping, sbbox, cbbox, operation);
-  //console.timeEnd('subdivide edges');
+  // console.time('subdivide edges');
+  var sortedEvents = subdivideSegments(
+    eventQueue,
+    subject,
+    clipping,
+    sbbox,
+    cbbox,
+    operation
+  )
+  // console.timeEnd('subdivide edges');
 
-  //console.time('connect vertices');
-  var result = connectEdges(sortedEvents, operation);
-  //console.timeEnd('connect vertices');
-  return result;
+  // console.time('connect vertices');
+  let result = connectEdges(sortedEvents, operation)
+  // console.timeEnd('connect vertices');
+  return result
 }
 
-boolean.union = function (subject, clipping) {
-  return boolean(subject, clipping, operations.UNION);
-};
+const union = (subject, clipping) =>
+  booleanOp(subject, clipping, operations.UNION)
 
+const difference = (subject, clipping) =>
+  booleanOp(subject, clipping, operations.DIFFERENCE)
 
-boolean.difference = function (subject, clipping) {
-  return boolean(subject, clipping, operations.DIFFERENCE);
-};
+const xor = (subject, clipping) => booleanOp(subject, clipping, operations.XOR)
 
+const intersection = (subject, clipping) =>
+  booleanOp(subject, clipping, operations.INTERSECTION)
 
-boolean.xor = function (subject, clipping) {
-  return boolean(subject, clipping, operations.XOR);
-};
-
-
-boolean.intersection = function (subject, clipping) {
-  return boolean(subject, clipping, operations.INTERSECTION);
-};
-
-
-/**
- * @enum {Number}
- */
-boolean.operations = operations;
-
-
-module.exports = boolean;
-module.exports.default = boolean;
+module.exports = { union, difference, xor, intersection }
