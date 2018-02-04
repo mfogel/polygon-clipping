@@ -56,7 +56,7 @@ describe('touching hourglasses', () => {
   })
 
   test('difference', () => {
-    const result = martinez.diff(
+    const result = martinez.difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -67,7 +67,7 @@ describe('touching hourglasses', () => {
   })
 
   test('difference 2', () => {
-    const result = martinez.diff(
+    const result = martinez.difference(
       clipping.geometry.coordinates,
       subject.geometry.coordinates
     )
@@ -120,7 +120,7 @@ describe('polygon + trapezoid', () => {
   })
 
   test('difference', () => {
-    const result = martinez.diff(
+    const result = martinez.difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -177,7 +177,7 @@ describe('overlapping edge + one inside', () => {
   })
 
   test('difference', () => {
-    const result = martinez.diff(
+    const result = martinez.difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -225,7 +225,7 @@ describe('overlapping Y shift', () => {
   })
 
   test('difference', () => {
-    const result = martinez.diff(
+    const result = martinez.difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -259,7 +259,7 @@ describe('touching boxes', () => {
   })
 
   test('difference', () => {
-    const result = martinez.diff(
+    const result = martinez.difference(
       subject.geometry.coordinates,
       clipping.geometry.coordinates
     )
@@ -357,7 +357,7 @@ test('no rounding error between intersection calculation and triangle area', () 
     ]
   ]
 
-  expect(martinez.diff(p1, p2)).toEqual(expected)
+  expect(martinez.difference(p1, p2)).toEqual(expected)
 })
 
 test('collapsed edges removed', () => {
@@ -395,7 +395,7 @@ test('overlapping edges difference', () => {
   const p1 = [[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]]]
   const p2 = [[[1, 0], [2, 0], [2, 4], [1, 4], [1, 0]]]
 
-  const result = martinez.diff(p1, p2)
+  const result = martinez.difference(p1, p2)
   expect(result).toEqual([
     [[[0, 0], [1, 0], [1, 3], [0, 3], [0, 0]]],
     [[[2, 0], [3, 0], [3, 3], [2, 3], [2, 0]]]

@@ -55,7 +55,7 @@ window.martinez.intersection = function (polygonA, polygonB) {};
  * @param  {Array<Array<Array<Number>>>} polygonB
  * @return {Array<Array<Array<Number>>>|Null}
  */
-window.martinez.diff = function (polygonA, polygonB) {};
+window.martinez.difference = function (polygonA, polygonB) {};
 
 /**
  * @api

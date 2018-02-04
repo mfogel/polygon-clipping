@@ -6,7 +6,7 @@ const load = require('load-json-file')
 const polygonClipping = require('../src')
 
 const endToEndDir = 'test/end-to-end'
-const possibleOps = ['union', 'intersection', 'diff', 'xor']
+const possibleOps = ['union', 'intersection', 'difference', 'xor']
 
 /** USE ME TO ONLY RUN ONE TEST **/
 const targetOnly = null

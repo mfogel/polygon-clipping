@@ -80,7 +80,7 @@ boolean.union = function (subject, clipping) {
 };
 
 
-boolean.diff = function (subject, clipping) {
+boolean.difference = function (subject, clipping) {
   return boolean(subject, clipping, operations.DIFFERENCE);
 };
 

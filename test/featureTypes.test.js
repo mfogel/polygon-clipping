@@ -74,7 +74,7 @@ testScenarios.forEach(ts => {
           expectedDiffResult.geometry.coordinates
         ]
       }
-      const diffResult = martinez.diff(
+      const diffResult = martinez.difference(
         subject.geometry.coordinates,
         clipping.geometry.coordinates
       )
