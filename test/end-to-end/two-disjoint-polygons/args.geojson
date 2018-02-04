@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "fill": "#F00",
+        "fill-opcacity": 0.5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "fill": "#0F0",
+        "fill-opcacity": 0.5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2, 0], [3, 0], [3, 1], [2, 1], [2, 0]]]
+      }
+    }
+  ]
+}
