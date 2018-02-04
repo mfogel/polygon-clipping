@@ -1,39 +1,31 @@
-'use strict';
+const SweepEvent = require('./sweep-event')
+const equals = require('./equals')
+const compareEvents = require('./compare-events')
 
-var SweepEvent    = require('./sweep-event');
-var equals        = require('./equals');
-var compareEvents = require('./compare-events');
-
-/**
- * @param  {SweepEvent} se
- * @param  {Array.<Number>} p
- * @param  {Queue} queue
- * @return {Queue}
- */
-module.exports = function divideSegment(se, p, queue)  {
-  var r = new SweepEvent(p, false, se,            se.isSubject);
-  var l = new SweepEvent(p, true,  se.otherEvent, se.isSubject);
+module.exports = function divideSegment (se, p, queue) {
+  const r = new SweepEvent(p, false, se, se.isSubject)
+  const l = new SweepEvent(p, true, se.otherEvent, se.isSubject)
 
   if (equals(se.point, se.otherEvent.point)) {
-    console.warn('what is that, a collapsed segment?', se);
+    console.warn('what is that, a collapsed segment?', se)
   }
 
-  r.contourId = l.contourId = se.contourId;
+  r.contourId = l.contourId = se.contourId
 
   // avoid a rounding error. The left event would be processed after the right event
   if (compareEvents(l, se.otherEvent) > 0) {
-    se.otherEvent.left = true;
-    l.left = false;
+    se.otherEvent.left = true
+    l.left = false
   }
 
   // avoid a rounding error. The left event would be processed after the right event
   // if (compareEvents(se, r) > 0) {}
 
-  se.otherEvent.otherEvent = l;
-  se.otherEvent = r;
+  se.otherEvent.otherEvent = l
+  se.otherEvent = r
 
-  queue.push(l);
-  queue.push(r);
+  queue.push(l)
+  queue.push(r)
 
-  return queue;
-};
+  return queue
+}

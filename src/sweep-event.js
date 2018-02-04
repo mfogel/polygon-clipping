@@ -1,131 +1,69 @@
-'use strict';
+const EdgeType = require('./edge-type')
+const signedArea = require('./signed-area')
 
-//var signedArea = require('./signed-area');
-var EdgeType   = require('./edge-type');
+function SweepEvent (point, left, otherEvent, isSubject, edgeType) {
+  // isLeft
+  this.left = left
 
-/**
- * Sweepline event
- *
- * @class {SweepEvent}
- * @param {Array.<Number>}  point
- * @param {Boolean}         left
- * @param {SweepEvent=}     otherEvent
- * @param {Boolean}         isSubject
- * @param {Number}          edgeType
- */
-function SweepEvent(point, left, otherEvent, isSubject, edgeType) {
+  this.point = point
 
-  /**
-   * Is left endpoint?
-   * @type {Boolean}
-   */
-  this.left = left;
+  this.otherEvent = otherEvent
 
-  /**
-   * @type {Array.<Number>}
-   */
-  this.point = point;
+  this.isSubject = isSubject
 
-  /**
-   * Other edge reference
-   * @type {SweepEvent}
-   */
-  this.otherEvent = otherEvent;
+  // edgeType
+  this.type = edgeType || EdgeType.NORMAL
 
-  /**
-   * Belongs to source or clipping polygon
-   * @type {Boolean}
-   */
-  this.isSubject = isSubject;
+  // transInOut
+  this.inOut = false
 
-  /**
-   * Edge contribution type
-   * @type {Number}
-   */
-  this.type = edgeType || EdgeType.NORMAL;
+  // isOutsideOther
+  this.otherInOut = false
 
+  // Not needed, delete
+  this.prevInResult = null
 
-  /**
-   * In-out transition for the sweepline crossing polygon
-   * @type {Boolean}
-   */
-  this.inOut = false;
+  // isInResult
+  this.inResult = false
 
+  // needed?
+  this.resultInOut = false
 
-  /**
-   * @type {Boolean}
-   */
-  this.otherInOut = false;
-
-  /**
-   * Previous event in result?
-   * @type {SweepEvent}
-   */
-  this.prevInResult = null;
-
-  /**
-   * Does event belong to result?
-   * @type {Boolean}
-   */
-  this.inResult = false;
-
-
-  // connection step
-
-  /**
-   * @type {Boolean}
-   */
-  this.resultInOut = false;
-
-  this.isExteriorRing = true;
+  this.isExteriorRing = true
 }
 
-
 SweepEvent.prototype = {
-
-  /**
-   * @param  {Array.<Number>}  p
-   * @return {Boolean}
-   */
   isBelow: function (p) {
-    var p0 = this.point, p1 = this.otherEvent.point;
-    return this.left ?
-      (p0[0] - p[0]) * (p1[1] - p[1]) - (p1[0] - p[0]) * (p0[1] - p[1]) > 0 :
-      // signedArea(this.point, this.otherEvent.point, p) > 0 :
-      (p1[0] - p[0]) * (p0[1] - p[1]) - (p0[0] - p[0]) * (p1[1] - p[1]) > 0;
-      //signedArea(this.otherEvent.point, this.point, p) > 0;
+    return this.left
+      ? signedArea(this.point, this.otherEvent.point, p) > 0
+      : signedArea(this.otherEvent.point, this.point, p) > 0
   },
 
-
-  /**
-   * @param  {Array.<Number>}  p
-   * @return {Boolean}
-   */
   isAbove: function (p) {
-    return !this.isBelow(p);
+    return !this.isBelow(p)
   },
 
-
-  /**
-   * @return {Boolean}
-   */
   isVertical: function () {
-    return this.point[0] === this.otherEvent.point[0];
+    return this.point[0] === this.otherEvent.point[0]
   },
-
 
   clone: function () {
     var copy = new SweepEvent(
-      this.point, this.left, this.otherEvent, this.isSubject, this.type);
+      this.point,
+      this.left,
+      this.otherEvent,
+      this.isSubject,
+      this.type
+    )
 
-    copy.inResult       = this.inResult;
-    copy.prevInResult   = this.prevInResult;
-    copy.isExteriorRing = this.isExteriorRing;
-    copy.inOut          = this.inOut;
-    copy.otherInOut     = this.otherInOut;
+    copy.inResult = this.inResult
+    copy.prevInResult = this.prevInResult
+    copy.isExteriorRing = this.isExteriorRing
+    copy.inOut = this.inOut
+    copy.otherInOut = this.otherInOut
 
-    return copy;
+    return copy
   }
-};
+}
 
-module.exports = SweepEvent;
+module.exports = SweepEvent
