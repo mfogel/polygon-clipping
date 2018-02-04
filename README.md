@@ -14,27 +14,30 @@ Apply boolean Polygon clipping operations (`intersection`, `union`, `difference`
 ```javascript
 const polygonClipping = require('polygon-clipping')
 
-const poly1 = [[[0,0],[2,0],[2,1],[0,2],[0,0]]]
-const poly2 = [[[1,0],[3,0],[3,1],[1,1],[1,0]]]
+const poly1 = [[[0,0],[2,0],[0,2],[0,0]]]
+const poly2 = [[[-1,0],[1,0],[0,1],[-1,0]]]
+const poly3 = [[[0,-1],[1,0],[0,1],[0,-1]]]
 
-polygonClipping.union       (poly1, poly2)
-polygonClipping.intersection(poly1, poly2)
+polygonClipping.clean       (poly1)
 polygonClipping.difference  (poly1, poly2)
-polygonClipping.xor         (poly1, poly2)
+polygonClipping.union       (poly1, poly2, poly3)
+polygonClipping.intersection(poly1, poly2, poly3)
+polygonClipping.xor         (poly1, poly2, poly3)
 ```
 
 ## API
 
 ```javascript
-/* one or more [multi]polygon(s) as input */
-polygonClipping.union(<geom>, [ <geom>, ... ])
+/* two or more [multi]polygon(s) as input */
+polygonClipping.union       (<geom>, <geom>, [ <geom>, ... ])
+polygonClipping.intersection(<geom>, <geom>, [ <geom>, ... ])
+polygonClipping.xor         (<geom>, <geom>, [ <geom>, ... ])
 
 /* exactly two [multi]polygons as input */
 polygonClipping.difference(<geom>, <geom>)
 
-/* two or more [multi]polygon(s) as input */
-polygonClipping.intersection(<geom>, <geom>, [ <geom>, ...])
-polygonClipping.xor(<geom>, <geom>, [ <geom>, ...])
+/* exactly one [multi]polygon as input */
+polygonClipping.clean(<geom>)
 ```
 
 ### Input
@@ -47,6 +50,7 @@ Follows the [geojson Polygon spec](https://tools.ietf.org/html/rfc7946#section-3
 * rings of the polygon are not required to be self-closing
 * winding order of rings of Polygon does not matter
 * interior rings may extend outside exterior rings
+* interior rings may touch or overlap each other
 * rings may be self-intersecting
 
 #### MultiPolygon
@@ -65,13 +69,15 @@ Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing P
 
 ## Correctness / Tests
 
-Much of the testsuite is organized as GeoJSON files, one per test, to make them easy to visualize. Browse those tests [here](tests). To run the test suite, run `npm test`.
+Run: `npm test`
+
+The tests are broken up into unit tests and end-to-end tests. The end-to-end tests are organized as GeoJSON files, to make them easy to visualize thanks to [GitHub's helpful rendering of GeoJSON files](https://help.github.com/articles/mapping-geojson-files-on-github/). Browse those tests [here](test/end-to-end).
 
 ## Performance / Benchmark
 
-The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the result in `O((n+k)*log(n))` time, where `n` is the total number of edges in all polygons involved and `k` is the number of intersections between edges.
+Run: `npm run bench`
 
-Benchmark results comparing other implementations coming.
+The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the result in `O((n+k)*log(n))` time, where `n` is the total number of edges in all polygons involved and `k` is the number of intersections between edges.
 
 ## Authors
 
