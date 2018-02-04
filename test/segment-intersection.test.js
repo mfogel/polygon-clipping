@@ -73,27 +73,4 @@ describe('intersection', () => {
 
   test('parallel, position', () =>
     expect(intersection([0, -1], [1, 0], [0, 0], [1, 1])).toBeNull())
-
-  test('shared point 1, skip touches', () =>
-    expect(intersection([0, 0], [1, 1], [0, 1], [0, 0], true)).toBeNull())
-
-  test('shared point 2, skip touches', () =>
-    expect(intersection([0, 0], [1, 1], [0, 1], [1, 1], true)).toBeNull())
-
-  test('collinear, shared point, skip touches', () =>
-    expect(intersection([0, 0], [1, 1], [1, 1], [2, 2], true)).toBeNull())
-
-  test('collinear, shared other point, skip touches', () =>
-    expect(intersection([1, 1], [0, 0], [1, 1], [2, 2], true)).toBeNull())
-
-  test('full overlap, skip touches', () =>
-    expect(intersection([0, 0], [1, 1], [0, 0], [1, 1], true)).toBeNull())
-
-  test('full overlap, orientation, skip touches', () =>
-    expect(intersection([1, 1], [0, 0], [0, 0], [1, 1], true)).toBeNull())
-
-  test('1 intersection, skip touches', () =>
-    expect(intersection([0, 0], [1, 1], [1, 0], [0, 1], true)).toEqual([
-      [0.5, 0.5]
-    ]))
 })

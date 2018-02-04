@@ -39,14 +39,11 @@ function dotProduct(a, b) {
  * @param {Array.<Number>} a2 point of first line
  * @param {Array.<Number>} b1 point of second line
  * @param {Array.<Number>} b2 point of second line
- * @param {Boolean=}       noEndpointTouch whether to skip single touchpoints
- *                                         (meaning connected segments) as
- *                                         intersections
  * @returns {Array.<Array.<Number>>|Null} If the lines intersect, the point of
  * intersection. If they overlap, the two end points of the overlapping segment.
  * Otherwise, null.
  */
-module.exports = function (a1, a2, b1, b2, noEndpointTouch) {
+module.exports = function (a1, a2, b1, b2) {
   // The algorithm expects our lines in the form P + sd, where P is a point,
   // s is on the interval [0, 1], and d is a vector.
   // We are passed two points. P can be the first point of each pair. The
@@ -84,24 +81,21 @@ module.exports = function (a1, a2, b1, b2, noEndpointTouch) {
     // If they're not parallel, then (because these are line segments) they
     // still might not actually intersect. This code checks that the
     // intersection point of the lines is actually on both line segments.
+
+    // not on line segment a
     var s = crossProduct(e, vb) / kross;
-    if (s < 0 || s > 1) {
-      // not on line segment a
-      return null;
-    }
+    if (s < 0 || s > 1) return null;
+
+    // not on line segment b
     var t = crossProduct(e, va) / kross;
-    if (t < 0 || t > 1) {
-      // not on line segment b
-      return null;
-    }
-    if (s === 0 || s === 1) {
-      // on an endpoint of line segment a
-      return noEndpointTouch ? null : [toPoint(a1, s, va)];
-    }
-    if (t === 0 || t === 1) {
-      // on an endpoint of line segment b
-      return noEndpointTouch ? null : [toPoint(b1, t, vb)];
-    }
+    if (t < 0 || t > 1) return null;
+
+    // on an endpoint of line segment a
+    if (s === 0 || s === 1) return [toPoint(a1, s, va)];
+
+    // on an endpoint of line segment b
+    if (t === 0 || t === 1) return [toPoint(b1, t, vb)];
+
     return [toPoint(a1, s, va)];
   }
 
@@ -130,15 +124,8 @@ module.exports = function (a1, a2, b1, b2, noEndpointTouch) {
   if (smin <= 1 && smax >= 0) {
 
     // overlap on an end point
-    if (smin === 1) {
-      return noEndpointTouch ? null : [toPoint(a1, smin > 0 ? smin : 0, va)];
-    }
-
-    if (smax === 0) {
-      return noEndpointTouch ? null : [toPoint(a1, smax < 1 ? smax : 1, va)];
-    }
-
-    if (noEndpointTouch && smin === 0 && smax === 1) return null;
+    if (smin === 1) return [toPoint(a1, smin > 0 ? smin : 0, va)];
+    if (smax === 0) return [toPoint(a1, smax < 1 ? smax : 1, va)];
 
     // There's overlap on a segment -- two points of intersection. Return both.
     return [
