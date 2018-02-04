@@ -1,5 +1,6 @@
 const compareEvents = require('./compare-events')
 const operationType = require('./operation')
+const equals = require('./equals')
 
 const orderEvents = sortedEvents => {
   const resultEvents = []
@@ -13,7 +14,7 @@ const orderEvents = sortedEvents => {
     }
   }
   // Due to overlapping edges the resultEvents array can be not wholly sorted
-  var sorted = false
+  let sorted = false
   while (!sorted) {
     sorted = true
     for (let i = 0, len = resultEvents.length; i < len; i++) {
@@ -50,7 +51,7 @@ const nextPos = (pos, resultEvents, processed, origIndex) => {
   let p1 = resultEvents[newPos].point
 
   // while in range and not the current one by value
-  while (newPos < resultEvents.length && p1[0] === p[0] && p1[1] === p[1]) {
+  while (newPos < resultEvents.length && equals(p1, p)) {
     if (!processed[newPos]) {
       return newPos
     } else {
@@ -76,7 +77,7 @@ const connectEdges = (sortedEvents, operation) => {
 
   for (let i = 0; i < resultEvents.length; i++) {
     if (processed[i]) continue
-    var contour = [[]]
+    const contour = [[]]
 
     if (!resultEvents[i].isExteriorRing) {
       if (
@@ -100,10 +101,10 @@ const connectEdges = (sortedEvents, operation) => {
       result.push(contour)
     }
 
-    var ringId = result.length - 1
-    var pos = i
+    const ringId = result.length - 1
+    let pos = i
 
-    var initial = resultEvents[i].point
+    const initial = resultEvents[i].point
     contour[0].push(initial)
 
     let event
@@ -112,10 +113,8 @@ const connectEdges = (sortedEvents, operation) => {
       processed[pos] = true
 
       if (event.left) {
-        event.resultInOut = false
         event.contourId = ringId
       } else {
-        event.otherEvent.resultInOut = true
         event.otherEvent.contourId = ringId
       }
 
@@ -129,7 +128,6 @@ const connectEdges = (sortedEvents, operation) => {
 
     event = resultEvents[pos]
     processed[pos] = processed[event.pos] = true
-    event.otherEvent.resultInOut = true
     event.otherEvent.contourId = ringId
   }
 

@@ -96,8 +96,7 @@ describe('divide segments', () => {
     const s = [subject.geometry.coordinates]
     const c = [clipping.geometry.coordinates]
 
-    const bbox = [Infinity, Infinity, -Infinity, -Infinity]
-    const q = fillQueue(s, c, bbox, bbox)
+    const q = fillQueue(s, c)
     const p0 = [16, 282]
     const p1 = [298, 359]
     const p2 = [156, 203.5]
@@ -121,7 +120,7 @@ describe('divide segments', () => {
     expect(compareSegments(te, te3)).toBe(1)
     expect(compareSegments(te3, te)).toBe(-1)
 
-    const segments = subdivideSegments(q, s, c, bbox, bbox, 0)
+    const segments = subdivideSegments(q, s, c, 0)
     const leftSegments = []
     for (let i = 0; i < segments.length; i++) {
       if (segments[i].left) {
@@ -147,64 +146,56 @@ describe('divide segments', () => {
         r: I,
         inOut: false,
         otherInOut: true,
-        inResult: false,
-        prevInResult: null
+        inResult: false
       },
       IF: {
         l: I,
         r: F,
         inOut: false,
         otherInOut: false,
-        inResult: true,
-        prevInResult: null
+        inResult: true
       },
       FJ: {
         l: F,
         r: J,
         inOut: false,
         otherInOut: false,
-        inResult: true,
-        prevInResult: null
+        inResult: true
       },
       JG: {
         l: J,
         r: G,
         inOut: false,
         otherInOut: true,
-        inResult: false,
-        prevInResult: null
+        inResult: false
       },
       EG: {
         l: E,
         r: G,
         inOut: true,
         otherInOut: true,
-        inResult: false,
-        prevInResult: null
+        inResult: false
       },
       DA: {
         l: D,
         r: A,
         inOut: false,
         otherInOut: true,
-        inResult: false,
-        prevInResult: null
+        inResult: false
       },
       AB: {
         l: A,
         r: B,
         inOut: false,
         otherInOut: true,
-        inResult: false,
-        prevInResult: null
+        inResult: false
       },
       JB: {
         l: J,
         r: B,
         inOut: true,
         otherInOut: true,
-        inResult: false,
-        prevInResult: null
+        inResult: false
       },
 
       CJ: {
@@ -212,24 +203,14 @@ describe('divide segments', () => {
         r: J,
         inOut: true,
         otherInOut: false,
-        inResult: true,
-        prevInResult: {
-          l: F,
-          r: J,
-          prevInResult: null
-        }
+        inResult: true
       },
       IC: {
         l: I,
         r: C,
         inOut: true,
         otherInOut: false,
-        inResult: true,
-        prevInResult: {
-          l: I,
-          r: F,
-          prevInResult: null
-        }
+        inResult: true
       },
 
       DI: {
@@ -237,8 +218,7 @@ describe('divide segments', () => {
         r: I,
         inOut: true,
         otherInOut: true,
-        inResult: false,
-        prevInResult: null
+        inResult: false
       }
     }
 
@@ -251,10 +231,7 @@ describe('divide segments', () => {
           equals(seg.otherEvent.point, data.r) &&
           seg.inOut === data.inOut &&
           seg.otherInOut === data.otherInOut &&
-          seg.inResult === data.inResult &&
-          ((seg.prevInResult === null && data.prevInResult === null) ||
-            (equals(seg.prevInResult.point, data.prevInResult.l) &&
-              equals(seg.prevInResult.otherEvent.point, data.prevInResult.r)))
+          seg.inResult === data.inResult
         ) {
           expect(true).toBeTruthy()
           return

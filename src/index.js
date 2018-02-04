@@ -11,27 +11,23 @@ const booleanOp = (subject, clipping, operation) => {
     clipping = [clipping]
   }
 
-  const sbbox = [Infinity, Infinity, -Infinity, -Infinity]
-  const cbbox = [Infinity, Infinity, -Infinity, -Infinity]
-
   // console.time('fill queue');
-  const eventQueue = fillQueue(subject, clipping, sbbox, cbbox, operation)
+  const eventQueue = fillQueue(subject, clipping, operation)
   // console.timeEnd('fill queue');
 
   // console.time('subdivide edges');
-  var sortedEvents = subdivideSegments(
+  const sortedEvents = subdivideSegments(
     eventQueue,
     subject,
     clipping,
-    sbbox,
-    cbbox,
     operation
   )
   // console.timeEnd('subdivide edges');
 
   // console.time('connect vertices');
-  let result = connectEdges(sortedEvents, operation)
+  const result = connectEdges(sortedEvents, operation)
   // console.timeEnd('connect vertices');
+
   return result
 }
 

@@ -78,7 +78,7 @@ module.exports = (se1, se2, queue) => {
     events.push(se1.otherEvent, se2.otherEvent)
   }
 
-  if ((leftCoincide && rightCoincide) || leftCoincide) {
+  if (leftCoincide) {
     // both line segments are equal or share the left endpoint
     se2.type = edgeType.NON_CONTRIBUTING
     se1.type =
@@ -86,13 +86,15 @@ module.exports = (se1, se2, queue) => {
         ? edgeType.SAME_TRANSITION
         : edgeType.DIFFERENT_TRANSITION
 
-    if (leftCoincide && !rightCoincide) {
+    if (!rightCoincide) {
       // honestly no idea, but changing events selection from [2, 1]
       // to [0, 1] fixes the overlapping self-intersecting polygons issue
       divideSegment(events[1].otherEvent, events[0].point, queue)
     }
     return 2
   }
+
+  /** TODO: all this return 3 is suspicious */
 
   // the line segments share the right endpoint
   if (rightCoincide) {

@@ -10,16 +10,9 @@ const data = load.sync(
 )
 const s = [data.features[0].geometry.coordinates]
 const c = [data.features[1].geometry.coordinates]
-const sbbox = [Infinity, Infinity, -Infinity, -Infinity]
-const cbbox = [Infinity, Infinity, -Infinity, -Infinity]
-const q = fillQueue(s, c, sbbox, cbbox)
+const q = fillQueue(s, c)
 
 describe('fill event queue', () => {
-  test('bboxes', () => {
-    expect(sbbox).toEqual([20, -113.5, 226.5, 74])
-    expect(cbbox).toEqual([54.5, -198, 239.5, 33.5])
-  })
-
   test('point 0', () => {
     const currentPoint = q.pop()
     expect(currentPoint.point).toEqual([20, -23.5]) /* s[0][0] */

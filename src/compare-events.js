@@ -16,8 +16,6 @@ module.exports = (e1, e2) => {
   // a right endpoint. The right endpoint is processed first
   if (e1.left !== e2.left) return e1.left ? 1 : -1
 
-  // var p2 = e1.otherEvent.point, p3 = e2.otherEvent.point;
-  // var sa = (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
   // Same coordinates, both events
   // are left endpoints or right endpoints.
   // not collinear

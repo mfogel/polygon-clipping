@@ -5,14 +5,7 @@ const operations = require('./operation')
 
 let contourId = 0
 
-const processPolygon = (
-  contourOrHole,
-  isSubject,
-  depth,
-  Q,
-  bbox,
-  isExteriorRing
-) => {
+const processPolygon = (contourOrHole, isSubject, depth, Q, isExteriorRing) => {
   for (let i = 0; i < contourOrHole.length - 1; i++) {
     const s1 = contourOrHole[i]
     const s2 = contourOrHole[i + 1]
@@ -35,11 +28,6 @@ const processPolygon = (
       e1.left = true
     }
 
-    bbox[0] = Math.min(bbox[0], s1[0])
-    bbox[1] = Math.min(bbox[1], s1[1])
-    bbox[2] = Math.max(bbox[2], s1[0])
-    bbox[3] = Math.max(bbox[3], s1[1])
-
     // Pushing it so the queue is sorted from left to right,
     // with object on the left having the highest priority.
     Q.push(e1)
@@ -47,7 +35,7 @@ const processPolygon = (
   }
 }
 
-const fillQueue = (subject, clipping, sbbox, cbbox, operation) => {
+const fillQueue = (subject, clipping, operation) => {
   const eventQueue = new Queue(null, compareEvents)
 
   for (let i = 0; i < subject.length; i++) {
@@ -55,14 +43,7 @@ const fillQueue = (subject, clipping, sbbox, cbbox, operation) => {
     for (let j = 0; j < polygonSet.length; j++) {
       const isExteriorRing = j === 0
       if (isExteriorRing) contourId++
-      processPolygon(
-        polygonSet[j],
-        true,
-        contourId,
-        eventQueue,
-        sbbox,
-        isExteriorRing
-      )
+      processPolygon(polygonSet[j], true, contourId, eventQueue, isExteriorRing)
     }
   }
 
@@ -77,7 +58,6 @@ const fillQueue = (subject, clipping, sbbox, cbbox, operation) => {
         false,
         contourId,
         eventQueue,
-        cbbox,
         isExteriorRing
       )
     }

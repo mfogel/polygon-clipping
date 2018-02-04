@@ -18,14 +18,6 @@ const computeFields = (event, prev, operation) => {
       event.inOut = !prev.otherInOut
       event.otherInOut = prev.isVertical() ? !prev.inOut : prev.inOut
     }
-
-    // compute prevInResult field
-    if (prev) {
-      event.prevInResult =
-        !inResult(prev, operation) || prev.isVertical()
-          ? prev.prevInResult
-          : prev
-    }
   }
 
   // check if the line segment belongs to the Boolean operation

@@ -1,6 +1,5 @@
 const SweepEvent = require('./sweep-event')
 const equals = require('./equals')
-const compareEvents = require('./compare-events')
 
 module.exports = function divideSegment (se, p, queue) {
   const r = new SweepEvent(p, false, se, se.isSubject)
@@ -13,10 +12,10 @@ module.exports = function divideSegment (se, p, queue) {
   r.contourId = l.contourId = se.contourId
 
   // avoid a rounding error. The left event would be processed after the right event
-  if (compareEvents(l, se.otherEvent) > 0) {
-    se.otherEvent.left = true
-    l.left = false
-  }
+  // if (compareEvents(l, se.otherEvent) > 0) {
+  //   se.otherEvent.left = true
+  //   l.left = false
+  // }
 
   // avoid a rounding error. The left event would be processed after the right event
   // if (compareEvents(se, r) > 0) {}
