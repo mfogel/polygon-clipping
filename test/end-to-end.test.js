@@ -5,12 +5,11 @@ const path = require('path')
 const load = require('load-json-file')
 const polygonClipping = require('../main')
 
-const endToEndDir = 'test/end-to-end'
-const possibleOps = ['union', 'intersection', 'difference', 'xor']
-
-/** USE ME TO ONLY RUN ONE TEST **/
+/** USE ME TO RUN ONLY ONE TEST **/
 const targetOnly = ''
 const opOnly = ''
+
+const endToEndDir = 'test/end-to-end'
 
 describe('end to end', () => {
   const targets = fs.readdirSync(endToEndDir)
@@ -23,19 +22,26 @@ describe('end to end', () => {
       const argsGeojson = load.sync(path.join(targetDir, 'args.geojson'))
       const args = argsGeojson.features.map(f => f.geometry.coordinates)
 
-      possibleOps.forEach(op => {
-        if (opOnly && op !== opOnly) return
+      const resultPathsAndOperationTypes = fs
+        .readdirSync(targetDir)
+        .filter(fn => fn !== 'args.geojson' && fn.endsWith('.geojson'))
+        .map(fn => [fn.slice(0, -'.geojson'.length), path.join(targetDir, fn)])
 
-        let resultGeojson
-        try {
-          resultGeojson = load.sync(path.join(targetDir, `${op}.geojson`))
-        } catch (err) {
-          /* missing result file indicates no need to test that operation */
-          return
-        }
-        test(op, () => {
+      resultPathsAndOperationTypes.forEach(([operationType, resultPath]) => {
+        if (opOnly && operationType !== opOnly) return
+
+        test(operationType, () => {
+          const resultGeojson = load.sync(resultPath)
           const expected = resultGeojson.geometry.coordinates
-          const result = polygonClipping[op](...args)
+
+          const operation = polygonClipping[operationType]
+          if (!operation) {
+            throw new Error(
+              `Unknown operation '${operationType}'. Mispelling in filename of ${resultPath} ?`
+            )
+          }
+
+          const result = operation(...args)
           expect(result).toEqual(expected)
         })
       })
