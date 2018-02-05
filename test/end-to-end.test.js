@@ -9,8 +9,8 @@ const endToEndDir = 'test/end-to-end'
 const possibleOps = ['union', 'intersection', 'difference', 'xor']
 
 /** USE ME TO ONLY RUN ONE TEST **/
-const targetOnly = null
-const opOnly = null
+const targetOnly = ''
+const opOnly = ''
 
 describe('end to end', () => {
   const targets = fs.readdirSync(endToEndDir)
