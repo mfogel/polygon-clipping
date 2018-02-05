@@ -1,15 +1,12 @@
-const subdivideSegments = require('./subdivide-segments')
+const cleanInput = require('./clean-input.js')
 const connectEdges = require('./connect-edges')
 const fillQueue = require('./fill-queue')
 const operations = require('./operation')
+const subdivideSegments = require('./subdivide-segments')
 
 const booleanOp = (subject, clipping, operation) => {
-  if (typeof subject[0][0][0] === 'number') {
-    subject = [subject]
-  }
-  if (typeof clipping[0][0][0] === 'number') {
-    clipping = [clipping]
-  }
+  cleanInput(subject)
+  cleanInput(clipping)
 
   // console.time('fill queue');
   const eventQueue = fillQueue(subject, clipping, operation)
