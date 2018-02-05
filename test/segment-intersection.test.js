@@ -3,74 +3,122 @@
 const intersection = require('../src/segment-intersection')
 
 describe('intersection', () => {
-  test('null if no intersections 1', () =>
-    expect(intersection([0, 0], [1, 1], [1, 0], [2, 2])).toBeNull())
+  test('null if no intersections 1', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[1, 0], [2, 2]]
+    expect(intersection(...a, ...b)).toBeNull()
+  })
 
-  test('null if no intersections 2', () =>
-    expect(intersection([0, 0], [1, 1], [1, 0], [10, 2])).toBeNull())
+  test('null if no intersections 2', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[1, 0], [10, 2]]
+    expect(intersection(...a, ...b)).toBeNull()
+  })
 
-  test('null if no intersections 3', () =>
-    expect(intersection([2, 2], [3, 3], [0, 6], [2, 4])).toBeNull())
+  test('null if no intersections 3', () => {
+    const a = [[2, 2], [3, 3]]
+    const b = [[0, 6], [2, 4]]
+    expect(intersection(...a, ...b)).toBeNull()
+  })
 
-  test('1 intersection', () =>
-    expect(intersection([0, 0], [1, 1], [1, 0], [0, 1])).toEqual([[0.5, 0.5]]))
+  test('1 intersection', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[1, 0], [0, 1]]
+    const inters = [[0.5, 0.5]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('shared point 1', () =>
-    expect(intersection([0, 0], [1, 1], [0, 1], [0, 0])).toEqual([[0, 0]]))
+  test('shared point 1', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[0, 1], [0, 0]]
+    const inters = [[0, 0]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('shared point 2', () =>
-    expect(intersection([0, 0], [1, 1], [0, 1], [1, 1])).toEqual([[1, 1]]))
+  test('shared point 2', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[0, 1], [1, 1]]
+    const inters = [[1, 1]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('T-crossing', () =>
-    expect(intersection([0, 0], [1, 1], [0.5, 0.5], [1, 0])).toEqual([
-      [0.5, 0.5]
-    ]))
+  test('T-crossing', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[0.5, 0.5], [1, 0]]
+    const inters = [[0.5, 0.5]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('full overlap', () =>
-    expect(intersection([0, 0], [10, 10], [1, 1], [5, 5])).toEqual([
-      [1, 1],
-      [5, 5]
-    ]))
+  test('full overlap', () => {
+    const a = [[0, 0], [10, 10]]
+    const b = [[1, 1], [5, 5]]
+    const inters = [[1, 1], [5, 5]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('shared point + overlap', () =>
-    expect(intersection([1, 1], [10, 10], [1, 1], [5, 5])).toEqual([
-      [1, 1],
-      [5, 5]
-    ]))
+  test('shared point + overlap', () => {
+    const a = [[1, 1], [10, 10]]
+    const b = [[1, 1], [5, 5]]
+    const inters = [[1, 1], [5, 5]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('mutual overlap', () =>
-    expect(intersection([3, 3], [10, 10], [0, 0], [5, 5])).toEqual([
-      [3, 3],
-      [5, 5]
-    ]))
+  test('mutual overlap', () => {
+    const a = [[3, 3], [10, 10]]
+    const b = [[0, 0], [5, 5]]
+    const inters = [[3, 3], [5, 5]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('full overlap', () =>
-    expect(intersection([0, 0], [1, 1], [0, 0], [1, 1])).toEqual([
-      [0, 0],
-      [1, 1]
-    ]))
+  test('full overlap', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[0, 0], [1, 1]]
+    const inters = [[0, 0], [1, 1]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('full overlap, orientation', () =>
-    expect(intersection([1, 1], [0, 0], [0, 0], [1, 1])).toEqual([
-      [1, 1],
-      [0, 0]
-    ]))
+  test('full overlap, orientation', () => {
+    const a = [[1, 1], [0, 0]]
+    const b = [[0, 0], [1, 1]]
+    const inters = [[1, 1], [0, 0]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('collinear, shared point', () =>
-    expect(intersection([0, 0], [1, 1], [1, 1], [2, 2])).toEqual([[1, 1]]))
+  test('collinear, shared point', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[1, 1], [2, 2]]
+    const inters = [[1, 1]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('collinear, shared other point', () =>
-    expect(intersection([1, 1], [0, 0], [1, 1], [2, 2])).toEqual([[1, 1]]))
+  test('collinear, shared other point', () => {
+    const a = [[1, 1], [0, 0]]
+    const b = [[1, 1], [2, 2]]
+    const inters = [[1, 1]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
 
-  test('collinear, no overlap', () =>
-    expect(intersection([0, 0], [1, 1], [2, 2], [4, 4])).toBeNull())
+  test('collinear, no overlap', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[2, 2], [4, 4]]
+    expect(intersection(...a, ...b)).toBeNull()
+  })
 
-  test('parallel', () =>
-    expect(intersection([0, 0], [1, 1], [0, -1], [1, 0])).toBeNull())
+  test('parallel', () => {
+    const a = [[0, 0], [1, 1]]
+    const b = [[0, -1], [1, 0]]
+    expect(intersection(...a, ...b)).toBeNull()
+  })
 
-  test('parallel, orientation', () =>
-    expect(intersection([1, 1], [0, 0], [0, -1], [1, 0])).toBeNull())
+  test('parallel, orientation', () => {
+    const a = [[1, 1], [0, 0]]
+    const b = [[0, -1], [1, 0]]
+    expect(intersection(...a, ...b)).toBeNull()
+  })
 
-  test('parallel, position', () =>
-    expect(intersection([0, -1], [1, 0], [0, 0], [1, 1])).toBeNull())
+  test('parallel, position', () => {
+    const a = [[0, -1], [1, 0]]
+    const b = [[0, 0], [1, 1]]
+    expect(intersection(...a, ...b)).toBeNull()
+  })
 })
