@@ -3,7 +3,7 @@
 const fs = require('fs')
 const path = require('path')
 const load = require('load-json-file')
-const polygonClipping = require('../src')
+const polygonClipping = require('../main')
 
 const endToEndDir = 'test/end-to-end'
 const possibleOps = ['union', 'intersection', 'difference', 'xor']

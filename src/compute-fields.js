@@ -1,5 +1,5 @@
 const edgeType = require('./edge-type')
-const operationType = require('./operation')
+const operationType = require('./operation-type')
 
 const computeFields = (event, prev, operation) => {
   // compute sweepLineEnters and isInsideOther fields

@@ -1,6 +1,6 @@
 const compareEvents = require('./compare-events')
-const operationType = require('./operation')
 const equals = require('./equals')
+const operationType = require('./operation-type')
 
 const orderEvents = sortedEvents => {
   const resultEvents = []

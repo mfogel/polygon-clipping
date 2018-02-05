@@ -2,7 +2,7 @@
   "name": "polygon-clipping",
   "version": "0.3.3",
   "description": "Apply boolean Polygon clipping operations (intersection, union, difference, xor) to your Polygons & MultiPolygons.",
-  "main": "src/index.js",
+  "main": "main.js",
   "scripts": {
     "test": "jest",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
