@@ -13,8 +13,8 @@ module.exports = function divideSegment (se, p, queue) {
 
   // avoid a rounding error. The left event would be processed after the right event
   // if (compareEvents(l, se.otherEvent) > 0) {
-  //   se.otherEvent.left = true
-  //   l.left = false
+  //   se.otherEvent.isLeft = true
+  //   l.isLeft = false
   // }
 
   // avoid a rounding error. The left event would be processed after the right event

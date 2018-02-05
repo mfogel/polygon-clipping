@@ -7,8 +7,8 @@ const orderEvents = sortedEvents => {
   for (let i = 0; i < sortedEvents.length; i++) {
     let event = sortedEvents[i]
     if (
-      (event.left && event.inResult) ||
-      (!event.left && event.otherEvent.inResult)
+      (event.isLeft && event.isInResult) ||
+      (!event.isLeft && event.otherEvent.isInResult)
     ) {
       resultEvents.push(event)
     }
@@ -34,7 +34,7 @@ const orderEvents = sortedEvents => {
     let event = resultEvents[i]
     event.pos = i
 
-    if (!event.left) {
+    if (!event.isLeft) {
       const tmp = event.pos
       event.pos = event.otherEvent.pos
       event.otherEvent.pos = tmp
@@ -112,7 +112,7 @@ const connectEdges = (sortedEvents, operation) => {
       event = resultEvents[pos]
       processed[pos] = true
 
-      if (event.left) {
+      if (event.isLeft) {
         event.contourId = ringId
       } else {
         event.otherEvent.contourId = ringId

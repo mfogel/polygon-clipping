@@ -80,9 +80,9 @@ module.exports = (se1, se2, queue) => {
 
   if (leftCoincide) {
     // both line segments are equal or share the left endpoint
-    se2.type = edgeType.NON_CONTRIBUTING
-    se1.type =
-      se2.inOut === se1.inOut
+    se2.edgeType = edgeType.NON_CONTRIBUTING
+    se1.edgeType =
+      se2.sweepLineEnters === se1.sweepLineEnters
         ? edgeType.SAME_TRANSITION
         : edgeType.DIFFERENT_TRANSITION
 

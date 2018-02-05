@@ -14,7 +14,7 @@ module.exports = (e1, e2) => {
 
   // Same coordinates, but one is a left endpoint and the other is
   // a right endpoint. The right endpoint is processed first
-  if (e1.left !== e2.left) return e1.left ? 1 : -1
+  if (e1.isLeft !== e2.isLeft) return e1.isLeft ? 1 : -1
 
   // Same coordinates, both events
   // are left endpoints or right endpoints.

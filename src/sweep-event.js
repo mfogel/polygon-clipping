@@ -1,9 +1,8 @@
 const EdgeType = require('./edge-type')
 const signedArea = require('./signed-area')
 
-function SweepEvent (point, left, otherEvent, isSubject, edgeType) {
-  // isLeft
-  this.left = left
+function SweepEvent (point, isLeft, otherEvent, isSubject, edgeType) {
+  this.isLeft = isLeft
 
   this.point = point
 
@@ -11,24 +10,20 @@ function SweepEvent (point, left, otherEvent, isSubject, edgeType) {
 
   this.isSubject = isSubject
 
-  // edgeType
-  this.type = edgeType || EdgeType.NORMAL
+  this.edgeType = edgeType || EdgeType.NORMAL
 
-  // transInOut
-  this.inOut = false
+  this.sweepLineEnters = true
 
-  // isOutsideOther
-  this.otherInOut = false
+  this.isInsideOther = false
 
-  // isInResult
-  this.inResult = false
+  this.isInResult = false
 
   this.isExteriorRing = true
 }
 
 SweepEvent.prototype = {
   isBelow: function (p) {
-    return this.left
+    return this.isLeft
       ? signedArea(this.point, this.otherEvent.point, p) > 0
       : signedArea(this.otherEvent.point, this.point, p) > 0
   },

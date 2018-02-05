@@ -11,7 +11,7 @@ module.exports = (eventQueue, subject, clipping, operation) => {
     const event = eventQueue.pop()
     sortedEvents.push(event)
 
-    if (event.left) {
+    if (event.isLeft) {
       const eventNode = sweepLine.insert(event)
       const prevNode = sweepLine.prev(eventNode)
       const nextNode = sweepLine.next(eventNode)

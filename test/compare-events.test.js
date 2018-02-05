@@ -29,10 +29,10 @@ describe('queue', () => {
     expect(queue.pop()).toBe(e2)
   })
 
-  test('queue should pop least(by left prop) sweep event first', () => {
+  test('queue should pop least(by isLeft prop) sweep event first', () => {
     const queue = new Queue(null, sweepEventsComp)
-    const e1 = { point: [0.0, 0.0], left: true }
-    const e2 = { point: [0.0, 0.0], left: false }
+    const e1 = { point: [0.0, 0.0], isLeft: true }
+    const e2 = { point: [0.0, 0.0], isLeft: false }
 
     queue.push(e1)
     queue.push(e2)
@@ -60,8 +60,8 @@ describe('sweep event comparison', () => {
   })
 
   test('not left first', () => {
-    const e1 = { point: [0.0, 0.0], left: true }
-    const e2 = { point: [0.0, 0.0], left: false }
+    const e1 = { point: [0.0, 0.0], isLeft: true }
+    const e2 = { point: [0.0, 0.0], isLeft: false }
 
     expect(sweepEventsComp(e1, e2)).toBe(1)
     expect(sweepEventsComp(e2, e1)).toBe(-1)

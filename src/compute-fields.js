@@ -2,40 +2,42 @@ const edgeType = require('./edge-type')
 const operationType = require('./operation')
 
 const computeFields = (event, prev, operation) => {
-  // compute inOut and otherInOut fields
+  // compute sweepLineEnters and isInsideOther fields
   if (prev === null) {
-    event.inOut = false
-    event.otherInOut = true
+    event.sweepLineEnters = true
+    event.isInsideOther = false
 
     // previous line segment in sweepline belongs to the same polygon
   } else {
     if (event.isSubject === prev.isSubject) {
-      event.inOut = !prev.inOut
-      event.otherInOut = prev.otherInOut
+      event.sweepLineEnters = !prev.sweepLineEnters
+      event.isInsideOther = prev.isInsideOther
 
       // previous line segment in sweepline belongs to the clipping polygon
     } else {
-      event.inOut = !prev.otherInOut
-      event.otherInOut = prev.isVertical() ? !prev.inOut : prev.inOut
+      event.sweepLineEnters = !prev.isInsideOther
+      event.isInsideOther = prev.isVertical()
+        ? !prev.sweepLineEnters
+        : prev.sweepLineEnters
     }
   }
 
   // check if the line segment belongs to the Boolean operation
-  event.inResult = inResult(event, operation)
+  event.isInResult = isInResult(event, operation)
 }
 
-const inResult = (event, operation) => {
-  switch (event.type) {
+const isInResult = (event, operation) => {
+  switch (event.edgeType) {
     case edgeType.NORMAL:
       switch (operation) {
         case operationType.INTERSECTION:
-          return !event.otherInOut
+          return event.isInsideOther
         case operationType.UNION:
-          return event.otherInOut
+          return !event.isInsideOther
         case operationType.DIFFERENCE:
           return (
-            (event.isSubject && event.otherInOut) ||
-            (!event.isSubject && !event.otherInOut)
+            (event.isSubject && !event.isInsideOther) ||
+            (!event.isSubject && event.isInsideOther)
           )
         case operationType.XOR:
           return true

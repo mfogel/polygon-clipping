@@ -23,9 +23,9 @@ const processPolygon = (contourOrHole, isSubject, depth, Q, isExteriorRing) => {
       e2.isExteriorRing = false
     }
     if (compareEvents(e1, e2) > 0) {
-      e2.left = true
+      e2.isLeft = true
     } else {
-      e1.left = true
+      e1.isLeft = true
     }
 
     // Pushing it so the queue is sorted from left to right,

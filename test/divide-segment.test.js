@@ -123,7 +123,7 @@ describe('divide segments', () => {
     const segments = subdivideSegments(q, s, c, 0)
     const leftSegments = []
     for (let i = 0; i < segments.length; i++) {
-      if (segments[i].left) {
+      if (segments[i].isLeft) {
         leftSegments.push(segments[i])
       }
     }
@@ -144,81 +144,81 @@ describe('divide segments', () => {
       EI: {
         l: E,
         r: I,
-        inOut: false,
-        otherInOut: true,
-        inResult: false
+        sweepLineEnters: true,
+        isInsideOther: false,
+        isInResult: false
       },
       IF: {
         l: I,
         r: F,
-        inOut: false,
-        otherInOut: false,
-        inResult: true
+        sweepLineEnters: true,
+        isInsideOther: true,
+        isInResult: true
       },
       FJ: {
         l: F,
         r: J,
-        inOut: false,
-        otherInOut: false,
-        inResult: true
+        sweepLineEnters: true,
+        isInsideOther: true,
+        isInResult: true
       },
       JG: {
         l: J,
         r: G,
-        inOut: false,
-        otherInOut: true,
-        inResult: false
+        sweepLineEnters: true,
+        isInsideOther: false,
+        isInResult: false
       },
       EG: {
         l: E,
         r: G,
-        inOut: true,
-        otherInOut: true,
-        inResult: false
+        sweepLineEnters: false,
+        isInsideOther: false,
+        isInResult: false
       },
       DA: {
         l: D,
         r: A,
-        inOut: false,
-        otherInOut: true,
-        inResult: false
+        sweepLineEnters: true,
+        isInsideOther: false,
+        isInResult: false
       },
       AB: {
         l: A,
         r: B,
-        inOut: false,
-        otherInOut: true,
-        inResult: false
+        sweepLineEnters: true,
+        isInsideOther: false,
+        isInResult: false
       },
       JB: {
         l: J,
         r: B,
-        inOut: true,
-        otherInOut: true,
-        inResult: false
+        sweepLineEnters: false,
+        isInsideOther: false,
+        isInResult: false
       },
 
       CJ: {
         l: C,
         r: J,
-        inOut: true,
-        otherInOut: false,
-        inResult: true
+        sweepLineEnters: false,
+        isInsideOther: true,
+        isInResult: true
       },
       IC: {
         l: I,
         r: C,
-        inOut: true,
-        otherInOut: false,
-        inResult: true
+        sweepLineEnters: false,
+        isInsideOther: true,
+        isInResult: true
       },
 
       DI: {
         l: D,
         r: I,
-        inOut: true,
-        otherInOut: true,
-        inResult: false
+        sweepLineEnters: false,
+        isInsideOther: false,
+        isInResult: false
       }
     }
 
@@ -229,9 +229,9 @@ describe('divide segments', () => {
         if (
           equals(seg.point, data.l) &&
           equals(seg.otherEvent.point, data.r) &&
-          seg.inOut === data.inOut &&
-          seg.otherInOut === data.otherInOut &&
-          seg.inResult === data.inResult
+          seg.sweepLineEnters === data.sweepLineEnters &&
+          seg.isInsideOther === data.isInsideOther &&
+          seg.isInResult === data.isInResult
         ) {
           expect(true).toBeTruthy()
           return
