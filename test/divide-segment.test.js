@@ -1,8 +1,6 @@
 /* eslint-env jest */
 
-const path = require('path')
 const Queue = require('tinyqueue')
-const load = require('load-json-file')
 const SweepEvent = require('../src/sweep-event')
 const compareEvents = require('../src/compare-events')
 const intersection = require('../src/segment-intersection')
@@ -12,14 +10,11 @@ const divideSegment = require('../src/divide-segment')
 const subdivideSegments = require('../src/subdivide-segments')
 const possibleIntersection = require('../src/possible-intersection')
 
-// GeoJSON Data
-const shapes = load.sync(path.join(__dirname, 'fixtures', 'two_shapes.geojson'))
-
 const Tree = require('avl')
 const compareSegments = require('../src/compare-segments')
 
-const subject = shapes.features[0]
-const clipping = shapes.features[1]
+const s = [[[16, 282], [298, 359], [153, 203.5], [16, 282]]]
+const c = [[[56, 181], [153, 294.5], [241.5, 229.5], [108.5, 120], [56, 181]]]
 
 describe('divide segments', () => {
   test('divide 2 segments', () => {
@@ -54,9 +49,6 @@ describe('divide segments', () => {
   })
 
   test('possible intersections', () => {
-    const s = subject.geometry.coordinates
-    const c = clipping.geometry.coordinates
-
     const q = new Queue(null, compareEvents)
 
     const se1 = new SweepEvent(
@@ -93,10 +85,7 @@ describe('divide segments', () => {
   })
 
   test('possible intersections on 2 polygons', () => {
-    const s = [subject.geometry.coordinates]
-    const c = [clipping.geometry.coordinates]
-
-    const q = fillQueue(s, c)
+    const q = fillQueue([s], [c])
     const p0 = [16, 282]
     const p1 = [298, 359]
     const p2 = [156, 203.5]

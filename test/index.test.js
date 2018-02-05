@@ -1,15 +1,9 @@
 /* eslint-env jest */
 
-const path = require('path')
-const load = require('load-json-file')
 const fillQueue = require('../src/fill-queue')
 
-// GeoJSON Data
-const data = load.sync(
-  path.join(__dirname, 'fixtures', 'two_triangles.geojson')
-)
-const s = [data.features[0].geometry.coordinates]
-const c = [data.features[1].geometry.coordinates]
+const s = [[[[20, -23.5], [170, 74], [226.5, -113.5], [20, -23.5]]]]
+const c = [[[[54.5, -170.5], [140.5, 33.5], [239.5, -198], [54.5, -170.5]]]]
 const q = fillQueue(s, c)
 
 describe('fill event queue', () => {

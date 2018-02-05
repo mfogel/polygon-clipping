@@ -1,19 +1,12 @@
 /* eslint-env jest */
 
-const path = require('path')
 const Tree = require('avl')
-const load = require('load-json-file')
 const compareSegments = require('../src/compare-segments')
 const SweepEvent = require('../src/sweep-event')
 
 describe('sweep line', () => {
-  // GeoJSON Data
-  const data = load.sync(
-    path.join(__dirname, 'fixtures', 'two_triangles.geojson')
-  )
-
-  const s = data.features[0].geometry.coordinates
-  const c = data.features[1].geometry.coordinates
+  const s = [[[16, 282], [298, 359], [153, 203.5], [16, 282]]]
+  const c = [[[56, 181], [153, 294.5], [241.5, 229.5], [108.5, 120], [56, 181]]]
 
   test('general', () => {
     const EF = new SweepEvent(
