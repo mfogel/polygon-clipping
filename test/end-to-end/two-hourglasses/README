@@ -1,0 +1,1 @@
+Note that geojsonhint doesn't like the self-intersection on the polygons in the argument. It complains about winding order, no matter which way the polygons are wound.
