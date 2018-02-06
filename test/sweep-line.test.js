@@ -9,21 +9,8 @@ describe('sweep line', () => {
   const c = [[[56, 181], [153, 294.5], [241.5, 229.5], [108.5, 120], [56, 181]]]
 
   test('general', () => {
-    const EF = new SweepEvent(
-      s[0][0],
-      true,
-      new SweepEvent(s[0][2], false),
-      true
-    )
-    EF.name = 'EF'
-
-    const EG = new SweepEvent(
-      s[0][0],
-      true,
-      new SweepEvent(s[0][1], false),
-      true
-    )
-    EG.name = 'EG'
+    const EF = SweepEvent.buildPair(s[0][0], s[0][2], true)[0]
+    const EG = SweepEvent.buildPair(s[0][0], s[0][1], true)[0]
 
     const tree = new Tree(compareSegments)
     tree.insert(EF)
@@ -38,18 +25,8 @@ describe('sweep line', () => {
     it = tree.find(EG)
     expect(tree.prev(it).key).toBe(EF)
 
-    const DA = new SweepEvent(
-      c[0][0],
-      true,
-      new SweepEvent(c[0][2], false),
-      true
-    )
-    const DC = new SweepEvent(
-      c[0][0],
-      true,
-      new SweepEvent(c[0][1], false),
-      true
-    )
+    const DA = SweepEvent.buildPair(c[0][0], c[0][2], true)[0]
+    const DC = SweepEvent.buildPair(c[0][0], c[0][1], true)[0]
 
     tree.insert(DA)
     tree.insert(DC)

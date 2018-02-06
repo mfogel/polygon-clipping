@@ -9,8 +9,8 @@ describe('compare segments are not collinear', () => {
   test('shared left point - right point first', () => {
     const tree = new Tree(compareSegments)
     const pt = [0.0, 0.0]
-    const se1 = new SweepEvent(pt, true, new SweepEvent([1, 1], false))
-    const se2 = new SweepEvent(pt, true, new SweepEvent([2, 3], false))
+    const se1 = SweepEvent.buildPair(pt, [1, 1])[0]
+    const se2 = SweepEvent.buildPair(pt, [2, 3])[0]
 
     tree.insert(se1)
     tree.insert(se2)
@@ -21,8 +21,8 @@ describe('compare segments are not collinear', () => {
 
   test('different left point - right point y coord to sort', () => {
     const tree = new Tree(compareSegments)
-    const se1 = new SweepEvent([0, 1], true, new SweepEvent([1, 1], false))
-    const se2 = new SweepEvent([0, 2], true, new SweepEvent([2, 3], false))
+    const se1 = SweepEvent.buildPair([0, 1], [1, 1])[0]
+    const se2 = SweepEvent.buildPair([0, 2], [2, 3])[0]
 
     tree.insert(se1)
     tree.insert(se2)
@@ -32,11 +32,11 @@ describe('compare segments are not collinear', () => {
   })
 
   test('events order in sweep line', () => {
-    const se1 = new SweepEvent([0, 1], true, new SweepEvent([2, 1], false))
-    const se2 = new SweepEvent([-1, 0], true, new SweepEvent([2, 3], false))
+    const se1 = SweepEvent.buildPair([0, 1], [2, 1])[0]
+    const se2 = SweepEvent.buildPair([-1, 0], [2, 3])[0]
 
-    const se3 = new SweepEvent([0, 1], true, new SweepEvent([3, 4], false))
-    const se4 = new SweepEvent([-1, 0], true, new SweepEvent([3, 1], false))
+    const se3 = SweepEvent.buildPair([0, 1], [3, 4])[0]
+    const se4 = SweepEvent.buildPair([-1, 0], [3, 1])[0]
 
     expect(compareEvents(se1, se2)).toBe(1)
     expect(se2.isBelow(se1.point)).toBeFalsy()
@@ -50,8 +50,8 @@ describe('compare segments are not collinear', () => {
   })
 
   test('first point is below', () => {
-    const se2 = new SweepEvent([0, 1], true, new SweepEvent([2, 1], false))
-    const se1 = new SweepEvent([-1, 0], true, new SweepEvent([2, 3], false))
+    const se1 = SweepEvent.buildPair([-1, 0], [2, 3])[0]
+    const se2 = SweepEvent.buildPair([0, 1], [2, 1])[0]
 
     expect(se1.isBelow(se2.point)).toBeFalsy()
     expect(compareSegments(se1, se2)).toBe(1)
@@ -60,18 +60,8 @@ describe('compare segments are not collinear', () => {
 
 describe('compare segments are collinear', () => {
   test('general', () => {
-    const se1 = new SweepEvent(
-      [1, 1],
-      true,
-      new SweepEvent([5, 1], false),
-      true
-    )
-    const se2 = new SweepEvent(
-      [2, 1],
-      true,
-      new SweepEvent([3, 1], false),
-      false
-    )
+    const se1 = SweepEvent.buildPair([1, 1], [5, 1], true)[0]
+    const se2 = SweepEvent.buildPair([2, 1], [3, 1], false)[0]
 
     expect(se1.isSubject).not.toBe(se2.isSubject)
     expect(compareSegments(se1, se2)).toBe(-1)
@@ -80,8 +70,8 @@ describe('compare segments are collinear', () => {
   test('left point', () => {
     const pt = [0, 1]
 
-    const se1 = new SweepEvent(pt, true, new SweepEvent([5, 1], false), false)
-    const se2 = new SweepEvent(pt, true, new SweepEvent([3, 1], false), false)
+    const se1 = SweepEvent.buildPair(pt, [5, 1])[0]
+    const se2 = SweepEvent.buildPair(pt, [3, 1])[0]
 
     se1.contourId = 1
     se2.contourId = 2
@@ -98,18 +88,8 @@ describe('compare segments are collinear', () => {
   })
 
   test('same polygon different left points', () => {
-    const se1 = new SweepEvent(
-      [1, 1],
-      true,
-      new SweepEvent([5, 1], false),
-      true
-    )
-    const se2 = new SweepEvent(
-      [2, 1],
-      true,
-      new SweepEvent([3, 1], false),
-      true
-    )
+    const se1 = SweepEvent.buildPair([1, 1], [5, 1])[0]
+    const se2 = SweepEvent.buildPair([2, 1], [3, 1])[0]
 
     expect(se1.isSubject).toBe(se2.isSubject)
     expect(se1.point).not.toEqual(se2.point)

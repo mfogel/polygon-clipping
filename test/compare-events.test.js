@@ -68,26 +68,16 @@ describe('sweep event comparison', () => {
   })
 
   test('shared start point not collinear edges', () => {
-    const e1 = new SweepEvent([0.0, 0.0], true, new SweepEvent([1, 1], false))
-    const e2 = new SweepEvent([0.0, 0.0], true, new SweepEvent([2, 3], false))
+    const e1 = SweepEvent.buildPair([0, 0], [1, 1])[0]
+    const e2 = SweepEvent.buildPair([0, 0], [2, 3])[0]
 
     expect(sweepEventsComp(e1, e2)).toBe(-1)
     expect(sweepEventsComp(e2, e1)).toBe(1)
   })
 
   test('collinear edges', () => {
-    const e1 = new SweepEvent(
-      [0.0, 0.0],
-      true,
-      new SweepEvent([1, 1], false),
-      true
-    )
-    const e2 = new SweepEvent(
-      [0.0, 0.0],
-      true,
-      new SweepEvent([2, 2], false),
-      false
-    )
+    const e1 = SweepEvent.buildPair([0, 0], [1, 1], true)[0]
+    const e2 = SweepEvent.buildPair([0, 0], [2, 2], false)[0]
 
     expect(sweepEventsComp(e1, e2)).toBe(-1)
     expect(sweepEventsComp(e2, e1)).toBe(1)

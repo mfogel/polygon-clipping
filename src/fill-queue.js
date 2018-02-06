@@ -9,24 +9,16 @@ const processPolygon = (contourOrHole, isSubject, depth, Q, isExteriorRing) => {
   for (let i = 0; i < contourOrHole.length - 1; i++) {
     const s1 = contourOrHole[i]
     const s2 = contourOrHole[i + 1]
-    const e1 = new SweepEvent(s1, false, undefined, isSubject)
-    const e2 = new SweepEvent(s2, false, e1, isSubject)
-    e1.otherEvent = e2
 
+    // TODO: this is indeed necessary. huh?
     if (s1[0] === s2[0] && s1[1] === s2[1]) {
       continue // skip collapsed edges, or it breaks
     }
 
+    const [e1, e2] = SweepEvent.buildPair(s1, s2, isSubject)
+
     e1.contourId = e2.contourId = depth
-    if (!isExteriorRing) {
-      e1.isExteriorRing = false
-      e2.isExteriorRing = false
-    }
-    if (compareEvents(e1, e2) > 0) {
-      e2.isLeft = true
-    } else {
-      e1.isLeft = true
-    }
+    e1.isExteriorRing = e2.isExteriorRing = isExteriorRing
 
     // Pushing it so the queue is sorted from left to right,
     // with object on the left having the highest priority.

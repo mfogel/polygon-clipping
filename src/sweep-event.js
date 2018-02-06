@@ -1,20 +1,45 @@
 const edgeType = require('./edge-type')
+const compareEvents = require('./compare-events')
 const operationType = require('./operation-type')
 const signedArea = require('./signed-area')
 
 class SweepEvent {
-  constructor (point, isLeft, otherEvent, isSubject) {
+  static buildPair (p1, p2, isSubject) {
+    const e1 = new SweepEvent(p1, isSubject)
+    const e2 = new SweepEvent(p2, isSubject)
+    e1.otherEvent = e2
+    e2.otherEvent = e1
+
+    // TODO: should this be using a 'comparePoints' and setting isLeft
+    // directly in the constructor? (yes)
+    //
+    // TODO: order [left, right] of returned points... should it matter?
+    if (compareEvents(e1, e2) > 0) {
+      e1.isLeft = false
+      e2.isLeft = true
+      return [e2, e1]
+    } else {
+      e1.isLeft = true
+      e2.isLeft = false
+      return [e1, e2]
+    }
+  }
+
+  constructor (point, isSubject) {
     this.point = point
-    this.isLeft = isLeft
-    this.otherEvent = otherEvent
     this.isSubject = isSubject
+
+    // TODO: I am skeptical about these.
+    this.isExteriorRing = true
+    this.contourId = null
 
     // TODO: review these defaults... are some also set elsewhere?
     this.edgeType = edgeType.NORMAL
+    this.otherEvent = null
+    this.isLeft = null
     this.sweepLineEnters = null
     this.isInsideOther = null
     this.isInResult = null
-    this.isExteriorRing = true
   }
 
   isBelow (p) {

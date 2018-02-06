@@ -81,6 +81,7 @@ const connectEdges = (sortedEvents, operation) => {
 
     if (!resultEvents[i].isExteriorRing) {
       if (
+        // TODO: this seems wrong.
         operation === operationType.DIFFERENCE &&
         !resultEvents[i].isSubject &&
         result.length === 0

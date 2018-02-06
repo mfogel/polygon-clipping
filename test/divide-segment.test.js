@@ -18,18 +18,8 @@ const c = [[[56, 181], [153, 294.5], [241.5, 229.5], [108.5, 120], [56, 181]]]
 
 describe('divide segments', () => {
   test('divide 2 segments', () => {
-    const se1 = new SweepEvent(
-      [0, 0],
-      true,
-      new SweepEvent([5, 5], false),
-      true
-    )
-    const se2 = new SweepEvent(
-      [0, 5],
-      true,
-      new SweepEvent([5, 0], false),
-      false
-    )
+    const se1 = SweepEvent.buildPair([0, 0], [5, 5], true)[0]
+    const se2 = SweepEvent.buildPair([0, 5], [5, 0], false)[0]
     const q = new Queue(null, compareEvents)
 
     q.push(se1)
@@ -51,18 +41,8 @@ describe('divide segments', () => {
   test('possible intersections', () => {
     const q = new Queue(null, compareEvents)
 
-    const se1 = new SweepEvent(
-      s[0][3],
-      true,
-      new SweepEvent(s[0][2], false),
-      true
-    )
-    const se2 = new SweepEvent(
-      c[0][0],
-      true,
-      new SweepEvent(c[0][1], false),
-      false
-    )
+    const se1 = SweepEvent.buildPair(s[0][3], s[0][2], true)[0]
+    const se2 = SweepEvent.buildPair(c[0][0], c[0][1], false)[0]
 
     expect(possibleIntersection(se1, se2, q)).toBe(1)
     expect(q.length).toBe(4)
@@ -90,13 +70,8 @@ describe('divide segments', () => {
     const p1 = [298, 359]
     const p2 = [156, 203.5]
 
-    const te = new SweepEvent(p0, true, null, true)
-    const te2 = new SweepEvent(p1, false, te, false)
-    te.otherEvent = te2
-
-    const te3 = new SweepEvent(p0, true, null, true)
-    const te4 = new SweepEvent(p2, true, te3, false)
-    te3.otherEvent = te4
+    const te = SweepEvent.buildPair(p0, p1, true)[0]
+    const te3 = SweepEvent.buildPair(p0, p2, false)[0]
 
     const tr = new Tree(compareSegments)
 
