@@ -1,15 +1,12 @@
-const signedArea = require('./signed-area')
 const compareEvents = require('./compare-events')
-const { arePointsEqual } = require('./point')
+const { arePointsColinear, arePointsEqual } = require('./point')
 
 module.exports = function compareSegments (le1, le2) {
   if (le1 === le2) return 0
 
-  // Segments are not collinear
-  if (
-    signedArea(le1.point, le1.otherEvent.point, le2.point) !== 0 ||
-    signedArea(le1.point, le1.otherEvent.point, le2.otherEvent.point) !== 0
-  ) {
+  const pts = [le1.point, le1.otherEvent.point, le2.point, le2.otherEvent.point]
+
+  if (!arePointsColinear(...pts)) {
     // If they share their left endpoint use the right endpoint to sort
     if (arePointsEqual(le1.point, le2.point)) {
       return le1.isBelow(le2.otherEvent.point) ? -1 : 1

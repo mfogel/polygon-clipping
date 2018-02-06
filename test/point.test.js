@@ -1,6 +1,7 @@
 /* eslint-env jest */
 
 const {
+  arePointsColinear,
   arePointsEqual,
   areVectorsParallel,
   comparePoints,
@@ -352,6 +353,50 @@ describe('are vectors parallel', () => {
       const v1 = [0, 1]
       const v2 = [0.5, 0]
       expect(areVectorsParallel(v1, v2)).toBeFalsy()
+    })
+  })
+})
+
+describe('are points colinear', () => {
+  test('not enough points', () => {
+    expect(arePointsColinear()).toBeTruthy()
+    expect(arePointsColinear([0, 0])).toBeTruthy()
+    expect(arePointsColinear([0, 0], [3, 4])).toBeTruthy()
+  })
+  describe('yes 3', () => {
+    test('general', () => {
+      expect(arePointsColinear([0, 0], [1, 1], [2, 2])).toBeTruthy()
+      expect(arePointsColinear([-1, -1], [0, 0], [2, 2])).toBeTruthy()
+      expect(arePointsColinear([-1, 0], [5, -6], [0, -1])).toBeTruthy()
+    })
+    test('repeated point', () => {
+      expect(arePointsColinear([0, 0], [0, 0], [2, 2])).toBeTruthy()
+      expect(arePointsColinear([1, 1], [1, 1], [1, 1])).toBeTruthy()
+    })
+    test('horizontal', () => {
+      expect(arePointsColinear([-42.1, 0], [0, 0], [7, 0])).toBeTruthy()
+    })
+    test('vertical', () => {
+      expect(arePointsColinear([0, -42.1], [0, 0], [0, 2])).toBeTruthy()
+    })
+  })
+  describe('no 3', () => {
+    test('general', () => {
+      expect(arePointsColinear([0, 0], [-2, 1], [1, 8])).toBeFalsy()
+    })
+    test('perpendicular', () => {
+      expect(arePointsColinear([0, 0], [0, 1], [1, 0])).toBeFalsy()
+    })
+  })
+  describe('yes 4', () => {
+    test('general', () => {
+      expect(arePointsColinear([0, 0], [1, 1], [2, 2], [5, 5])).toBeTruthy()
+      expect(arePointsColinear([-1, -1], [0, 0], [2, 2], [-5, -5])).toBeTruthy()
+      expect(arePointsColinear([-1, 0], [5, -6], [0, -1], [-2, 1])).toBeTruthy()
+    })
+    test('repeated point', () => {
+      expect(arePointsColinear([0, 0], [0, 0], [2, 2], [1, 1])).toBeTruthy()
+      expect(arePointsColinear([1, 1], [1, 1], [1, 1], [1, 1])).toBeTruthy()
     })
   })
 })

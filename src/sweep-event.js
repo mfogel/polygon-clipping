@@ -1,7 +1,7 @@
 const edgeType = require('./edge-type')
 const compareEvents = require('./compare-events')
 const operationType = require('./operation-type')
-const signedArea = require('./signed-area')
+const { crossProduct } = require('./point')
 
 class SweepEvent {
   static buildPair (p1, p2, isSubject) {
@@ -42,14 +42,17 @@ class SweepEvent {
     this.isInResult = null
   }
 
-  isBelow (p) {
-    return this.isLeft
-      ? signedArea(this.point, this.otherEvent.point, p) > 0
-      : signedArea(this.otherEvent.point, this.point, p) > 0
+  isBelow (point) {
+    const [p0, p1, p2] = [this.point, this.otherEvent.point, point]
+    const p20 = [p0[0] - p2[0], p0[1] - p2[1]]
+    const p21 = [p1[0] - p2[0], p1[1] - p2[1]]
+    const kross = crossProduct(p20, p21)
+    return this.isLeft ? kross > 0 : kross < 0
   }
 
-  isAbove (p) {
-    return !this.isBelow(p)
+  isAbove (point) {
+    // TODO: this isn't correct for a point that's colinear with the segment
+    return !this.isBelow(point)
   }
 
   isVertical () {
