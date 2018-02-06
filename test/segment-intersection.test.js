@@ -80,7 +80,7 @@ describe('intersection', () => {
   test('full overlap, orientation', () => {
     const a = [[1, 1], [0, 0]]
     const b = [[0, 0], [1, 1]]
-    const inters = [[1, 1], [0, 0]]
+    const inters = [[0, 0], [1, 1]]
     expect(intersection(...a, ...b)).toEqual(inters)
   })
 

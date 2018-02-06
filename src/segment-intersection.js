@@ -1,6 +1,10 @@
-const { crossProduct, dotProduct } = require('./point')
-
-const toPoint = (p, s, d) => [p[0] + s * d[0], p[1] + s * d[1]]
+const {
+  arePointsEqual,
+  crossProduct,
+  dotProduct,
+  getBbox,
+  getBboxOverlap
+} = require('./point')
 
 /**
  * Finds the intersection (if any) between two line segments a and b, given the
@@ -19,20 +23,14 @@ const toPoint = (p, s, d) => [p[0] + s * d[0], p[1] + s * d[1]]
  * Otherwise, null.
  */
 module.exports = function (a1, a2, b1, b2) {
-  // The algorithm expects our lines in the form P + sd, where P is a point,
-  // s is on the interval [0, 1], and d is a vector.
-  // We are passed two points. P can be the first point of each pair. The
-  // vector, then, could be thought of as the distance (in x and y components)
-  // from the first point to the second point.
-  // So first, let's make our vectors:
   const va = [a2[0] - a1[0], a2[1] - a1[1]]
   const vb = [b2[0] - b1[0], b2[1] - b1[1]]
-  // We also define a function to convert back to regular point form:
+  const ve = [b1[0] - a1[0], b1[1] - a1[1]]
 
-  // The rest is pretty much a straight port of the algorithm.
-  const e = [b1[0] - a1[0], b1[1] - a1[1]]
-  let kross = crossProduct(va, vb)
-  let sqrKross = kross * kross
+  const toPoint = (p, s, d) => [p[0] + s * d[0], p[1] + s * d[1]]
+
+  const krossVaVb = crossProduct(va, vb)
+  const sqrKrossVaVb = krossVaVb * krossVaVb
   const sqrLenA = dotProduct(va, va)
   const sqrLenB = dotProduct(vb, vb)
 
@@ -41,17 +39,17 @@ module.exports = function (a1, a2, b1, b2) {
   // cross product is the 0 vector. The full calculation involves relative error
   // to account for possible very small line segments. See Schneider & Eberly
   // for details.
-  if (sqrKross > Number.EPSILON * sqrLenA * sqrLenB) {
+  if (sqrKrossVaVb > Number.EPSILON * sqrLenA * sqrLenB) {
     // If they're not parallel, then (because these are line segments) they
     // still might not actually intersect. This code checks that the
     // intersection point of the lines is actually on both line segments.
 
     // not on line segment a
-    const s = crossProduct(e, vb) / kross
+    const s = crossProduct(ve, vb) / krossVaVb
     if (s < 0 || s > 1) return null
 
     // not on line segment b
-    const t = crossProduct(e, va) / kross
+    const t = crossProduct(ve, va) / krossVaVb
     if (t < 0 || t > 1) return null
 
     // on an endpoint of line segment a
@@ -63,39 +61,24 @@ module.exports = function (a1, a2, b1, b2) {
     return [toPoint(a1, s, va)]
   }
 
-  // If we've reached this point, then the lines are either parallel or the
-  // same, but the segments could overlap partially or fully, or not at all.
-  // So we need to find the overlap, if any. To do that, we can use e, which is
-  // the (vector) difference between the two initial points. If this is parallel
-  // with the line itself, then the two lines are the same line, and there will
-  // be overlap.
-  const sqrLenE = dotProduct(e, e)
-  kross = crossProduct(e, va)
-  sqrKross = kross * kross
+  // We have parallel segments
+  const sqrLenE = dotProduct(ve, ve)
+  const krossVeVa = crossProduct(ve, va)
+  const sqrKrossVeVa = krossVeVa * krossVeVa
 
-  if (sqrKross > Number.EPSILON * sqrLenA * sqrLenE) {
-    // Lines are just parallel, not the same. No overlap.
+  if (sqrKrossVeVa > Number.EPSILON * sqrLenA * sqrLenE) {
+    // Segments are not colinear. No overlap.
     return null
   }
 
-  const sa = dotProduct(va, e) / sqrLenA
-  const sb = sa + dotProduct(va, vb) / sqrLenA
-  const smin = Math.min(sa, sb)
-  const smax = Math.max(sa, sb)
+  // We have colinear segments. Intersections are either:
+  //  * on zero points (no overlap)
+  //  * on one point (segments touch on one end)
+  //  * on two points (segments overlap)
+  const [aBbox, bBbox] = [getBbox(a1, a2), getBbox(b1, b2)]
+  const overlap = getBboxOverlap(aBbox, bBbox)
 
-  // this is, essentially, the FindIntersection acting on floats from
-  // Schneider & Eberly, just inlined into this function.
-  if (smin <= 1 && smax >= 0) {
-    // overlap on an end point
-    if (smin === 1) return [toPoint(a1, smin > 0 ? smin : 0, va)]
-    if (smax === 0) return [toPoint(a1, smax < 1 ? smax : 1, va)]
-
-    // There's overlap on a segment -- two points of intersection. Return both.
-    return [
-      toPoint(a1, smin > 0 ? smin : 0, va),
-      toPoint(a1, smax < 1 ? smax : 1, va)
-    ]
-  }
-
-  return null
+  if (overlap === null) return null
+  if (arePointsEqual(...overlap)) return [overlap[0]]
+  return overlap
 }
