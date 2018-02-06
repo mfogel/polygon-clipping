@@ -1,5 +1,4 @@
 const Tree = require('avl')
-const computeFields = require('./compute-fields')
 const possibleIntersection = require('./possible-intersection')
 const compareSegments = require('./compare-segments')
 
@@ -17,12 +16,12 @@ module.exports = (eventQueue, subject, clipping, operation) => {
       const nextNode = sweepLine.next(eventNode)
 
       const prevEvent = prevNode ? prevNode.key : null
-      computeFields(event, prevEvent, operation)
+      event.refreshIsInResult(prevEvent, operation)
 
       if (nextNode) {
         if (possibleIntersection(event, nextNode.key, eventQueue) === 2) {
-          computeFields(event, prevEvent, operation)
-          computeFields(nextNode.key, event, operation)
+          event.refreshIsInResult(prevEvent, operation)
+          nextNode.key.refreshIsInResult(event, operation)
         }
       }
 
@@ -30,8 +29,8 @@ module.exports = (eventQueue, subject, clipping, operation) => {
         if (possibleIntersection(prevNode.key, event, eventQueue) === 2) {
           const prevprev = sweepLine.prev(prevNode)
           const prevprevEvent = prevprev ? prevprev.key : null
-          computeFields(prevEvent, prevprevEvent, operation)
-          computeFields(event, prevEvent, operation)
+          prevEvent.refreshIsInResult(prevprevEvent, operation)
+          event.refreshIsInResult(prevEvent, operation)
         }
       }
     } else sweepLine.remove(event.otherEvent)
