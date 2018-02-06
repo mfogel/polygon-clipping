@@ -1,5 +1,6 @@
 const Queue = require('tinyqueue')
 const SweepEvent = require('./sweep-event')
+const { arePointsEqual } = require('./point')
 const compareEvents = require('./compare-events')
 const operationType = require('./operation-type')
 
@@ -10,10 +11,8 @@ const processPolygon = (contourOrHole, isSubject, depth, Q, isExteriorRing) => {
     const s1 = contourOrHole[i]
     const s2 = contourOrHole[i + 1]
 
-    // TODO: this is indeed necessary. huh?
-    if (s1[0] === s2[0] && s1[1] === s2[1]) {
-      continue // skip collapsed edges, or it breaks
-    }
+    // repeated point in input? Skip over it
+    if (arePointsEqual(s1, s2)) continue
 
     const [e1, e2] = SweepEvent.buildPair(s1, s2, isSubject)
 

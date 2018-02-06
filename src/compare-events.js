@@ -1,16 +1,11 @@
 const signedArea = require('./signed-area')
+const { arePointsEqual, comparePoints } = require('./point')
 
 module.exports = (e1, e2) => {
   const p1 = e1.point
   const p2 = e2.point
 
-  // Different x-coordinate
-  if (p1[0] > p2[0]) return 1
-  if (p1[0] < p2[0]) return -1
-
-  // Different points, but same x-coordinate
-  // Event with lower y-coordinate is processed first
-  if (p1[1] !== p2[1]) return p1[1] > p2[1] ? 1 : -1
+  if (!arePointsEqual(p1, p2)) return comparePoints(p1, p2)
 
   // Same coordinates, but one is a left endpoint and the other is
   // a right endpoint. The right endpoint is processed first

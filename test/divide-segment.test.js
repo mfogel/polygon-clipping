@@ -4,7 +4,7 @@ const Queue = require('tinyqueue')
 const SweepEvent = require('../src/sweep-event')
 const compareEvents = require('../src/compare-events')
 const intersection = require('../src/segment-intersection')
-const equals = require('../src/equals')
+const { arePointsEqual } = require('../src/point')
 const fillQueue = require('../src/fill-queue')
 const divideSegment = require('../src/divide-segment')
 const subdivideSegments = require('../src/subdivide-segments')
@@ -191,8 +191,8 @@ describe('divide segments', () => {
       for (let x = 0; x < leftSegments.length; x++) {
         const seg = leftSegments[x]
         if (
-          equals(seg.point, data.l) &&
-          equals(seg.otherEvent.point, data.r) &&
+          arePointsEqual(seg.point, data.l) &&
+          arePointsEqual(seg.otherEvent.point, data.r) &&
           seg.sweepLineEnters === data.sweepLineEnters &&
           seg.isInsideOther === data.isInsideOther &&
           seg.isInResult === data.isInResult

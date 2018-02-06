@@ -1,6 +1,6 @@
 const divideSegment = require('./divide-segment')
 const intersection = require('./segment-intersection')
-const equals = require('./equals')
+const { arePointsEqual } = require('./point')
 const compareEvents = require('./compare-events')
 
 module.exports = (se1, se2, queue) => {
@@ -21,8 +21,8 @@ module.exports = (se1, se2, queue) => {
   // the line segments intersect at an endpoint of both line segments
   if (
     nintersections === 1 &&
-    (equals(se1.point, se2.point) ||
-      equals(se1.otherEvent.point, se2.otherEvent.point))
+    (arePointsEqual(se1.point, se2.point) ||
+      arePointsEqual(se1.otherEvent.point, se2.otherEvent.point))
   ) {
     return 0
   }
@@ -40,16 +40,16 @@ module.exports = (se1, se2, queue) => {
   if (nintersections === 1) {
     // if the intersection point is not an endpoint of se1
     if (
-      !equals(se1.point, inter[0]) &&
-      !equals(se1.otherEvent.point, inter[0])
+      !arePointsEqual(se1.point, inter[0]) &&
+      !arePointsEqual(se1.otherEvent.point, inter[0])
     ) {
       divideSegment(se1, inter[0], queue)
     }
 
     // if the intersection point is not an endpoint of se2
     if (
-      !equals(se2.point, inter[0]) &&
-      !equals(se2.otherEvent.point, inter[0])
+      !arePointsEqual(se2.point, inter[0]) &&
+      !arePointsEqual(se2.otherEvent.point, inter[0])
     ) {
       divideSegment(se2, inter[0], queue)
     }
@@ -61,7 +61,7 @@ module.exports = (se1, se2, queue) => {
   let leftCoincide = false
   let rightCoincide = false
 
-  if (equals(se1.point, se2.point)) {
+  if (arePointsEqual(se1.point, se2.point)) {
     leftCoincide = true // linked
   } else if (compareEvents(se1, se2) === 1) {
     events.push(se2, se1)
@@ -69,7 +69,7 @@ module.exports = (se1, se2, queue) => {
     events.push(se1, se2)
   }
 
-  if (equals(se1.otherEvent.point, se2.otherEvent.point)) {
+  if (arePointsEqual(se1.otherEvent.point, se2.otherEvent.point)) {
     rightCoincide = true
   } else if (compareEvents(se1.otherEvent, se2.otherEvent) === 1) {
     events.push(se2.otherEvent, se1.otherEvent)

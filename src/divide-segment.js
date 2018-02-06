@@ -1,5 +1,5 @@
 const SweepEvent = require('./sweep-event')
-const equals = require('./equals')
+const { arePointsEqual } = require('./point')
 
 // TODO: move all these writes to SweepEvent internals within the class
 
@@ -14,7 +14,7 @@ module.exports = function divideSegment (se, p, queue) {
   r.otherEvent = se
   se.otherEvent = r
 
-  if (equals(se.point, se.otherEvent.point)) {
+  if (arePointsEqual(se.point, se.otherEvent.point)) {
     console.warn('what is that, a collapsed segment?', se)
   }
 

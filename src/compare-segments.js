@@ -1,6 +1,6 @@
 const signedArea = require('./signed-area')
 const compareEvents = require('./compare-events')
-const equals = require('./equals')
+const { arePointsEqual } = require('./point')
 
 module.exports = function compareSegments (le1, le2) {
   if (le1 === le2) return 0
@@ -11,7 +11,7 @@ module.exports = function compareSegments (le1, le2) {
     signedArea(le1.point, le1.otherEvent.point, le2.otherEvent.point) !== 0
   ) {
     // If they share their left endpoint use the right endpoint to sort
-    if (equals(le1.point, le2.point)) {
+    if (arePointsEqual(le1.point, le2.point)) {
       return le1.isBelow(le2.otherEvent.point) ? -1 : 1
     }
 
@@ -31,8 +31,8 @@ module.exports = function compareSegments (le1, le2) {
 
   if (le1.isSubject === le2.isSubject) {
     // same polygon
-    if (equals(le1.point, le2.point)) {
-      if (equals(le1.otherEvent.point, le2.otherEvent.point)) return 0
+    if (arePointsEqual(le1.point, le2.point)) {
+      if (arePointsEqual(le1.otherEvent.point, le2.otherEvent.point)) return 0
       else return le1.contourId > le2.contourId ? 1 : -1
     }
   } else {

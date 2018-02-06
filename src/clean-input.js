@@ -9,7 +9,7 @@
  * standardized multipolygon with self-closing rings.
  */
 
-const equals = require('./equals')
+const { arePointsEqual } = require('./point')
 
 /* WARN: input modified directly */
 const forceMultiPoly = geom => {
@@ -36,7 +36,7 @@ const forceMultiPoly = geom => {
 const closeAllRings = multipoly => {
   multipoly.forEach(poly => {
     poly.forEach(ring => {
-      if (!equals(ring[0], ring[ring.length - 1])) {
+      if (!arePointsEqual(ring[0], ring[ring.length - 1])) {
         ring.push([...ring[0]]) // copy by value
       }
     })

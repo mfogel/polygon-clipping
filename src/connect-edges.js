@@ -1,5 +1,5 @@
 const compareEvents = require('./compare-events')
-const equals = require('./equals')
+const { arePointsEqual } = require('./point')
 const operationType = require('./operation-type')
 
 const orderEvents = sortedEvents => {
@@ -51,7 +51,7 @@ const nextPos = (pos, resultEvents, processed, origIndex) => {
   let p1 = resultEvents[newPos].point
 
   // while in range and not the current one by value
-  while (newPos < resultEvents.length && equals(p1, p)) {
+  while (newPos < resultEvents.length && arePointsEqual(p1, p)) {
     if (!processed[newPos]) {
       return newPos
     } else {

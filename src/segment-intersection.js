@@ -1,8 +1,4 @@
-const EPSILON = 1e-9
-
-const crossProduct = (a, b) => a[0] * b[1] - a[1] * b[0]
-
-const dotProduct = (a, b) => a[0] * b[0] + a[1] * b[1]
+const { crossProduct, dotProduct } = require('./point')
 
 const toPoint = (p, s, d) => [p[0] + s * d[0], p[1] + s * d[1]]
 
@@ -45,7 +41,7 @@ module.exports = function (a1, a2, b1, b2) {
   // cross product is the 0 vector. The full calculation involves relative error
   // to account for possible very small line segments. See Schneider & Eberly
   // for details.
-  if (sqrKross > EPSILON * sqrLenA * sqrLenB) {
+  if (sqrKross > Number.EPSILON * sqrLenA * sqrLenB) {
     // If they're not parallel, then (because these are line segments) they
     // still might not actually intersect. This code checks that the
     // intersection point of the lines is actually on both line segments.
@@ -77,7 +73,7 @@ module.exports = function (a1, a2, b1, b2) {
   kross = crossProduct(e, va)
   sqrKross = kross * kross
 
-  if (sqrKross > EPSILON * sqrLenA * sqrLenE) {
+  if (sqrKross > Number.EPSILON * sqrLenA * sqrLenE) {
     // Lines are just parallel, not the same. No overlap.
     return null
   }
