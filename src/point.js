@@ -65,9 +65,20 @@ const getBboxOverlap = (b1, b2) => {
   return [[x1, y1], [x2, y2]]
 }
 
+const areVectorsParallel = (v1, v2) => {
+  const kross = crossProduct(v1, v2)
+  const sqrKross = kross * kross
+  const sqrLenA = dotProduct(v1, v1)
+  const sqrLenB = dotProduct(v2, v2)
+
+  // Two vectors are parallel iff their cross product is null
+  return sqrKross <= Number.EPSILON * sqrLenA * sqrLenB
+}
+
 module.exports = {
   comparePoints,
   arePointsEqual,
+  areVectorsParallel,
   crossProduct,
   doBboxesOverlap,
   dotProduct,

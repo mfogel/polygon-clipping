@@ -2,6 +2,7 @@
 
 const {
   arePointsEqual,
+  areVectorsParallel,
   comparePoints,
   crossProduct,
   doBboxesOverlap,
@@ -304,6 +305,53 @@ describe('bbox overlap', () => {
         expect(doBboxesOverlap(p, p)).toBeTruthy()
         expect(getBboxOverlap(p, p)).toEqual(p)
       })
+    })
+  })
+})
+
+describe('are vectors parallel', () => {
+  describe('yes', () => {
+    test('general', () => {
+      const v1 = [1, 1]
+      const v2 = [2, 2]
+      expect(areVectorsParallel(v1, v2)).toBeTruthy()
+    })
+    test('reverse direction', () => {
+      const v1 = [1, 1]
+      const v2 = [-2, -2]
+      expect(areVectorsParallel(v1, v2)).toBeTruthy()
+    })
+    test('horizontal', () => {
+      const v1 = [1, 0]
+      const v2 = [-2, 0]
+      expect(areVectorsParallel(v1, v2)).toBeTruthy()
+    })
+    test('vertical', () => {
+      const v1 = [0, 1]
+      const v2 = [0, 2.23423]
+      expect(areVectorsParallel(v1, v2)).toBeTruthy()
+    })
+    test('null vector', () => {
+      // null vector is parallel to everything
+      const v1 = [0, 1]
+      const v2 = [0, 0]
+      expect(areVectorsParallel(v1, v2)).toBeTruthy()
+    })
+    test('null vector with itself', () => {
+      const v1 = [0, 0]
+      expect(areVectorsParallel(v1, v1)).toBeTruthy()
+    })
+  })
+  describe('no', () => {
+    test('general', () => {
+      const v1 = [1, 1]
+      const v2 = [2, 4]
+      expect(areVectorsParallel(v1, v2)).toBeFalsy()
+    })
+    test('perpendicular', () => {
+      const v1 = [0, 1]
+      const v2 = [0.5, 0]
+      expect(areVectorsParallel(v1, v2)).toBeFalsy()
     })
   })
 })

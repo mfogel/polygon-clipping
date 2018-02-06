@@ -1,7 +1,7 @@
 const {
   arePointsEqual,
+  areVectorsParallel,
   crossProduct,
-  dotProduct,
   getBbox,
   getBboxOverlap
 } = require('./point')
@@ -27,22 +27,18 @@ module.exports = function (a1, a2, b1, b2) {
   const vb = [b2[0] - b1[0], b2[1] - b1[1]]
   const ve = [b1[0] - a1[0], b1[1] - a1[1]]
 
-  const toPoint = (p, s, d) => [p[0] + s * d[0], p[1] + s * d[1]]
-
-  const krossVaVb = crossProduct(va, vb)
-  const sqrKrossVaVb = krossVaVb * krossVaVb
-  const sqrLenA = dotProduct(va, va)
-  const sqrLenB = dotProduct(vb, vb)
-
   // Check for line intersection. This works because of the properties of the
   // cross product -- specifically, two vectors are parallel if and only if the
   // cross product is the 0 vector. The full calculation involves relative error
   // to account for possible very small line segments. See Schneider & Eberly
   // for details.
-  if (sqrKrossVaVb > Number.EPSILON * sqrLenA * sqrLenB) {
+  if (!areVectorsParallel(va, vb)) {
     // If they're not parallel, then (because these are line segments) they
     // still might not actually intersect. This code checks that the
     // intersection point of the lines is actually on both line segments.
+
+    const toPoint = (p, s, d) => [p[0] + s * d[0], p[1] + s * d[1]]
+    const krossVaVb = crossProduct(va, vb)
 
     // not on line segment a
     const s = crossProduct(ve, vb) / krossVaVb
@@ -61,15 +57,9 @@ module.exports = function (a1, a2, b1, b2) {
     return [toPoint(a1, s, va)]
   }
 
-  // We have parallel segments
-  const sqrLenE = dotProduct(ve, ve)
-  const krossVeVa = crossProduct(ve, va)
-  const sqrKrossVeVa = krossVeVa * krossVeVa
-
-  if (sqrKrossVeVa > Number.EPSILON * sqrLenA * sqrLenE) {
-    // Segments are not colinear. No overlap.
-    return null
-  }
+  // We have parallel segments. If they're colinear, ve
+  // will also be parallel to va and vb
+  if (!areVectorsParallel(va, ve)) return null
 
   // We have colinear segments. Intersections are either:
   //  * on zero points (no overlap)
@@ -77,7 +67,6 @@ module.exports = function (a1, a2, b1, b2) {
   //  * on two points (segments overlap)
   const [aBbox, bBbox] = [getBbox(a1, a2), getBbox(b1, b2)]
   const overlap = getBboxOverlap(aBbox, bBbox)
-
   if (overlap === null) return null
   if (arePointsEqual(...overlap)) return [overlap[0]]
   return overlap
