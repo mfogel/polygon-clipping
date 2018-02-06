@@ -1,7 +1,13 @@
-const edgeType = require('./edge-type')
 const compareEvents = require('./compare-events')
 const operationType = require('./operation-type')
 const { crossProduct } = require('./point')
+
+const edgeTypes = {
+  NORMAL: 0,
+  NON_CONTRIBUTING: 1,
+  SAME_TRANSITION: 2,
+  DIFFERENT_TRANSITION: 3
+}
 
 class SweepEvent {
   static buildPair (p1, p2, isSubject) {
@@ -34,7 +40,7 @@ class SweepEvent {
     this.contourId = null
 
     // TODO: review these defaults... are some also set elsewhere?
-    this.edgeType = edgeType.NORMAL
+    this.edgeType = edgeTypes.NORMAL
     this.otherEvent = null
     this.isLeft = null
     this.sweepLineEnters = null
@@ -60,11 +66,11 @@ class SweepEvent {
   }
 
   setEdgeTypeForCoincidesWith (otherEvent) {
-    otherEvent.edgeType = edgeType.NON_CONTRIBUTING
+    otherEvent.edgeType = edgeTypes.NON_CONTRIBUTING
     this.edgeType =
       otherEvent.sweepLineEnters === this.sweepLineEnters
-        ? edgeType.SAME_TRANSITION
-        : edgeType.DIFFERENT_TRANSITION
+        ? edgeTypes.SAME_TRANSITION
+        : edgeTypes.DIFFERENT_TRANSITION
   }
 
   refreshSweepLineEnters (prevEvent) {
@@ -119,19 +125,19 @@ class SweepEvent {
 
     const calcIsInResult = operation => {
       switch (this.edgeType) {
-        case edgeType.NORMAL:
+        case edgeTypes.NORMAL:
           return calcIsInResultForNormalEdge(operation)
-        case edgeType.SAME_TRANSITION:
+        case edgeTypes.SAME_TRANSITION:
           return (
             operation === operationType.INTERSECTION ||
             operation === operationType.UNION
           )
-        case edgeType.DIFFERENT_TRANSITION:
+        case edgeTypes.DIFFERENT_TRANSITION:
           return operation === operationType.DIFFERENCE
-        case edgeType.NON_CONTRIBUTING:
+        case edgeTypes.NON_CONTRIBUTING:
           return false
         default:
-          throw new Error(`Unrecognized edgeType, '${edgeType}'`)
+          throw new Error(`Unrecognized edgeType, '${this.edgeType}'`)
       }
     }
 
