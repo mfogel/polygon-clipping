@@ -1,3 +1,4 @@
+// TODO: this is sweep-line specific. Move to that file?
 const comparePoints = (a, b) => {
   // lower X comes first
   if (a[0] !== b[0]) return a[0] < b[0] ? -1 : 1

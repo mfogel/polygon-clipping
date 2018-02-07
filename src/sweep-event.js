@@ -1,6 +1,5 @@
-const compareEvents = require('./compare-events')
 const operationTypes = require('./operation-types')
-const { crossProduct } = require('./point')
+const { comparePoints, crossProduct } = require('./point')
 
 const edgeTypes = {
   NORMAL: 0,
@@ -11,29 +10,24 @@ const edgeTypes = {
 
 class SweepEvent {
   static buildPair (p1, p2, isSubject) {
-    const e1 = new SweepEvent(p1, isSubject)
-    const e2 = new SweepEvent(p2, isSubject)
+    const comparePts = comparePoints(p1, p2)
+    if (comparePts === 0) {
+      throw new Error('Unable to build events for collapsed segment')
+    }
+
+    const e1 = new SweepEvent(p1, isSubject, comparePts < 0)
+    const e2 = new SweepEvent(p2, isSubject, comparePts > 0)
     e1.otherEvent = e2
     e2.otherEvent = e1
 
-    // TODO: should this be using a 'comparePoints' and setting isLeft
-    // directly in the constructor? (yes)
-    //
     // TODO: order [left, right] of returned points... should it matter?
-    if (compareEvents(e1, e2) > 0) {
-      e1.isLeft = false
-      e2.isLeft = true
-      return [e2, e1]
-    } else {
-      e1.isLeft = true
-      e2.isLeft = false
-      return [e1, e2]
-    }
+    return comparePts ? [e1, e2] : [e2, e1]
   }
 
-  constructor (point, isSubject) {
+  constructor (point, isSubject, isLeft) {
     this.point = point
     this.isSubject = isSubject
+    this.isLeft = isLeft
 
     // TODO: I am skeptical about these.
     this.isExteriorRing = true
@@ -42,7 +36,6 @@ class SweepEvent {
     // TODO: review these defaults... are some also set elsewhere?
     this.edgeType = edgeTypes.NORMAL
     this.otherEvent = null
-    this.isLeft = null
     this.sweepLineEnters = null
     this.isInsideOther = null
     this.isInResult = null
