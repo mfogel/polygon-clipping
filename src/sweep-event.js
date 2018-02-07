@@ -1,5 +1,5 @@
 const compareEvents = require('./compare-events')
-const operationType = require('./operation-type')
+const operationTypes = require('./operation-types')
 const { crossProduct } = require('./point')
 
 const edgeTypes = {
@@ -84,7 +84,7 @@ class SweepEvent {
     }
   }
 
-  refreshIsInsideOther (prevEvent, operation) {
+  refreshIsInsideOther (prevEvent) {
     this.refreshSweepLineEnters(prevEvent)
 
     if (!prevEvent) this.isInsideOther = false
@@ -99,41 +99,40 @@ class SweepEvent {
     }
   }
 
-  refreshIsInResult (prevEvent, operation) {
+  refreshIsInResult (prevEvent) {
     if (this.isInsideOther === null) {
-      this.refreshIsInsideOther(prevEvent, operation)
+      this.refreshIsInsideOther(prevEvent)
     }
 
-    const calcIsInResultForNormalEdge = operation => {
-      switch (operation) {
-        case operationType.INTERSECTION:
-          return this.isInsideOther
-        case operationType.UNION:
-          return !this.isInsideOther
-        case operationType.XOR:
-          // TODO: is this right?
-          return true
-        case operationType.DIFFERENCE:
-          return (
-            (this.isSubject && !this.isInsideOther) ||
-            (!this.isSubject && this.isInsideOther)
-          )
-        default:
-          throw new Error(`Unrecognized operationType, '${operation}'`)
+    const calcIsInResultForNormalEdge = () => {
+      if (operationTypes.isActive(operationTypes.INTERSECTION)) {
+        return this.isInsideOther
+      } else if (operationTypes.isActive(operationTypes.UNION)) {
+        return !this.isInsideOther
+      } else if (operationTypes.isActive(operationTypes.XOR)) {
+        // TODO: is this right?
+        return true
+      } else if (operationTypes.isActive(operationTypes.DIFFERENCE)) {
+        return (
+          (this.isSubject && !this.isInsideOther) ||
+          (!this.isSubject && this.isInsideOther)
+        )
+      } else {
+        throw new Error('No active operationType found')
       }
     }
 
-    const calcIsInResult = operation => {
+    const calcIsInResult = () => {
       switch (this.edgeType) {
         case edgeTypes.NORMAL:
-          return calcIsInResultForNormalEdge(operation)
+          return calcIsInResultForNormalEdge()
         case edgeTypes.SAME_TRANSITION:
           return (
-            operation === operationType.INTERSECTION ||
-            operation === operationType.UNION
+            operationTypes.isActive(operationTypes.INTERSECTION) ||
+            operationTypes.isActive(operationTypes.UNION)
           )
         case edgeTypes.DIFFERENT_TRANSITION:
-          return operation === operationType.DIFFERENCE
+          return operationTypes.isActive(operationTypes.DIFFERENCE)
         case edgeTypes.NON_CONTRIBUTING:
           return false
         default:
@@ -141,7 +140,7 @@ class SweepEvent {
       }
     }
 
-    this.isInResult = calcIsInResult(operation)
+    this.isInResult = calcIsInResult()
   }
 }
 

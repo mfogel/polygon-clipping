@@ -9,6 +9,7 @@ const fillQueue = require('../src/fill-queue')
 const divideSegment = require('../src/divide-segment')
 const subdivideSegments = require('../src/subdivide-segments')
 const possibleIntersection = require('../src/possible-intersection')
+const operationTypes = require('../src/operation-types')
 
 const Tree = require('avl')
 const compareSegments = require('../src/compare-segments')
@@ -84,6 +85,7 @@ describe('divide segments', () => {
     expect(compareSegments(te, te3)).toBe(1)
     expect(compareSegments(te3, te)).toBe(-1)
 
+    operationTypes.setActive(operationTypes.INTERSECTION)
     const segments = subdivideSegments(q, s, c, 0)
     const leftSegments = []
     for (let i = 0; i < segments.length; i++) {

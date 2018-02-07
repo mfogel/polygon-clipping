@@ -2,7 +2,7 @@ const Queue = require('tinyqueue')
 const SweepEvent = require('./sweep-event')
 const { arePointsEqual } = require('./point')
 const compareEvents = require('./compare-events')
-const operationType = require('./operation-type')
+const operationTypes = require('./operation-types')
 
 let contourId = 0
 
@@ -42,7 +42,7 @@ const fillQueue = (subject, clipping, operation) => {
     let polygonSet = clipping[i]
     for (let j = 0; j < polygonSet.length; j++) {
       let isExteriorRing = j === 0
-      if (operation === operationType.DIFFERENCE) isExteriorRing = false
+      if (operation === operationTypes.DIFFERENCE) isExteriorRing = false
       if (isExteriorRing) contourId++
       processPolygon(
         polygonSet[j],

@@ -1,16 +1,16 @@
 const doOperation = require('./src/do-operation')
-const operationType = require('./src/operation-type')
+const operationTypes = require('./src/operation-types')
 
 const union = (subject, clipping) =>
-  doOperation(subject, clipping, operationType.UNION)
+  doOperation(subject, clipping, operationTypes.UNION)
 
 const difference = (subject, clipping) =>
-  doOperation(subject, clipping, operationType.DIFFERENCE)
+  doOperation(subject, clipping, operationTypes.DIFFERENCE)
 
 const xor = (subject, clipping) =>
-  doOperation(subject, clipping, operationType.XOR)
+  doOperation(subject, clipping, operationTypes.XOR)
 
 const intersection = (subject, clipping) =>
-  doOperation(subject, clipping, operationType.INTERSECTION)
+  doOperation(subject, clipping, operationTypes.INTERSECTION)
 
 module.exports = { union, difference, xor, intersection }

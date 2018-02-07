@@ -1,6 +1,6 @@
 const compareEvents = require('./compare-events')
 const { arePointsEqual } = require('./point')
-const operationType = require('./operation-type')
+const operationTypes = require('./operation-types')
 
 const orderEvents = sortedEvents => {
   const resultEvents = []
@@ -68,7 +68,7 @@ const nextPos = (pos, resultEvents, processed, origIndex) => {
   return newPos
 }
 
-const connectEdges = (sortedEvents, operation) => {
+const connectEdges = sortedEvents => {
   const resultEvents = orderEvents(sortedEvents)
 
   // "false"-filled array
@@ -82,7 +82,7 @@ const connectEdges = (sortedEvents, operation) => {
     if (!resultEvents[i].isExteriorRing) {
       if (
         // TODO: this seems wrong.
-        operation === operationType.DIFFERENCE &&
+        operationTypes.isActive(operationTypes.DIFFERENCE) &&
         !resultEvents[i].isSubject &&
         result.length === 0
       ) {
@@ -93,7 +93,7 @@ const connectEdges = (sortedEvents, operation) => {
         result[result.length - 1].push(contour[0])
       }
     } else if (
-      operation === operationType.DIFFERENCE &&
+      operationTypes.isActive(operationTypes.DIFFERENCE) &&
       !resultEvents[i].isSubject &&
       result.length > 1
     ) {
