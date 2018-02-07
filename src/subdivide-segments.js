@@ -16,21 +16,22 @@ module.exports = (eventQueue, subject, clipping) => {
       const nextNode = sweepLine.next(eventNode)
 
       const prevEvent = prevNode ? prevNode.key : null
-      event.refreshIsInResult(prevEvent)
+      const nextEvent = nextNode ? nextNode.key : null
+      event.registerPrevEvent(prevEvent)
 
-      if (nextNode) {
-        if (possibleIntersection(event, nextNode.key, eventQueue) === 2) {
-          event.refreshIsInResult(prevEvent)
-          nextNode.key.refreshIsInResult(event)
+      if (nextEvent) {
+        if (possibleIntersection(event, nextEvent, eventQueue) === 2) {
+          event.registerPrevEvent(prevEvent)
+          nextEvent.registerPrevEvent(event)
         }
       }
 
-      if (prevNode) {
-        if (possibleIntersection(prevNode.key, event, eventQueue) === 2) {
-          const prevprev = sweepLine.prev(prevNode)
-          const prevprevEvent = prevprev ? prevprev.key : null
-          prevEvent.refreshIsInResult(prevprevEvent)
-          event.refreshIsInResult(prevEvent)
+      if (prevEvent) {
+        if (possibleIntersection(prevEvent, event, eventQueue) === 2) {
+          const prevPrev = sweepLine.prev(prevNode)
+          const prevPrevEvent = prevPrev ? prevPrev.key : null
+          prevEvent.registerPrevEvent(prevPrevEvent)
+          event.registerPrevEvent(prevEvent)
         }
       }
     } else sweepLine.remove(event.otherEvent)

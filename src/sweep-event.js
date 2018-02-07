@@ -35,7 +35,10 @@ class SweepEvent {
 
     // TODO: review these defaults... are some also set elsewhere?
     this.edgeType = edgeTypes.NORMAL
+
     this.otherEvent = null
+    this.prevEvent = null
+    this.coincidentEvent = null
     this.sweepLineEnters = null
     this.isInsideOther = null
     this.isInResult = null
@@ -58,45 +61,51 @@ class SweepEvent {
     return this.point[0] === this.otherEvent.point[0]
   }
 
-  setEdgeTypeForCoincidesWith (otherEvent) {
-    otherEvent.edgeType = edgeTypes.NON_CONTRIBUTING
+  registerCoincidentEvent (event) {
+    this.coincidentEvent = event
+    this.refreshEdgeType()
+  }
+
+  registerPrevEvent (event) {
+    this.prevEvent = event
+    this.refreshSweepLineEnters()
+    this.refreshIsInsideOther()
+    this.refreshIsInResult()
+  }
+
+  refreshEdgeType () {
+    this.coincidentEvent.edgeType = edgeTypes.NON_CONTRIBUTING
     this.edgeType =
-      otherEvent.sweepLineEnters === this.sweepLineEnters
+      this.coincidentEvent.sweepLineEnters === this.sweepLineEnters
         ? edgeTypes.SAME_TRANSITION
         : edgeTypes.DIFFERENT_TRANSITION
   }
 
-  refreshSweepLineEnters (prevEvent) {
-    if (!prevEvent) this.sweepLineEnters = true
+  refreshSweepLineEnters () {
+    if (!this.prevEvent) this.sweepLineEnters = true
     else {
-      if (this.isSubject === prevEvent.isSubject) {
-        this.sweepLineEnters = !prevEvent.sweepLineEnters
+      if (this.isSubject === this.prevEvent.isSubject) {
+        this.sweepLineEnters = !this.prevEvent.sweepLineEnters
       } else {
-        this.sweepLineEnters = !prevEvent.isInsideOther
+        this.sweepLineEnters = !this.prevEvent.isInsideOther
       }
     }
   }
 
-  refreshIsInsideOther (prevEvent) {
-    this.refreshSweepLineEnters(prevEvent)
-
-    if (!prevEvent) this.isInsideOther = false
+  refreshIsInsideOther () {
+    if (!this.prevEvent) this.isInsideOther = false
     else {
-      if (this.isSubject === prevEvent.isSubject) {
-        this.isInsideOther = prevEvent.isInsideOther
+      if (this.isSubject === this.prevEvent.isSubject) {
+        this.isInsideOther = this.prevEvent.isInsideOther
       } else {
-        this.isInsideOther = prevEvent.isVertical()
-          ? !prevEvent.sweepLineEnters
-          : prevEvent.sweepLineEnters
+        this.isInsideOther = this.prevEvent.isVertical()
+          ? !this.prevEvent.sweepLineEnters
+          : this.prevEvent.sweepLineEnters
       }
     }
   }
 
-  refreshIsInResult (prevEvent) {
-    if (this.isInsideOther === null) {
-      this.refreshIsInsideOther(prevEvent)
-    }
-
+  refreshIsInResult () {
     const calcIsInResultForNormalEdge = () => {
       if (operationTypes.isActive(operationTypes.INTERSECTION)) {
         return this.isInsideOther

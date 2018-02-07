@@ -79,7 +79,7 @@ module.exports = (se1, se2, queue) => {
 
   if (leftCoincide) {
     // both line segments are equal or share the left endpoint
-    se1.setEdgeTypeForCoincidesWith(se2)
+    se1.registerCoincidentEvent(se2)
 
     if (!rightCoincide) {
       // honestly no idea, but changing events selection from [2, 1]
