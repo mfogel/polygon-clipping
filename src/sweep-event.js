@@ -45,16 +45,25 @@ class SweepEvent {
   }
 
   isBelow (point) {
+    return this.compareWithPoint(point) > 0
+  }
+
+  isColinear (point) {
+    return this.compareWithPoint(point) === 0
+  }
+
+  isAbove (point) {
+    return this.compareWithPoint(point) < 0
+  }
+
+  compareWithPoint (point) {
     const [p0, p1, p2] = [this.point, this.otherEvent.point, point]
     const p20 = [p0[0] - p2[0], p0[1] - p2[1]]
     const p21 = [p1[0] - p2[0], p1[1] - p2[1]]
     const kross = crossProduct(p20, p21)
-    return this.isLeft ? kross > 0 : kross < 0
-  }
-
-  isAbove (point) {
-    // TODO: this isn't correct for a point that's colinear with the segment
-    return !this.isBelow(point)
+    if (kross === 0) return 0
+    if (this.isLeft) return kross > 0 ? 1 : -1
+    else return kross < 0 ? 1 : -1
   }
 
   isVertical () {

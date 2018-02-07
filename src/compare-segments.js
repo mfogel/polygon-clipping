@@ -19,7 +19,9 @@ module.exports = function compareSegments (le1, le2) {
 
     // has the line segment associated to e1 been inserted
     // into S after the line segment associated to e2 ?
-    if (compareEvents(le1, le2) === 1) return le2.isAbove(le1.point) ? -1 : 1
+    if (compareEvents(le1, le2) === 1) {
+      return le2.isAbove(le1.point) || le2.isColinear(le1.point) ? -1 : 1
+    }
 
     // The line segment associated to e2 has been inserted
     // into S after the line segment associated to e1

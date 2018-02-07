@@ -40,7 +40,8 @@ describe('compare segments are not collinear', () => {
 
     expect(compareEvents(se1, se2)).toBe(1)
     expect(se2.isBelow(se1.point)).toBeFalsy()
-    expect(se2.isAbove(se1.point)).toBeTruthy()
+    expect(se2.isColinear(se1.point)).toBeTruthy()
+    expect(se2.isAbove(se1.point)).toBeFalsy()
 
     expect(compareSegments(se1, se2)).toBe(-1)
     expect(compareSegments(se2, se1)).toBe(1)
