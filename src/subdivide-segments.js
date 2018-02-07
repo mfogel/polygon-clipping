@@ -20,14 +20,14 @@ module.exports = (eventQueue, subject, clipping) => {
       event.registerPrevEvent(prevEvent)
 
       if (nextEvent) {
-        if (possibleIntersection(event, nextEvent, eventQueue) === 2) {
+        if (possibleIntersection(event, nextEvent, eventQueue)) {
           event.registerPrevEvent(prevEvent)
           nextEvent.registerPrevEvent(event)
         }
       }
 
       if (prevEvent) {
-        if (possibleIntersection(prevEvent, event, eventQueue) === 2) {
+        if (possibleIntersection(prevEvent, event, eventQueue)) {
           const prevPrev = sweepLine.prev(prevNode)
           const prevPrevEvent = prevPrev ? prevPrev.key : null
           prevEvent.registerPrevEvent(prevPrevEvent)

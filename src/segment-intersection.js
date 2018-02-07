@@ -18,9 +18,9 @@ const {
  * @param {Array.<Number>} a2 point of first line
  * @param {Array.<Number>} b1 point of second line
  * @param {Array.<Number>} b2 point of second line
- * @returns {Array.<Array.<Number>>|Null} If the lines intersect, the point of
- * intersection. If they overlap, the two end points of the overlapping segment.
- * Otherwise, null.
+ * @returns {Array.<Array.<Number>> Array of the intersection points. Will be
+ * either empty, contain one point, or two points (in the case of overlapping
+ * segments, the 'intersections' are defined to be the endpoints of the overlap.)
  */
 module.exports = function (a1, a2, b1, b2) {
   const va = [a2[0] - a1[0], a2[1] - a1[1]]
@@ -42,11 +42,11 @@ module.exports = function (a1, a2, b1, b2) {
 
     // not on line segment a
     const s = crossProduct(ve, vb) / krossVaVb
-    if (s < 0 || s > 1) return null
+    if (s < 0 || s > 1) return []
 
     // not on line segment b
     const t = crossProduct(ve, va) / krossVaVb
-    if (t < 0 || t > 1) return null
+    if (t < 0 || t > 1) return []
 
     // on an endpoint of line segment a
     if (s === 0 || s === 1) return [toPoint(a1, s, va)]
@@ -59,7 +59,7 @@ module.exports = function (a1, a2, b1, b2) {
 
   // We have parallel segments. If they're colinear, ve
   // will also be parallel to va and vb
-  if (!areVectorsParallel(va, ve)) return null
+  if (!areVectorsParallel(va, ve)) return []
 
   // We have colinear segments. Intersections are either:
   //  * on zero points (no overlap)
@@ -67,7 +67,7 @@ module.exports = function (a1, a2, b1, b2) {
   //  * on two points (segments overlap)
   const [aBbox, bBbox] = [getBbox(a1, a2), getBbox(b1, b2)]
   const overlap = getBboxOverlap(aBbox, bBbox)
-  if (overlap === null) return null
+  if (overlap === null) return []
   if (arePointsEqual(...overlap)) return [overlap[0]]
   return overlap
 }

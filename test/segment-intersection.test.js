@@ -3,22 +3,22 @@
 const intersection = require('../src/segment-intersection')
 
 describe('intersection', () => {
-  test('null if no intersections 1', () => {
+  test('no intersections 1', () => {
     const a = [[0, 0], [1, 1]]
     const b = [[1, 0], [2, 2]]
-    expect(intersection(...a, ...b)).toBeNull()
+    expect(intersection(...a, ...b)).toEqual([])
   })
 
-  test('null if no intersections 2', () => {
+  test('no intersections 2', () => {
     const a = [[0, 0], [1, 1]]
     const b = [[1, 0], [10, 2]]
-    expect(intersection(...a, ...b)).toBeNull()
+    expect(intersection(...a, ...b)).toEqual([])
   })
 
-  test('null if no intersections 3', () => {
+  test('no intersections 3', () => {
     const a = [[2, 2], [3, 3]]
     const b = [[0, 6], [2, 4]]
-    expect(intersection(...a, ...b)).toBeNull()
+    expect(intersection(...a, ...b)).toEqual([])
   })
 
   test('1 intersection', () => {
@@ -101,24 +101,24 @@ describe('intersection', () => {
   test('collinear, no overlap', () => {
     const a = [[0, 0], [1, 1]]
     const b = [[2, 2], [4, 4]]
-    expect(intersection(...a, ...b)).toBeNull()
+    expect(intersection(...a, ...b)).toEqual([])
   })
 
   test('parallel', () => {
     const a = [[0, 0], [1, 1]]
     const b = [[0, -1], [1, 0]]
-    expect(intersection(...a, ...b)).toBeNull()
+    expect(intersection(...a, ...b)).toEqual([])
   })
 
   test('parallel, orientation', () => {
     const a = [[1, 1], [0, 0]]
     const b = [[0, -1], [1, 0]]
-    expect(intersection(...a, ...b)).toBeNull()
+    expect(intersection(...a, ...b)).toEqual([])
   })
 
   test('parallel, position', () => {
     const a = [[0, -1], [1, 0]]
     const b = [[0, 0], [1, 1]]
-    expect(intersection(...a, ...b)).toBeNull()
+    expect(intersection(...a, ...b)).toEqual([])
   })
 })

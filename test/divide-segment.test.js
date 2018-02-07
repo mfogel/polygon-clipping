@@ -45,7 +45,7 @@ describe('divide segments', () => {
     const se1 = SweepEvent.buildPair(s[0][3], s[0][2], true)[0]
     const se2 = SweepEvent.buildPair(c[0][0], c[0][1], false)[0]
 
-    expect(possibleIntersection(se1, se2, q)).toBe(1)
+    expect(possibleIntersection(se1, se2, q)).toBeFalsy()
     expect(q.length).toBe(4)
 
     let e = q.pop()
