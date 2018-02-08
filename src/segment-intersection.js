@@ -1,10 +1,5 @@
-const {
-  arePointsEqual,
-  areVectorsParallel,
-  crossProduct,
-  getBbox,
-  getBboxOverlap
-} = require('./point')
+const { arePointsEqual, areVectorsParallel, crossProduct } = require('./point')
+const { getBbox, getBboxOverlap } = require('./bbox')
 
 /**
  * Finds the intersection (if any) between two line segments a and b, given the
