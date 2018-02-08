@@ -33,15 +33,12 @@ class SweepEvent {
     this.isExteriorRing = true
     this.ringId = null
 
-    // TODO: review these defaults... are some also set elsewhere?
-    this.edgeType = edgeTypes.NORMAL
-
     this.otherEvent = null
     this.prevEvent = null
     this.coincidentEvent = null
-    this.sweepLineEnters = null
-    this.isInsideOther = null
-    this.isInResult = null
+
+    // cache of dynamically computed properies
+    this._clearCache()
   }
 
   isBelow (point) {
@@ -77,89 +74,110 @@ class SweepEvent {
 
   registerCoincidentEvent (event, isWinner) {
     this.coincidentEvent = event
-    if (!isWinner) this.registerPrevEvent(event)
-    this.refreshEdgeType()
-    this.refreshIsInResult()
+    if (!isWinner) this.prevEvent = event
+    this._clearCache()
   }
 
   registerPrevEvent (event) {
     this.prevEvent = event
-    this.refreshSweepLineEnters()
-    this.refreshIsInsideOther()
-    this.refreshIsInResult()
+    this._clearCache()
   }
 
-  refreshEdgeType () {
-    if (this.isCoincidenceWinner()) {
-      this.edgeType =
-        this.coincidentEvent.sweepLineEnters === this.sweepLineEnters
-          ? edgeTypes.SAME_TRANSITION
-          : edgeTypes.DIFFERENT_TRANSITION
-    } else this.edgeType = edgeTypes.NON_CONTRIBUTING
+  get edgeType () {
+    return this._getCached('edgeType', this._calcEdgeType)
   }
 
-  refreshSweepLineEnters () {
-    if (!this.prevEvent) this.sweepLineEnters = true
-    else {
-      if (this.isSubject === this.prevEvent.isSubject) {
-        this.sweepLineEnters = !this.prevEvent.sweepLineEnters
-      } else {
-        this.sweepLineEnters = !this.prevEvent.isInsideOther
-      }
+  get sweepLineEnters () {
+    return this._getCached('sweepLineEnters', this._calcSweepLineEnters)
+  }
+
+  get isInsideOther () {
+    return this._getCached('isInsideOther', this._calcIsInsideOther)
+  }
+
+  get isInResult () {
+    return this._getCached('isInResult', this._calcIsInResult)
+  }
+
+  _clearCache () {
+    this._cache = {
+      edgeType: null,
+      sweepLineEnters: null,
+      isInsideOther: null,
+      isInResult: null
     }
   }
 
-  refreshIsInsideOther () {
-    if (!this.prevEvent) this.isInsideOther = false
+  _getCached (propName, calcMethod) {
+    // if this._cache[something] isn't set, fill it with this._caclSomething()
+    if (this._cache[propName] === null) {
+      this._cache[propName] = calcMethod.bind(this)()
+    }
+    return this._cache[propName]
+  }
+
+  _calcEdgeType () {
+    if (this.coincidentEvent) {
+      if (this.isCoincidenceWinner()) {
+        return this.coincidentEvent.sweepLineEnters === this.sweepLineEnters
+          ? edgeTypes.SAME_TRANSITION
+          : edgeTypes.DIFFERENT_TRANSITION
+      } else return edgeTypes.NON_CONTRIBUTING
+    } else return edgeTypes.NORMAL
+  }
+
+  _calcSweepLineEnters () {
+    if (!this.prevEvent) return true
+    else {
+      return this.isSubject === this.prevEvent.isSubject
+        ? !this.prevEvent.sweepLineEnters
+        : !this.prevEvent.isInsideOther
+    }
+  }
+
+  _calcIsInsideOther () {
+    if (!this.prevEvent) return false
     else {
       if (this.isSubject === this.prevEvent.isSubject) {
-        this.isInsideOther = this.prevEvent.isInsideOther
+        return this.prevEvent.isInsideOther
       } else {
-        this.isInsideOther = this.prevEvent.isVertical()
+        return this.prevEvent.isVertical()
           ? !this.prevEvent.sweepLineEnters
           : this.prevEvent.sweepLineEnters
       }
     }
   }
 
-  refreshIsInResult () {
-    const calcIsInResultForNormalEdge = () => {
-      if (operationTypes.isActive(operationTypes.INTERSECTION)) {
-        return this.isInsideOther
-      } else if (operationTypes.isActive(operationTypes.UNION)) {
-        return !this.isInsideOther
-      } else if (operationTypes.isActive(operationTypes.XOR)) {
-        // TODO: is this right?
-        return true
-      } else if (operationTypes.isActive(operationTypes.DIFFERENCE)) {
-        return (
-          (this.isSubject && !this.isInsideOther) ||
-          (!this.isSubject && this.isInsideOther)
-        )
-      } else {
-        throw new Error('No active operationType found')
-      }
-    }
-
-    const calcIsInResult = () => {
-      switch (this.edgeType) {
-        case edgeTypes.NORMAL:
-          return calcIsInResultForNormalEdge()
-        case edgeTypes.SAME_TRANSITION:
+  _calcIsInResult () {
+    switch (this.edgeType) {
+      case edgeTypes.NORMAL:
+        if (operationTypes.isActive(operationTypes.INTERSECTION)) {
+          return this.isInsideOther
+        } else if (operationTypes.isActive(operationTypes.UNION)) {
+          return !this.isInsideOther
+        } else if (operationTypes.isActive(operationTypes.XOR)) {
+          // TODO: is this right?
+          return true
+        } else if (operationTypes.isActive(operationTypes.DIFFERENCE)) {
           return (
-            operationTypes.isActive(operationTypes.INTERSECTION) ||
-            operationTypes.isActive(operationTypes.UNION)
+            (this.isSubject && !this.isInsideOther) ||
+            (!this.isSubject && this.isInsideOther)
           )
-        case edgeTypes.DIFFERENT_TRANSITION:
-          return operationTypes.isActive(operationTypes.DIFFERENCE)
-        case edgeTypes.NON_CONTRIBUTING:
-          return false
-        default:
-          throw new Error(`Unrecognized edgeType, '${this.edgeType}'`)
-      }
+        } else {
+          throw new Error('No active operationType found')
+        }
+      case edgeTypes.SAME_TRANSITION:
+        return (
+          operationTypes.isActive(operationTypes.INTERSECTION) ||
+          operationTypes.isActive(operationTypes.UNION)
+        )
+      case edgeTypes.DIFFERENT_TRANSITION:
+        return operationTypes.isActive(operationTypes.DIFFERENCE)
+      case edgeTypes.NON_CONTRIBUTING:
+        return false
+      default:
+        throw new Error(`Unrecognized edgeType, '${this.edgeType}'`)
     }
-
-    this.isInResult = calcIsInResult()
   }
 }
 
