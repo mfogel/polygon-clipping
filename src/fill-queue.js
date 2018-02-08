@@ -26,7 +26,7 @@ const processPolygon = (contourOrHole, isSubject, depth, Q, isExteriorRing) => {
   }
 }
 
-const fillQueue = (subject, clipping, operation) => {
+const fillQueue = (subject, clipping) => {
   const eventQueue = new Queue(null, compareEvents)
 
   for (let i = 0; i < subject.length; i++) {
@@ -42,7 +42,7 @@ const fillQueue = (subject, clipping, operation) => {
     let polygonSet = clipping[i]
     for (let j = 0; j < polygonSet.length; j++) {
       let isExteriorRing = j === 0
-      if (operation === operationTypes.DIFFERENCE) isExteriorRing = false
+      if (operationTypes.isActive(operationTypes.DIFFERENCE)) { isExteriorRing = false }
       if (isExteriorRing) contourId++
       processPolygon(
         polygonSet[j],
