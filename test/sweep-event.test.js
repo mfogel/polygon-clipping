@@ -74,8 +74,8 @@ describe('sweep event compare', () => {
   })
 
   test('then favor right events over left', () => {
-    const s1 = new SweepEvent([5, 4], null, false)
-    const s2 = new SweepEvent([5, 4], null, true)
+    const s1 = new Segment([3, 2], [5, 4]).rightSE
+    const s2 = new Segment([5, 4], [6, 5]).leftSE
     expect(SweepEvent.compare(s1, s2)).toBe(-1)
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })

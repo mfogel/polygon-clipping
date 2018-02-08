@@ -8,8 +8,8 @@ class Segment {
     }
 
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
-    this.leftSE = new SweepEvent(lp, isSubject, true)
-    this.rightSE = new SweepEvent(rp, isSubject, false)
+    this.leftSE = new SweepEvent(lp, isSubject, this)
+    this.rightSE = new SweepEvent(rp, isSubject, this)
 
     // TODO: maybe not set these and make traversal go through segment?
     this.leftSE.otherEvent = this.rightSE

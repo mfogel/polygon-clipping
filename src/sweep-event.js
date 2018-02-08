@@ -42,10 +42,10 @@ class SweepEvent {
     return 0
   }
 
-  constructor (point, isSubject, isLeft) {
+  constructor (point, isSubject, segment) {
     this.point = point
     this.isSubject = isSubject
-    this.isLeft = isLeft
+    this.segment = segment
 
     // TODO: I am skeptical about these.
     this.isExteriorRing = true
@@ -83,6 +83,14 @@ class SweepEvent {
 
   isVertical () {
     return this.point[0] === this.otherEvent.point[0]
+  }
+
+  get isLeft () {
+    return this === this.segment.leftSE
+  }
+
+  get isRight () {
+    return this === this.segment.rightSE
   }
 
   isCoincidenceWinner () {
