@@ -4,6 +4,7 @@ const {
   doBboxesOverlap,
   getBbox,
   getBboxOverlap,
+  getOtherCorners,
   isInBbox
 } = require('../src/bbox')
 
@@ -280,5 +281,28 @@ describe('bbox overlap', () => {
         expect(getBboxOverlap(p, p)).toEqual(p)
       })
     })
+  })
+})
+
+describe('get other corners', () => {
+  test('general', () => {
+    const bbox = [[2, 3], [4, 5]]
+    const expected = [[2, 5], [4, 3]]
+    expect(getOtherCorners(bbox)).toEqual(expected)
+  })
+
+  test('horizontal', () => {
+    const bbox = [[2, 3], [4, 3]]
+    expect(getOtherCorners(bbox)).toEqual(bbox)
+  })
+
+  test('vertical', () => {
+    const bbox = [[2, 3], [2, 5]]
+    expect(getOtherCorners(bbox)).toEqual(bbox.reverse())
+  })
+
+  test('point', () => {
+    const bbox = [[2, 2], [2, 2]]
+    expect(getOtherCorners(bbox)).toEqual(bbox)
   })
 })

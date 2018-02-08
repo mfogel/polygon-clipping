@@ -98,6 +98,20 @@ describe('intersection', () => {
     expect(intersection(...a, ...b)).toEqual(inters)
   })
 
+  test('collinear, one encloses other', () => {
+    const a = [[0, 0], [4, 4]]
+    const b = [[1, 1], [2, 2]]
+    const inters = [[1, 1], [2, 2]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
+
+  test('collinear, one encloses other 2', () => {
+    const a = [[4, 0], [0, 4]]
+    const b = [[3, 1], [1, 3]]
+    const inters = [[1, 3], [3, 1]]
+    expect(intersection(...a, ...b)).toEqual(inters)
+  })
+
   test('collinear, no overlap', () => {
     const a = [[0, 0], [1, 1]]
     const b = [[2, 2], [4, 4]]

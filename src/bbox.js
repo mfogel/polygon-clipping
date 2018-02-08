@@ -52,4 +52,15 @@ const getBboxOverlap = (b1, b2) => {
   return [[x1, y1], [x2, y2]]
 }
 
-module.exports = { doBboxesOverlap, getBbox, getBboxOverlap, isInBbox }
+/* Returns a box of [[xmin, ymax], [xmax, ymin]] */
+const getOtherCorners = bbox => {
+  return [[bbox[0][0], bbox[1][1]], [bbox[1][0], bbox[0][1]]]
+}
+
+module.exports = {
+  doBboxesOverlap,
+  getBbox,
+  getBboxOverlap,
+  getOtherCorners,
+  isInBbox
+}

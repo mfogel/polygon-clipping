@@ -1,5 +1,5 @@
 const { arePointsEqual, areVectorsParallel, crossProduct } = require('./point')
-const { getBbox, getBboxOverlap } = require('./bbox')
+const { getBbox, getBboxOverlap, getOtherCorners } = require('./bbox')
 
 /**
  * Finds the intersection (if any) between two line segments a and b, given the
@@ -18,6 +18,11 @@ const { getBbox, getBboxOverlap } = require('./bbox')
  * segments, the 'intersections' are defined to be the endpoints of the overlap.)
  */
 module.exports = function (a1, a2, b1, b2) {
+  // If bboxes don't overlap, there can't be any intersections
+  const [aBbox, bBbox] = [getBbox(a1, a2), getBbox(b1, b2)]
+  const bboxOverlap = getBboxOverlap(aBbox, bBbox)
+  if (bboxOverlap === null) return []
+
   const va = [a2[0] - a1[0], a2[1] - a1[1]]
   const vb = [b2[0] - b1[0], b2[1] - b1[1]]
   const ve = [b1[0] - a1[0], b1[1] - a1[1]]
@@ -56,13 +61,13 @@ module.exports = function (a1, a2, b1, b2) {
   // will also be parallel to va and vb
   if (!areVectorsParallel(va, ve)) return []
 
-  // We have colinear segments. Intersections are either:
-  //  * on zero points (no overlap)
-  //  * on one point (segments touch on one end)
-  //  * on two points (segments overlap)
-  const [aBbox, bBbox] = [getBbox(a1, a2), getBbox(b1, b2)]
-  const overlap = getBboxOverlap(aBbox, bBbox)
-  if (overlap === null) return []
-  if (arePointsEqual(...overlap)) return [overlap[0]]
-  return overlap
+  // We have colinear segments. If the bbox overlap is
+  // collapsed, that point must be the only intersection
+  if (arePointsEqual(...bboxOverlap)) return [bboxOverlap[0]]
+
+  // We have colinear segments with overlap - thus two intersections.
+  // The only question is which two oposing corners of the overlap bbox
+  // are the intersections.
+  const goesUpAndToTheRight = aBbox.some(pt => arePointsEqual(a1, pt))
+  return goesUpAndToTheRight ? bboxOverlap : getOtherCorners(bboxOverlap)
 }
