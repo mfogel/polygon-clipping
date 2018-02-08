@@ -1,4 +1,5 @@
 const TinyQueue = require('tinyqueue')
+const Segment = require('./segment')
 const SweepEvent = require('./sweep-event')
 const { arePointsEqual } = require('./point')
 const operationTypes = require('./operation-types')
@@ -26,13 +27,13 @@ class EventQueue {
           // repeated point in a ring? Skip over it
           if (arePointsEqual(prevPoint, point)) return
 
-          const [e1, e2] = SweepEvent.buildPair(prevPoint, point, isSubject)
+          const seg = new Segment(prevPoint, point, isSubject)
 
           // TODO: if this info is needed, SweepEvent constructor should accept it
-          e1.ringId = e2.ringId = this.ringId
-          e1.isExteriorRing = e2.isExteriorRing = isExteriorRing
+          seg.leftSE.ringId = seg.rightSE.ringId = this.ringId
+          seg.leftSE.isExteriorRing = seg.rightSE.isExteriorRing = isExteriorRing
 
-          this.push(e1, e2)
+          this.push(seg.leftSE, seg.rightSE)
         })
       })
     })

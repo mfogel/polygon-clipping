@@ -9,21 +9,6 @@ const edgeTypes = {
 }
 
 class SweepEvent {
-  static buildPair (p1, p2, isSubject) {
-    const comparePts = SweepEvent.comparePoints(p1, p2)
-    if (comparePts === 0) {
-      throw new Error('Unable to build events for collapsed segment')
-    }
-
-    const e1 = new SweepEvent(p1, isSubject, comparePts < 0)
-    const e2 = new SweepEvent(p2, isSubject, comparePts > 0)
-    e1.otherEvent = e2
-    e2.otherEvent = e1
-
-    // TODO: order [left, right] of returned points... should it matter?
-    return comparePts ? [e1, e2] : [e2, e1]
-  }
-
   static compare (a, b) {
     // favor event with a point that the sweep line hits first
     const pointCmp = SweepEvent.comparePoints(a.point, b.point)

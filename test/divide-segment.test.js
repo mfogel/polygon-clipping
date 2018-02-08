@@ -1,7 +1,7 @@
 /* eslint-env jest */
 
 const EventQueue = require('../src/event-queue')
-const SweepEvent = require('../src/sweep-event')
+const Segment = require('../src/segment')
 const intersection = require('../src/segment-intersection')
 const { arePointsEqual } = require('../src/point')
 const divideSegment = require('../src/divide-segment')
@@ -17,8 +17,8 @@ const c = [[[56, 181], [153, 294.5], [241.5, 229.5], [108.5, 120], [56, 181]]]
 
 describe('divide segments', () => {
   test('divide 2 segments', () => {
-    const se1 = SweepEvent.buildPair([0, 0], [5, 5], true)[0]
-    const se2 = SweepEvent.buildPair([0, 5], [5, 0], false)[0]
+    const se1 = new Segment([0, 0], [5, 5], true).leftSE
+    const se2 = new Segment([0, 5], [5, 0], false).leftSE
     const q = new EventQueue()
     q.push(se1, se2)
 
@@ -38,8 +38,8 @@ describe('divide segments', () => {
   test('possible intersections', () => {
     const q = new EventQueue()
 
-    const se1 = SweepEvent.buildPair(s[0][3], s[0][2], true)[0]
-    const se2 = SweepEvent.buildPair(c[0][0], c[0][1], false)[0]
+    const se1 = new Segment(s[0][3], s[0][2], true).leftSE
+    const se2 = new Segment(c[0][0], c[0][1], false).leftSE
 
     expect(possibleIntersection(se1, se2, q)).toBeFalsy()
     expect(q.getLength()).toBe(4)
@@ -69,8 +69,8 @@ describe('divide segments', () => {
     const p1 = [298, 359]
     const p2 = [156, 203.5]
 
-    const te = SweepEvent.buildPair(p0, p1, true)[0]
-    const te3 = SweepEvent.buildPair(p0, p2, false)[0]
+    const te = new Segment(p0, p1, true).leftSE
+    const te3 = new Segment(p0, p2, false).leftSE
 
     const tr = new Tree(compareSegments)
 

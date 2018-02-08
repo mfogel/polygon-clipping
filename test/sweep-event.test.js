@@ -1,11 +1,12 @@
 /* eslint-env jest */
 
+const Segment = require('../src/segment')
 const SweepEvent = require('../src/sweep-event')
 
 describe('sweep event', () => {
   test('isBelow', () => {
-    const s1 = SweepEvent.buildPair([0, 0], [1, 1])[0]
-    const s2 = SweepEvent.buildPair([0, 1], [0, 0])[0]
+    const s1 = new Segment([0, 0], [1, 1]).leftSE
+    const s2 = new Segment([0, 1], [0, 0]).leftSE
 
     expect(s1.isBelow([0, 1])).toBeTruthy()
     expect(s1.isBelow([1, 2])).toBeTruthy()
@@ -19,8 +20,8 @@ describe('sweep event', () => {
   })
 
   test('isColinear', () => {
-    const s1 = SweepEvent.buildPair([0, 0], [1, 1])[0]
-    const s2 = SweepEvent.buildPair([0, 1], [0, 0])[0]
+    const s1 = new Segment([0, 0], [1, 1]).leftSE
+    const s2 = new Segment([0, 1], [0, 0]).leftSE
 
     expect(s1.isColinear([0, 1])).toBeFalsy()
     expect(s1.isColinear([1, 2])).toBeFalsy()
@@ -34,8 +35,8 @@ describe('sweep event', () => {
   })
 
   test('isAbove', () => {
-    const s1 = SweepEvent.buildPair([0, 0], [1, 1])[0]
-    const s2 = SweepEvent.buildPair([0, 1], [0, 0])[0]
+    const s1 = new Segment([0, 0], [1, 1]).leftSE
+    const s2 = new Segment([0, 1], [0, 0]).leftSE
 
     expect(s1.isAbove([0, 1])).toBeFalsy()
     expect(s1.isAbove([1, 2])).toBeFalsy()
@@ -49,8 +50,8 @@ describe('sweep event', () => {
   })
 
   test('isVertical', () => {
-    const s1 = SweepEvent.buildPair([0, 0], [0, 1])[0]
-    const s2 = SweepEvent.buildPair([0, 0], [0.0001, 1])[0]
+    const s1 = new Segment([0, 0], [0, 1]).leftSE
+    const s2 = new Segment([0, 0], [0.0001, 1]).leftSE
 
     expect(s1.isVertical()).toBeTruthy()
     expect(s2.isVertical()).toBeFalsy()
@@ -80,15 +81,15 @@ describe('sweep event compare', () => {
   })
 
   test('then favor lower segment', () => {
-    const s1 = SweepEvent.buildPair([0, 0], [4, 4])[0]
-    const s2 = SweepEvent.buildPair([0, 0], [5, 6])[0]
+    const s1 = new Segment([0, 0], [4, 4]).leftSE
+    const s2 = new Segment([0, 0], [5, 6]).leftSE
     expect(SweepEvent.compare(s1, s2)).toBe(-1)
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
   test('then favor subject', () => {
-    const s1 = SweepEvent.buildPair([0, 0], [5, 5], true)[0]
-    const s2 = SweepEvent.buildPair([0, 0], [4, 4], false)[0]
+    const s1 = new Segment([0, 0], [5, 5], true).leftSE
+    const s2 = new Segment([0, 0], [4, 4], false).leftSE
     expect(SweepEvent.compare(s1, s2)).toBe(-1)
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
@@ -97,8 +98,8 @@ describe('sweep event compare', () => {
 
   test('then totally equal', () => {
     // TODO: this seems wrong.... they're not the same.
-    const s1 = SweepEvent.buildPair([0, 0], [5, 5], true)[0]
-    const s2 = SweepEvent.buildPair([0, 0], [4, 4], true)[0]
+    const s1 = new Segment([0, 0], [5, 5], true).leftSE
+    const s2 = new Segment([0, 0], [4, 4], true).leftSE
     expect(SweepEvent.compare(s1, s2)).toBe(0)
     expect(SweepEvent.compare(s2, s1)).toBe(0)
   })
