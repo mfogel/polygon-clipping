@@ -1,5 +1,5 @@
 const operationTypes = require('./operation-types')
-const { comparePoints, crossProduct } = require('./point')
+const { arePointsColinear, crossProduct } = require('./point')
 
 const edgeTypes = {
   NORMAL: 0,
@@ -10,7 +10,7 @@ const edgeTypes = {
 
 class SweepEvent {
   static buildPair (p1, p2, isSubject) {
-    const comparePts = comparePoints(p1, p2)
+    const comparePts = SweepEvent.comparePoints(p1, p2)
     if (comparePts === 0) {
       throw new Error('Unable to build events for collapsed segment')
     }
@@ -22,6 +22,39 @@ class SweepEvent {
 
     // TODO: order [left, right] of returned points... should it matter?
     return comparePts ? [e1, e2] : [e2, e1]
+  }
+
+  static compare (a, b) {
+    // favor event with a point that the sweep line hits first
+    const pointCmp = SweepEvent.comparePoints(a.point, b.point)
+    if (pointCmp !== 0) return pointCmp
+
+    // favor right events over left
+    if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
+
+    // favor events where the line segment is lower
+    if (!arePointsColinear(a.point, a.otherEvent.point, b.otherEvent.point)) {
+      return !a.isBelow(b.otherEvent.point) ? 1 : -1
+    }
+
+    // TODO: favor shorter line segment?
+
+    // favor events from subject over clipping
+    if (a.isSubject !== b.isSubject) return a.isSubject ? -1 : 1
+
+    // else they're totally equal
+    return 0
+  }
+
+  static comparePoints (a, b) {
+    // favor lower X
+    if (a[0] !== b[0]) return a[0] < b[0] ? -1 : 1
+
+    // favor lower Y
+    if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1
+
+    // else they're the same
+    return 0
   }
 
   constructor (point, isSubject, isLeft) {

@@ -1,7 +1,7 @@
 const divideSegment = require('./divide-segment')
 const intersection = require('./segment-intersection')
 const { arePointsEqual } = require('./point')
-const compareEvents = require('./compare-events')
+const SweepEvent = require('./sweep-event')
 
 /**
  * Returns true two intersections are found, and one of them
@@ -47,12 +47,12 @@ module.exports = (se1, se2, queue) => {
     )
 
     if (!rightCoincide) {
-      const [e1, e2] = [se1.otherEvent, se2.otherEvent].sort(compareEvents)
+      const [e1, e2] = [se1.otherEvent, se2.otherEvent].sort(SweepEvent.compare)
       divideSegment(e2.otherEvent, e1.point, queue)
     }
 
     if (!leftCoincide) {
-      const [e1, e2] = [se1, se2].sort(compareEvents)
+      const [e1, e2] = [se1, se2].sort(SweepEvent.compare)
       divideSegment(e1, e2.point, queue)
     }
 

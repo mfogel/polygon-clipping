@@ -2,7 +2,6 @@
 
 const Tree = require('avl')
 const compareSegments = require('../src/compare-segments')
-const compareEvents = require('../src/compare-events')
 const SweepEvent = require('../src/sweep-event')
 
 describe('compare segments are not collinear', () => {
@@ -38,7 +37,7 @@ describe('compare segments are not collinear', () => {
     const se3 = SweepEvent.buildPair([0, 1], [3, 4])[0]
     const se4 = SweepEvent.buildPair([-1, 0], [3, 1])[0]
 
-    expect(compareEvents(se1, se2)).toBe(1)
+    expect(SweepEvent.compare(se1, se2)).toBe(1)
     expect(se2.isBelow(se1.point)).toBeFalsy()
     expect(se2.isColinear(se1.point)).toBeTruthy()
     expect(se2.isAbove(se1.point)).toBeFalsy()
@@ -46,7 +45,7 @@ describe('compare segments are not collinear', () => {
     expect(compareSegments(se1, se2)).toBe(-1)
     expect(compareSegments(se2, se1)).toBe(1)
 
-    expect(compareEvents(se3, se4)).toBe(1)
+    expect(SweepEvent.compare(se3, se4)).toBe(1)
     expect(se4.isAbove(se3.point)).toBeFalsy()
   })
 

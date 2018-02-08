@@ -1,4 +1,4 @@
-const compareEvents = require('./compare-events')
+const SweepEvent = require('./sweep-event')
 const { arePointsEqual } = require('./point')
 const operationTypes = require('./operation-types')
 
@@ -20,7 +20,7 @@ const orderEvents = sortedEvents => {
     for (let i = 0, len = resultEvents.length; i < len; i++) {
       if (
         i + 1 < len &&
-        compareEvents(resultEvents[i], resultEvents[i + 1]) === 1
+        SweepEvent.compare(resultEvents[i], resultEvents[i + 1]) === 1
       ) {
         const tmp = resultEvents[i]
         resultEvents[i] = resultEvents[i + 1]

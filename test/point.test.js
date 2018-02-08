@@ -4,18 +4,9 @@ const {
   arePointsColinear,
   arePointsEqual,
   areVectorsParallel,
-  comparePoints,
   crossProduct,
   dotProduct
 } = require('../src/point')
-
-describe('compare points', () => {
-  test('earlier X coord', () => expect(comparePoints([-1, 1], [0, 0])).toBe(-1))
-  test('later X coord', () => expect(comparePoints([1, 0], [0, 1])).toBe(1))
-  test('earlier Y coord', () => expect(comparePoints([0, -1], [0, 0])).toBe(-1))
-  test('later Y coord', () => expect(comparePoints([0, 1], [0, 0])).toBe(1))
-  test('equal coord', () => expect(comparePoints([1, 1], [1, 1])).toBe(0))
-})
 
 describe('are points equal', () => {
   test('yes', () => expect(arePointsEqual([0, 0], [0.0, 0, 0])).toBeTruthy())

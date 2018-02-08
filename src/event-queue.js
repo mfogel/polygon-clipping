@@ -1,11 +1,10 @@
 const TinyQueue = require('tinyqueue')
-const compareEvents = require('./compare-events')
 const SweepEvent = require('./sweep-event')
 const { arePointsEqual } = require('./point')
 const operationTypes = require('./operation-types')
 
 class EventQueue {
-  constructor (comparator = compareEvents) {
+  constructor (comparator = SweepEvent.compare) {
     this.tinyQueue = new TinyQueue(null, comparator)
     this.ringId = 0
   }
