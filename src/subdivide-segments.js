@@ -17,24 +17,14 @@ module.exports = eventQueue => {
 
       const prevEvent = prevNode ? prevNode.key : null
       const nextEvent = nextNode ? nextNode.key : null
+
       event.registerPrevEvent(prevEvent)
 
-      if (nextEvent) {
-        if (possibleIntersection(event, nextEvent, eventQueue)) {
-          event.registerPrevEvent(prevEvent)
-          nextEvent.registerPrevEvent(event)
-        }
-      }
+      if (nextEvent) possibleIntersection(event, nextEvent, eventQueue)
+      if (prevEvent) possibleIntersection(prevEvent, event, eventQueue)
+    }
 
-      if (prevEvent) {
-        if (possibleIntersection(prevEvent, event, eventQueue)) {
-          const prevPrev = sweepLine.prev(prevNode)
-          const prevPrevEvent = prevPrev ? prevPrev.key : null
-          prevEvent.registerPrevEvent(prevPrevEvent)
-          event.registerPrevEvent(prevEvent)
-        }
-      }
-    } else sweepLine.remove(event.otherEvent)
+    if (!event.isLeft) sweepLine.remove(event.otherEvent)
   }
 
   return sortedEvents

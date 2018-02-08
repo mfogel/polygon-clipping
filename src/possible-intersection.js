@@ -57,10 +57,8 @@ module.exports = (se1, se2, queue) => {
     }
 
     if (leftCoincide) {
-      se1.registerCoincidentEvent(se2)
-      return true
+      se1.registerCoincidentEvent(se2, true)
+      se2.registerCoincidentEvent(se1, false)
     }
   }
-
-  return false
 }

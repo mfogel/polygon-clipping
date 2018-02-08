@@ -70,9 +70,16 @@ class SweepEvent {
     return this.point[0] === this.otherEvent.point[0]
   }
 
-  registerCoincidentEvent (event) {
+  isCoincidenceWinner () {
+    // first event is declared winner, second looser
+    return this.coincidentEvent && this.coincidentEvent !== this.prevEvent
+  }
+
+  registerCoincidentEvent (event, isWinner) {
     this.coincidentEvent = event
+    if (!isWinner) this.registerPrevEvent(event)
     this.refreshEdgeType()
+    this.refreshIsInResult()
   }
 
   registerPrevEvent (event) {
@@ -83,11 +90,12 @@ class SweepEvent {
   }
 
   refreshEdgeType () {
-    this.coincidentEvent.edgeType = edgeTypes.NON_CONTRIBUTING
-    this.edgeType =
-      this.coincidentEvent.sweepLineEnters === this.sweepLineEnters
-        ? edgeTypes.SAME_TRANSITION
-        : edgeTypes.DIFFERENT_TRANSITION
+    if (this.isCoincidenceWinner()) {
+      this.edgeType =
+        this.coincidentEvent.sweepLineEnters === this.sweepLineEnters
+          ? edgeTypes.SAME_TRANSITION
+          : edgeTypes.DIFFERENT_TRANSITION
+    } else this.edgeType = edgeTypes.NON_CONTRIBUTING
   }
 
   refreshSweepLineEnters () {
