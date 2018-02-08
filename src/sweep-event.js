@@ -31,7 +31,7 @@ class SweepEvent {
 
     // TODO: I am skeptical about these.
     this.isExteriorRing = true
-    this.contourId = null
+    this.ringId = null
 
     // TODO: review these defaults... are some also set elsewhere?
     this.edgeType = edgeTypes.NORMAL

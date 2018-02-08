@@ -2,11 +2,11 @@ const Tree = require('avl')
 const possibleIntersection = require('./possible-intersection')
 const compareSegments = require('./compare-segments')
 
-module.exports = (eventQueue, subject, clipping) => {
+module.exports = eventQueue => {
   const sweepLine = new Tree(compareSegments)
   const sortedEvents = []
 
-  while (eventQueue.length) {
+  while (!eventQueue.isEmpty()) {
     const event = eventQueue.pop()
     sortedEvents.push(event)
 

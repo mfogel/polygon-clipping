@@ -32,7 +32,7 @@ module.exports = function compareSegments (le1, le2) {
     // same polygon
     if (arePointsEqual(le1.point, le2.point)) {
       if (arePointsEqual(le1.otherEvent.point, le2.otherEvent.point)) return 0
-      else return le1.contourId > le2.contourId ? 1 : -1
+      else return le1.ringId > le2.ringId ? 1 : -1
     }
   } else {
     // Segments are collinear, but belong to separate polygons

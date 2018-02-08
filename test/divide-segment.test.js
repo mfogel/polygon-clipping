@@ -1,11 +1,9 @@
 /* eslint-env jest */
 
-const Queue = require('tinyqueue')
+const EventQueue = require('../src/event-queue')
 const SweepEvent = require('../src/sweep-event')
-const compareEvents = require('../src/compare-events')
 const intersection = require('../src/segment-intersection')
 const { arePointsEqual } = require('../src/point')
-const fillQueue = require('../src/fill-queue')
 const divideSegment = require('../src/divide-segment')
 const subdivideSegments = require('../src/subdivide-segments')
 const possibleIntersection = require('../src/possible-intersection')
@@ -21,10 +19,8 @@ describe('divide segments', () => {
   test('divide 2 segments', () => {
     const se1 = SweepEvent.buildPair([0, 0], [5, 5], true)[0]
     const se2 = SweepEvent.buildPair([0, 5], [5, 0], false)[0]
-    const q = new Queue(null, compareEvents)
-
-    q.push(se1)
-    q.push(se2)
+    const q = new EventQueue()
+    q.push(se1, se2)
 
     const iter = intersection(
       se1.point,
@@ -36,17 +32,17 @@ describe('divide segments', () => {
     divideSegment(se1, iter[0], q)
     divideSegment(se2, iter[0], q)
 
-    expect(q.length).toBe(6)
+    expect(q.getLength()).toBe(6)
   })
 
   test('possible intersections', () => {
-    const q = new Queue(null, compareEvents)
+    const q = new EventQueue()
 
     const se1 = SweepEvent.buildPair(s[0][3], s[0][2], true)[0]
     const se2 = SweepEvent.buildPair(c[0][0], c[0][1], false)[0]
 
     expect(possibleIntersection(se1, se2, q)).toBeFalsy()
-    expect(q.length).toBe(4)
+    expect(q.getLength()).toBe(4)
 
     let e = q.pop()
     expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
@@ -66,7 +62,9 @@ describe('divide segments', () => {
   })
 
   test('possible intersections on 2 polygons', () => {
-    const q = fillQueue([s], [c])
+    const q = new EventQueue()
+    q.consume([s], true)
+    q.consume([c], false)
     const p0 = [16, 282]
     const p1 = [298, 359]
     const p2 = [156, 203.5]

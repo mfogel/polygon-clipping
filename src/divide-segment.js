@@ -16,12 +16,10 @@ module.exports = function divideSegment (se, p, queue) {
     console.warn('what is that, a collapsed segment?', se)
   }
 
-  r.contourId = l.contourId = se.contourId
+  r.ringId = l.ringId = se.ringId
   // FIXME: this breaks the tests. It shouldn't.
   // r.isExteriorRing = l.isExteriorRing = se.isExteriorRing
 
-  queue.push(l)
-  queue.push(r)
-
+  queue.push(l, r)
   return queue
 }

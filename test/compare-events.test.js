@@ -1,44 +1,38 @@
 /* eslint-env jest */
 
-const Queue = require('tinyqueue')
+const EventQueue = require('../src/event-queue')
 const sweepEventsComp = require('../src/compare-events')
 const SweepEvent = require('../src/sweep-event')
 
 describe('queue', () => {
   test('queue should process lest(by x) sweep event first', () => {
-    const queue = new Queue(null, sweepEventsComp)
+    const queue = new EventQueue()
     const e1 = { point: [0.0, 0.0] }
     const e2 = { point: [0.5, 0.5] }
-
-    queue.push(e1)
-    queue.push(e2)
+    queue.push(e1, e2)
 
     expect(queue.pop()).toBe(e1)
     expect(queue.pop()).toBe(e2)
   })
 
   test('queue should process lest(by y) sweep event first', () => {
-    const queue = new Queue(null, sweepEventsComp)
+    const queue = new EventQueue()
     const e1 = { point: [0.0, 0.0] }
     const e2 = { point: [0.0, 0.5] }
-
-    queue.push(e1)
-    queue.push(e2)
+    queue.push(e1, e2)
 
     expect(queue.pop()).toBe(e1)
     expect(queue.pop()).toBe(e2)
   })
 
   test('queue should pop least(by isLeft prop) sweep event first', () => {
-    const queue = new Queue(null, sweepEventsComp)
-    const e1 = { point: [0.0, 0.0], isLeft: true }
-    const e2 = { point: [0.0, 0.0], isLeft: false }
+    const queue = new EventQueue()
+    const e1 = { point: [0.0, 0.0], isLeft: false }
+    const e2 = { point: [0.0, 0.0], isLeft: true }
+    queue.push(e1, e2)
 
-    queue.push(e1)
-    queue.push(e2)
-
-    expect(queue.pop()).toBe(e2)
     expect(queue.pop()).toBe(e1)
+    expect(queue.pop()).toBe(e2)
   })
 })
 

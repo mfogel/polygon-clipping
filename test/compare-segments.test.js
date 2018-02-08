@@ -74,16 +74,16 @@ describe('compare segments are collinear', () => {
     const se1 = SweepEvent.buildPair(pt, [5, 1])[0]
     const se2 = SweepEvent.buildPair(pt, [3, 1])[0]
 
-    se1.contourId = 1
-    se2.contourId = 2
+    se1.ringId = 1
+    se2.ringId = 2
 
     expect(se1.isSubject).toBe(se2.isSubject)
     expect(se1.point).toBe(se2.point)
 
     expect(compareSegments(se1, se2)).toBe(-1)
 
-    se1.contourId = 2
-    se2.contourId = 1
+    se1.ringId = 2
+    se2.ringId = 1
 
     expect(compareSegments(se1, se2)).toBe(1)
   })

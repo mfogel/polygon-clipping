@@ -114,9 +114,9 @@ const connectEdges = sortedEvents => {
       processed[pos] = true
 
       if (event.isLeft) {
-        event.contourId = ringId
+        event.ringId = ringId
       } else {
-        event.otherEvent.contourId = ringId
+        event.otherEvent.ringId = ringId
       }
 
       pos = event.pos
@@ -129,7 +129,7 @@ const connectEdges = sortedEvents => {
 
     event = resultEvents[pos]
     processed[pos] = processed[event.pos] = true
-    event.otherEvent.contourId = ringId
+    event.otherEvent.ringId = ringId
   }
 
   // Handle if the result is a polygon (eg not multipoly)
