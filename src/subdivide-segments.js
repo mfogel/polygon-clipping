@@ -24,7 +24,7 @@ module.exports = eventQueue => {
       if (prevEvent) possibleIntersection(prevEvent, event, eventQueue)
     }
 
-    if (!event.isLeft) sweepLine.remove(event.otherEvent)
+    if (!event.isLeft) sweepLine.remove(event.otherSE)
   }
 
   return sortedEvents

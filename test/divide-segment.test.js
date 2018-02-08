@@ -24,9 +24,9 @@ describe('divide segments', () => {
 
     const iter = intersection(
       se1.point,
-      se1.otherEvent.point,
+      se1.otherSE.point,
       se2.point,
-      se2.otherEvent.point
+      se2.otherSE.point
     )
 
     divideSegment(se1, iter[0], q)
@@ -46,19 +46,19 @@ describe('divide segments', () => {
 
     let e = q.pop()
     expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherEvent.point).toEqual([56, 181])
+    expect(e.otherSE.point).toEqual([56, 181])
 
     e = q.pop()
     expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherEvent.point).toEqual([16, 282])
+    expect(e.otherSE.point).toEqual([16, 282])
 
     e = q.pop()
     expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherEvent.point).toEqual([153, 203.5])
+    expect(e.otherSE.point).toEqual([153, 203.5])
 
     e = q.pop()
     expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherEvent.point).toEqual([153, 294.5])
+    expect(e.otherSE.point).toEqual([153, 294.5])
   })
 
   test('possible intersections on 2 polygons', () => {
@@ -192,7 +192,7 @@ describe('divide segments', () => {
         const seg = leftSegments[x]
         if (
           arePointsEqual(seg.point, data.l) &&
-          arePointsEqual(seg.otherEvent.point, data.r) &&
+          arePointsEqual(seg.otherSE.point, data.r) &&
           seg.sweepLineEnters === data.sweepLineEnters &&
           seg.isInsideOther === data.isInsideOther &&
           seg.isInResult === data.isInResult

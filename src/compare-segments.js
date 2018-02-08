@@ -4,12 +4,12 @@ const { arePointsColinear, arePointsEqual } = require('./point')
 module.exports = function compareSegments (le1, le2) {
   if (le1 === le2) return 0
 
-  const pts = [le1.point, le1.otherEvent.point, le2.point, le2.otherEvent.point]
+  const pts = [le1.point, le1.otherSE.point, le2.point, le2.otherSE.point]
 
   if (!arePointsColinear(...pts)) {
     // If they share their left endpoint use the right endpoint to sort
     if (arePointsEqual(le1.point, le2.point)) {
-      return le1.isBelow(le2.otherEvent.point) ? -1 : 1
+      return le1.isBelow(le2.otherSE.point) ? -1 : 1
     }
 
     // Different left endpoint: use the left endpoint to sort
@@ -31,7 +31,7 @@ module.exports = function compareSegments (le1, le2) {
   if (le1.isSubject === le2.isSubject) {
     // same polygon
     if (arePointsEqual(le1.point, le2.point)) {
-      if (arePointsEqual(le1.otherEvent.point, le2.otherEvent.point)) return 0
+      if (arePointsEqual(le1.otherSE.point, le2.otherSE.point)) return 0
       else return le1.ringId > le2.ringId ? 1 : -1
     }
   } else {

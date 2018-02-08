@@ -10,17 +10,13 @@ module.exports = function divideSegment (se, p, queue) {
 
   const l = new SweepEvent(p, se.isSubject, newSeg)
   newSeg.leftSE = l
-  newSeg.rightSE = se.otherEvent
-  l.otherEvent = se.otherEvent
-  se.otherEvent.otherEvent = l
-  se.otherEvent.segment = newSeg
+  newSeg.rightSE = se.otherSE
+  se.otherSE.segment = newSeg
 
   const r = new SweepEvent(p, se.isSubject, se.segment)
   se.segment.rightSE = r
-  r.otherEvent = se
-  se.otherEvent = r
 
-  if (arePointsEqual(se.point, se.otherEvent.point)) {
+  if (arePointsEqual(se.point, se.otherSE.point)) {
     console.warn('what is that, a collapsed segment?', se)
   }
 

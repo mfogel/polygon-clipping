@@ -15,8 +15,8 @@ describe('compare segments are not collinear', () => {
     tree.insert(se1)
     tree.insert(se2)
 
-    expect(tree.maxNode().key.otherEvent.point).toEqual([2, 3])
-    expect(tree.minNode().key.otherEvent.point).toEqual([1, 1])
+    expect(tree.maxNode().key.otherSE.point).toEqual([2, 3])
+    expect(tree.minNode().key.otherSE.point).toEqual([1, 1])
   })
 
   test('different left point - right point y coord to sort', () => {
@@ -27,8 +27,8 @@ describe('compare segments are not collinear', () => {
     tree.insert(se1)
     tree.insert(se2)
 
-    expect(tree.minNode().key.otherEvent.point).toEqual([1, 1])
-    expect(tree.maxNode().key.otherEvent.point).toEqual([2, 3])
+    expect(tree.minNode().key.otherSE.point).toEqual([1, 1])
+    expect(tree.maxNode().key.otherSE.point).toEqual([2, 3])
   })
 
   test('events order in sweep line', () => {

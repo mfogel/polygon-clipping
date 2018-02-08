@@ -36,3 +36,23 @@ describe('segment constructor', () => {
     expect(seg.rightSE.isSubject).toBeFalsy()
   })
 })
+
+describe('segment getOtherSE', () => {
+  test('left to right', () => {
+    const seg = new Segment([0, 0], [1, 0], true)
+    expect(seg.getOtherSE(seg.leftSE)).toBe(seg.rightSE)
+    expect(seg.leftSE.otherSE).toBe(seg.rightSE)
+  })
+
+  test('right to left', () => {
+    const seg = new Segment([0, 0], [1, 0], true)
+    expect(seg.getOtherSE(seg.rightSE)).toBe(seg.leftSE)
+    expect(seg.rightSE.otherSE).toBe(seg.leftSE)
+  })
+
+  test('doesnt work for Sweep Events that are from other Segments', () => {
+    const seg1 = new Segment([0, 0], [1, 0], true)
+    const seg2 = new Segment([0, 0], [1, 0], true)
+    expect(() => seg1.getOtherSE(seg2.leftSE)).toThrow()
+  })
+})

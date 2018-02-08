@@ -18,8 +18,8 @@ class SweepEvent {
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
 
     // favor events where the line segment is lower
-    if (!arePointsColinear(a.point, a.otherEvent.point, b.otherEvent.point)) {
-      return !a.isBelow(b.otherEvent.point) ? 1 : -1
+    if (!arePointsColinear(a.point, a.otherSE.point, b.otherSE.point)) {
+      return !a.isBelow(b.otherSE.point) ? 1 : -1
     }
 
     // TODO: favor shorter line segment?
@@ -51,7 +51,6 @@ class SweepEvent {
     this.isExteriorRing = true
     this.ringId = null
 
-    this.otherEvent = null
     this.prevEvent = null
     this.coincidentEvent = null
 
@@ -72,7 +71,7 @@ class SweepEvent {
   }
 
   compareWithPoint (point) {
-    const [p0, p1, p2] = [this.point, this.otherEvent.point, point]
+    const [p0, p1, p2] = [this.point, this.otherSE.point, point]
     const p20 = [p0[0] - p2[0], p0[1] - p2[1]]
     const p21 = [p1[0] - p2[0], p1[1] - p2[1]]
     const kross = crossProduct(p20, p21)
@@ -82,7 +81,7 @@ class SweepEvent {
   }
 
   isVertical () {
-    return this.point[0] === this.otherEvent.point[0]
+    return this.point[0] === this.otherSE.point[0]
   }
 
   get isLeft () {
@@ -91,6 +90,10 @@ class SweepEvent {
 
   get isRight () {
     return this === this.segment.rightSE
+  }
+
+  get otherSE () {
+    return this.segment.getOtherSE(this)
   }
 
   isCoincidenceWinner () {

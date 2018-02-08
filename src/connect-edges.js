@@ -8,7 +8,7 @@ const orderEvents = sortedEvents => {
     let event = sortedEvents[i]
     if (
       (event.isLeft && event.isInResult) ||
-      (!event.isLeft && event.otherEvent.isInResult)
+      (!event.isLeft && event.otherSE.isInResult)
     ) {
       resultEvents.push(event)
     }
@@ -36,8 +36,8 @@ const orderEvents = sortedEvents => {
 
     if (!event.isLeft) {
       const tmp = event.pos
-      event.pos = event.otherEvent.pos
-      event.otherEvent.pos = tmp
+      event.pos = event.otherSE.pos
+      event.otherSE.pos = tmp
     }
   }
 
@@ -116,7 +116,7 @@ const connectEdges = sortedEvents => {
       if (event.isLeft) {
         event.ringId = ringId
       } else {
-        event.otherEvent.ringId = ringId
+        event.otherSE.ringId = ringId
       }
 
       pos = event.pos
@@ -129,7 +129,7 @@ const connectEdges = sortedEvents => {
 
     event = resultEvents[pos]
     processed[pos] = processed[event.pos] = true
-    event.otherEvent.ringId = ringId
+    event.otherSE.ringId = ringId
   }
 
   // Handle if the result is a polygon (eg not multipoly)
