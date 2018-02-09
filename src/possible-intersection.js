@@ -15,20 +15,15 @@ module.exports = (se1, se2, queue) => {
   const inters = se1.segment.getIntersections(se2.segment)
 
   if (inters.length === 1) {
+    const intersection = inters[0]
     // if the intersection point is not an endpoint of se1
-    if (
-      !arePointsEqual(se1.point, inters[0]) &&
-      !arePointsEqual(se1.otherSE.point, inters[0])
-    ) {
-      divideSegment(se1, inters[0], queue)
+    if (!se1.segment.isAnEndpoint(intersection)) {
+      divideSegment(se1, intersection, queue)
     }
 
     // if the intersection point is not an endpoint of se2
-    if (
-      !arePointsEqual(se2.point, inters[0]) &&
-      !arePointsEqual(se2.otherSE.point, inters[0])
-    ) {
-      divideSegment(se2, inters[0], queue)
+    if (!se2.segment.isAnEndpoint(intersection)) {
+      divideSegment(se2, intersection, queue)
     }
   }
 

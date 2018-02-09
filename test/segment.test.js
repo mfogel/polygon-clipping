@@ -191,3 +191,19 @@ describe('intersection', () => {
     expect(a.getIntersections(b)).toEqual([])
   })
 })
+
+describe('is an endpoint', () => {
+  const p1 = [0, -1]
+  const p2 = [1, 0]
+  const seg = new Segment(p1, p2)
+
+  test('yup', () => {
+    expect(seg.isAnEndpoint(p1)).toBeTruthy()
+    expect(seg.isAnEndpoint(p2)).toBeTruthy()
+  })
+
+  test('nope', () => {
+    expect(seg.isAnEndpoint([-34, 46])).toBeFalsy()
+    expect(seg.isAnEndpoint([0, 0])).toBeFalsy()
+  })
+})

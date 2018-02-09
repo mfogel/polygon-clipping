@@ -26,12 +26,20 @@ class Segment {
     throw new Error('may only be called by own sweep events')
   }
 
+  isAnEndpoint (point) {
+    return (
+      arePointsEqual(this.leftSE.point, point) ||
+      arePointsEqual(this.rightSE.point, point)
+    )
+  }
+
   /**
    * Given another segment, returns an array of intersection points
    * between the two segments. The returned array can contain:
-   *  * zero points - no intersection b/t segments
-   *  * one point - segments intersect once
-   *  * two points - segments overlap. Endpoints of overlap returned.
+   *  * zero points:  no intersection b/t segments
+   *  * one point:    segments intersect once
+   *  * two points:   segments overlap. Endpoints of overlap returned.
+   *                  Will be ordered as sweep line would encounter them.
    */
   getIntersections (other) {
     const [a1, a2] = [this.leftSE.point, this.rightSE.point]
