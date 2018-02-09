@@ -1,4 +1,5 @@
 const Tree = require('avl')
+const { arePointsEqual } = require('./point')
 const possibleIntersection = require('./possible-intersection')
 const compareSegments = require('./compare-segments')
 
@@ -20,8 +21,23 @@ module.exports = eventQueue => {
 
       event.registerPrevEvent(prevEvent)
 
-      if (nextEvent) possibleIntersection(event, nextEvent, eventQueue)
-      if (prevEvent) possibleIntersection(prevEvent, event, eventQueue)
+      if (nextEvent) {
+        possibleIntersection(event, nextEvent, eventQueue)
+        const overlap = event.segment.getOverlap(nextEvent.segment)
+        if (overlap !== null && arePointsEqual(overlap[0], event.point)) {
+          event.registerCoincidentEvent(nextEvent, true)
+          nextEvent.registerCoincidentEvent(event, false)
+        }
+      }
+
+      if (prevEvent) {
+        possibleIntersection(prevEvent, event, eventQueue)
+        const overlap = prevEvent.segment.getOverlap(event.segment)
+        if (overlap !== null && arePointsEqual(overlap[0], prevEvent.point)) {
+          prevEvent.registerCoincidentEvent(event, true)
+          event.registerCoincidentEvent(prevEvent, false)
+        }
+      }
     }
 
     if (!event.isLeft) sweepLine.remove(event.otherSE)

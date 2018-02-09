@@ -41,10 +41,5 @@ module.exports = (se1, se2, queue) => {
       const [e1, e2] = [se1, se2].sort(SweepEvent.compare)
       divideSegment(e1, e2.point, queue)
     }
-
-    if (leftCoincide) {
-      se1.registerCoincidentEvent(se2, true)
-      se2.registerCoincidentEvent(se1, false)
-    }
   }
 }
