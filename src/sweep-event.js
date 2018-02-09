@@ -8,8 +8,14 @@ const edgeTypes = {
   DIFFERENT_TRANSITION: 3
 }
 
+// Give events unique ID's to get consistent sorting when segments
+// are otherwise identical
+let sweepEventId = 1
+
 class SweepEvent {
   static compare (a, b) {
+    if (a === b) return 0
+
     // favor event with a point that the sweep line hits first
     const pointCmp = SweepEvent.comparePoints(a.point, b.point)
     if (pointCmp !== 0) return pointCmp
@@ -22,13 +28,18 @@ class SweepEvent {
       return !a.isBelow(b.otherSE.point) ? 1 : -1
     }
 
-    // TODO: favor shorter line segment?
-
     // favor events from subject over clipping
     if (a.isSubject !== b.isSubject) return a.isSubject ? -1 : 1
 
-    // else they're totally equal
-    return 0
+    // favor lower sweep event ids just for consistent sorting
+    if (a.id !== b.id) return a.id < b.id ? -1 : 1
+
+    // NOTE:  We don't sort on segment length because that changes
+    //        as segments are divided.
+
+    throw new Error(
+      'Unable to compare two SweepEvents seem indentical but are not... ?'
+    )
   }
 
   static comparePoints (a, b) {
@@ -45,6 +56,7 @@ class SweepEvent {
   constructor (point, segment) {
     this.point = point
     this.segment = segment
+    this.id = sweepEventId++
 
     // TODO: I am skeptical about these.
     this.isExteriorRing = true
@@ -77,6 +89,14 @@ class SweepEvent {
     if (kross === 0) return 0
     if (this.isLeft) return kross > 0 ? 1 : -1
     else return kross < 0 ? 1 : -1
+  }
+
+  isPointEqual (point) {
+    return SweepEvent.comparePoints(this.point, point) === 0
+  }
+
+  hasSamePoint (other) {
+    return SweepEvent.comparePoints(this.point, other.point) === 0
   }
 
   get isLeft () {

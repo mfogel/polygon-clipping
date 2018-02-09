@@ -1,5 +1,5 @@
 const SweepEvent = require('./sweep-event')
-const { arePointsColinear, arePointsEqual } = require('./point')
+const { arePointsColinear } = require('./point')
 
 module.exports = function compareSegments (le1, le2) {
   if (le1 === le2) return 0
@@ -8,7 +8,7 @@ module.exports = function compareSegments (le1, le2) {
 
   if (!arePointsColinear(...pts)) {
     // If they share their left endpoint use the right endpoint to sort
-    if (arePointsEqual(le1.point, le2.point)) {
+    if (le1.hasSamePoint(le2)) {
       return le1.isBelow(le2.otherSE.point) ? -1 : 1
     }
 
@@ -30,8 +30,8 @@ module.exports = function compareSegments (le1, le2) {
 
   if (le1.isSubject === le2.isSubject) {
     // same polygon
-    if (arePointsEqual(le1.point, le2.point)) {
-      if (arePointsEqual(le1.otherSE.point, le2.otherSE.point)) return 0
+    if (le1.hasSamePoint(le2)) {
+      if (le1.otherSE.hasSamePoint(le2.otherSE)) return 0
       else return le1.ringId > le2.ringId ? 1 : -1
     }
   } else {

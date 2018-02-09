@@ -86,14 +86,25 @@ describe('sweep event compare', () => {
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
-  // TODO: favor shorter line segment?
-
-  test('then totally equal', () => {
-    // TODO: this seems wrong.... they're not the same.
+  test('then favor earlier created first', () => {
     const s1 = new Segment([0, 0], [5, 5], true).leftSE
     const s2 = new Segment([0, 0], [4, 4], true).leftSE
-    expect(SweepEvent.compare(s1, s2)).toBe(0)
-    expect(SweepEvent.compare(s2, s1)).toBe(0)
+    expect(SweepEvent.compare(s1, s2)).toBe(-1)
+    expect(SweepEvent.compare(s2, s1)).toBe(1)
+  })
+
+  test('totally equal', () => {
+    const s1 = new Segment([0, 0], [5, 5], true).leftSE
+    expect(SweepEvent.compare(s1, s1)).toBe(0)
+  })
+
+  test('length does not matter', () => {
+    const s1 = new Segment([0, 0], [5, 5], true).leftSE
+    const s2 = new Segment([0, 0], [4, 4], true).leftSE
+    const s3 = new Segment([0, 0], [5, 5], true).leftSE
+    expect(SweepEvent.compare(s1, s2)).toBe(-1)
+    expect(SweepEvent.compare(s2, s3)).toBe(-1)
+    expect(SweepEvent.compare(s1, s3)).toBe(-1)
   })
 })
 
@@ -108,4 +119,22 @@ describe('sweep event compare points', () => {
     expect(SweepEvent.comparePoints([0, 1], [0, 0])).toBe(1))
   test('equal coord', () =>
     expect(SweepEvent.comparePoints([1, 1], [1, 1])).toBe(0))
+})
+
+describe('is point Equal', () => {
+  const se = new SweepEvent([5, 4])
+  test('yes', () => expect(se.isPointEqual([5, 4])).toBeTruthy())
+  test('no', () => expect(se.isPointEqual([1, 0])).toBeFalsy())
+})
+
+describe('has same point', () => {
+  const se = new SweepEvent([5, 4])
+  test('yes', () => {
+    const se2 = new SweepEvent([5, 4])
+    expect(se.hasSamePoint(se2)).toBeTruthy()
+  })
+  test('no', () => {
+    const se2 = new SweepEvent([2, 4])
+    expect(se.hasSamePoint(se2)).toBeFalsy()
+  })
 })

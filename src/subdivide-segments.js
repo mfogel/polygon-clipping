@@ -1,6 +1,5 @@
 const Tree = require('avl')
 const compareSegments = require('./compare-segments')
-const { arePointsEqual } = require('./point')
 
 const possibleIntersection = (se1, se2) => {
   const inters = se1.segment.getIntersections(se2.segment)
@@ -11,7 +10,7 @@ const possibleIntersection = (se1, se2) => {
     // we only need to split on first intersection that's not coincident
     // with the current event. The next intersection one will be handled
     // in another pass of the event loop.
-    splitOn = arePointsEqual(se1.point, inters[0]) ? inters[1] : inters[0]
+    splitOn = se1.isPointEqual(inters[0]) ? inters[1] : inters[0]
   }
   return [
     ...se1.segment.attemptSplit(splitOn),
