@@ -47,12 +47,8 @@ class EventQueue {
     return this.tinyQueue.pop()
   }
 
-  isEmpty () {
+  get isEmpty () {
     return this.tinyQueue.length === 0
-  }
-
-  getLength () {
-    return this.tinyQueue.length
   }
 }
 

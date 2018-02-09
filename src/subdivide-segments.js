@@ -1,13 +1,31 @@
 const Tree = require('avl')
 const { arePointsEqual } = require('./point')
-const possibleIntersection = require('./possible-intersection')
 const compareSegments = require('./compare-segments')
+
+const possibleIntersection = (se1, se2) => {
+  const inters = se1.segment.getIntersections(se2.segment)
+  const newEvents = []
+  inters.forEach(intersection =>
+    [se1, se2].forEach(evt =>
+      evt.segment.attemptSplit(intersection).forEach(evt => newEvents.push(evt))
+    )
+  )
+  return newEvents
+}
+
+const checkCoincidence = (se1, se2) => {
+  const overlap = se1.segment.getOverlap(se2.segment)
+  if (overlap !== null && arePointsEqual(overlap[0], se1.point)) {
+    se1.registerCoincidentEvent(se2, true)
+    se2.registerCoincidentEvent(se1, false)
+  }
+}
 
 module.exports = eventQueue => {
   const sweepLine = new Tree(compareSegments)
   const sortedEvents = []
 
-  while (!eventQueue.isEmpty()) {
+  while (!eventQueue.isEmpty) {
     const event = eventQueue.pop()
     sortedEvents.push(event)
 
@@ -22,23 +40,13 @@ module.exports = eventQueue => {
       event.registerPrevEvent(prevEvent)
 
       if (nextEvent) {
-        eventQueue.push(...possibleIntersection(event, nextEvent, eventQueue))
-
-        const overlap = event.segment.getOverlap(nextEvent.segment)
-        if (overlap !== null && arePointsEqual(overlap[0], event.point)) {
-          event.registerCoincidentEvent(nextEvent, true)
-          nextEvent.registerCoincidentEvent(event, false)
-        }
+        eventQueue.push(...possibleIntersection(event, nextEvent))
+        checkCoincidence(event, nextEvent)
       }
 
       if (prevEvent) {
         eventQueue.push(...possibleIntersection(prevEvent, event))
-
-        const overlap = prevEvent.segment.getOverlap(event.segment)
-        if (overlap !== null && arePointsEqual(overlap[0], prevEvent.point)) {
-          prevEvent.registerCoincidentEvent(event, true)
-          event.registerCoincidentEvent(prevEvent, false)
-        }
+        checkCoincidence(prevEvent, event)
       }
     }
 

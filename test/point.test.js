@@ -98,6 +98,10 @@ describe('are points colinear', () => {
     test('perpendicular', () => {
       expect(arePointsColinear([0, 0], [0, 1], [1, 0])).toBeFalsy()
     })
+    // FIXME: 8 decimal places really ain't good enough.
+    test.skip('almost', () => {
+      expect(arePointsColinear([-1, -1], [1, 1], [0, 0.00000001])).toBeFalsy()
+    })
   })
   describe('yes 4', () => {
     test('general', () => {

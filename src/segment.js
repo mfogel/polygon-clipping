@@ -20,6 +20,10 @@ class Segment {
     this.rightSE = new SweepEvent(rp, this)
   }
 
+  clone () {
+    return new Segment(this.leftSE.point, this.rightSE.point, this.isSubject)
+  }
+
   get xmin () {
     return this.leftSE.point[0]
   }
@@ -66,6 +70,15 @@ class Segment {
 
   isAnEndpoint (point) {
     return this.points.some(pt => arePointsEqual(pt, point))
+  }
+
+  isInInterior (point) {
+    if (arePointsColinear(point, this.leftSE.point, this.rightSE.point)) {
+      if (this.xmin <= point[0] && point[0] <= this.xmax) {
+        return !this.isAnEndpoint(point)
+      }
+    }
+    return false
   }
 
   /**
@@ -143,6 +156,37 @@ class Segment {
 
     // intersection is in a midpoint of both lines, let's use a
     return [[a1[0] + s * va[0], a1[1] + s * va[1]]]
+  }
+
+  /**
+   * Attempt to split the given segment into two segments on the given point.
+   * If the given point is not along the interior of the segment, the split will
+   * not be possible and an empty array will be returned.
+   * If the point is not on an endpoint, the segment will be split.
+   *  * The existing segment will retain it's leftSE and a new rightSE will be
+   *    generated for it.
+   *  * A new segment will be generated which will adopt the original segment's
+   *    rightSE, and a new leftSE will be generated for it.
+   *  * An array of the two new generated SweepEvents, one from each segment,
+   *    will be returned.
+   */
+  attemptSplit (point) {
+    if (!this.isInInterior(point)) return []
+
+    const newSeg = this.clone()
+
+    newSeg.leftSE = new SweepEvent(point, newSeg)
+    newSeg.rightSE = this.rightSE
+    this.rightSE.segment = newSeg
+
+    this.rightSE = new SweepEvent(point, this)
+
+    // TODO: deal with this
+    this.rightSE.ringId = newSeg.leftSE.ringId = this.leftSE.ringId
+    // FIXME: this breaks the tests. It shouldn't.
+    // r.isExteriorRing = l.isExteriorRing = se.isExteriorRing
+
+    return [this.rightSE, newSeg.leftSE]
   }
 }
 

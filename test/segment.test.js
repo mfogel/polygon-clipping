@@ -2,7 +2,7 @@
 
 const Segment = require('../src/segment')
 
-describe('segment constructor', () => {
+describe('constructor', () => {
   test('cannot build segment with identical points', () => {
     const pt = [0, 5]
     expect(() => new Segment(pt, pt)).toThrow()
@@ -34,6 +34,62 @@ describe('segment constructor', () => {
     const seg = new Segment([0, 0], [1, 0], false)
     expect(seg.leftSE.isSubject).toBeFalsy()
     expect(seg.rightSE.isSubject).toBeFalsy()
+  })
+})
+
+describe('clone', () => {
+  test('general', () => {
+    const [pt1, pt2] = [[0, 5], [10, 15]]
+    const seg = new Segment(pt1, pt2)
+    const clone = seg.clone()
+    expect(clone.leftSE).not.toBe(seg.leftSE)
+    expect(clone.rightSE).not.toBe(seg.rightSE)
+    expect(clone.leftSE.point).toEqual(seg.leftSE.point)
+    expect(clone.rightSE.point).toEqual(seg.rightSE.point)
+  })
+})
+
+describe('attempt split', () => {
+  test('nope: on point out far away', () => {
+    const seg = new Segment([0, 0], [10, 10])
+    const pt = [2342, -234.324]
+    expect(seg.attemptSplit(pt)).toEqual([])
+  })
+  test('nope: on point colinear but not on', () => {
+    const seg = new Segment([0, 0], [10, 10])
+    const pt = [20, 20]
+    expect(seg.attemptSplit(pt)).toEqual([])
+  })
+  test('nope: on point on endpoint', () => {
+    const seg = new Segment([0, 0], [10, 10])
+    const pt = [10, 10]
+    expect(seg.attemptSplit(pt)).toEqual([])
+  })
+  test('yep: on interior point 1', () => {
+    const seg = new Segment([0, 0], [10, 10], true)
+    const pt = [5, 5]
+    const evts = seg.attemptSplit(pt)
+    expect(evts[0].segment).toBe(seg)
+    expect(evts[0].point).toEqual(pt)
+    expect(evts[0].isRight).toBeTruthy()
+    expect(evts[1].segment).not.toBe(seg)
+    expect(evts[1].point).toEqual(pt)
+    expect(evts[1].isLeft).toBeTruthy()
+    expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
+    expect(evts[1].isSubject).toBeTruthy()
+  })
+  test('yep: on interior point 2', () => {
+    const seg = new Segment([0, 10], [10, 0], false)
+    const pt = [5, 5]
+    const evts = seg.attemptSplit(pt)
+    expect(evts[0].segment).toBe(seg)
+    expect(evts[0].point).toEqual(pt)
+    expect(evts[0].isRight).toBeTruthy()
+    expect(evts[1].segment).not.toBe(seg)
+    expect(evts[1].point).toEqual(pt)
+    expect(evts[1].isLeft).toBeTruthy()
+    expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
+    expect(evts[1].isSubject).toBeFalsy()
   })
 })
 
@@ -266,5 +322,26 @@ describe('is an endpoint', () => {
   test('nope', () => {
     expect(seg.isAnEndpoint([-34, 46])).toBeFalsy()
     expect(seg.isAnEndpoint([0, 0])).toBeFalsy()
+  })
+})
+
+describe('is in interior', () => {
+  const p1 = [-1, -1]
+  const p2 = [1, 1]
+  const seg = new Segment(p1, p2)
+
+  test('yup', () => {
+    expect(seg.isInInterior([0, 0])).toBeTruthy()
+    expect(seg.isInInterior([0.5, 0.5])).toBeTruthy()
+  })
+
+  test('nope', () => {
+    expect(seg.isInInterior(p1)).toBeFalsy()
+    expect(seg.isInInterior(p2)).toBeFalsy()
+    expect(seg.isInInterior([-234, 23421])).toBeFalsy()
+  })
+
+  test('nope really close', () => {
+    expect(seg.isInInterior([0, 0.0000001])).toBeFalsy()
   })
 })
