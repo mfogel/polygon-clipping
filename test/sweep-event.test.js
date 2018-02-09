@@ -48,14 +48,6 @@ describe('sweep event', () => {
     expect(s2.isAbove([0, 0])).toBeFalsy()
     expect(s2.isAbove([5, -1])).toBeTruthy()
   })
-
-  test('isVertical', () => {
-    const s1 = new Segment([0, 0], [0, 1]).leftSE
-    const s2 = new Segment([0, 0], [0.0001, 1]).leftSE
-
-    expect(s1.isVertical()).toBeTruthy()
-    expect(s2.isVertical()).toBeFalsy()
-  })
 })
 
 describe('sweep event compare', () => {

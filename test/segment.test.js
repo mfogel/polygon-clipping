@@ -37,6 +37,47 @@ describe('segment constructor', () => {
   })
 })
 
+describe('simple properties - mins, maxes, bbox, vector, points, horizontal/vertical', () => {
+  test('general', () => {
+    const seg = new Segment([1, 2], [3, 4])
+    expect(seg.xmin).toBe(1)
+    expect(seg.xmax).toBe(3)
+    expect(seg.ymin).toBe(2)
+    expect(seg.ymax).toBe(4)
+    expect(seg.bbox).toEqual([[1, 2], [3, 4]])
+    expect(seg.vector).toEqual([2, 2])
+    expect(seg.points).toEqual([[1, 2], [3, 4]])
+    expect(seg.isHorizontal).toBeFalsy()
+    expect(seg.isVertical).toBeFalsy()
+  })
+
+  test('horizontal', () => {
+    const seg = new Segment([1, 4], [3, 4])
+    expect(seg.xmin).toBe(1)
+    expect(seg.xmax).toBe(3)
+    expect(seg.ymin).toBe(4)
+    expect(seg.ymax).toBe(4)
+    expect(seg.bbox).toEqual([[1, 4], [3, 4]])
+    expect(seg.vector).toEqual([2, 0])
+    expect(seg.points).toEqual([[1, 4], [3, 4]])
+    expect(seg.isHorizontal).toBeTruthy()
+    expect(seg.isVertical).toBeFalsy()
+  })
+
+  test('vertical', () => {
+    const seg = new Segment([3, 2], [3, 4])
+    expect(seg.xmin).toBe(3)
+    expect(seg.xmax).toBe(3)
+    expect(seg.ymin).toBe(2)
+    expect(seg.ymax).toBe(4)
+    expect(seg.bbox).toEqual([[3, 2], [3, 4]])
+    expect(seg.vector).toEqual([0, 2])
+    expect(seg.points).toEqual([[3, 2], [3, 4]])
+    expect(seg.isHorizontal).toBeFalsy()
+    expect(seg.isVertical).toBeTruthy()
+  })
+})
+
 describe('segment getOtherSE', () => {
   test('left to right', () => {
     const seg = new Segment([0, 0], [1, 0], true)
@@ -62,18 +103,21 @@ describe('intersection', () => {
     const a = new Segment([0, 0], [1, 1])
     const b = new Segment([1, 0], [2, 2])
     expect(a.getIntersections(b)).toEqual([])
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('no intersections 2', () => {
     const a = new Segment([0, 0], [1, 1])
     const b = new Segment([1, 0], [10, 2])
     expect(a.getIntersections(b)).toEqual([])
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('no intersections 3', () => {
     const a = new Segment([2, 2], [3, 3])
     const b = new Segment([0, 6], [2, 4])
     expect(a.getIntersections(b)).toEqual([])
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('1 intersection', () => {
@@ -81,6 +125,7 @@ describe('intersection', () => {
     const b = new Segment([1, 0], [0, 1])
     const inters = [[0.5, 0.5]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('shared point 1', () => {
@@ -88,6 +133,7 @@ describe('intersection', () => {
     const b = new Segment([0, 1], [0, 0])
     const inters = [[0, 0]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('shared point 2', () => {
@@ -95,6 +141,7 @@ describe('intersection', () => {
     const b = new Segment([0, 1], [1, 1])
     const inters = [[1, 1]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('T-crossing', () => {
@@ -102,6 +149,7 @@ describe('intersection', () => {
     const b = new Segment([0.5, 0.5], [1, 0])
     const inters = [[0.5, 0.5]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('full overlap', () => {
@@ -109,6 +157,7 @@ describe('intersection', () => {
     const b = new Segment([1, 1], [5, 5])
     const inters = [[1, 1], [5, 5]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(inters)
   })
 
   test('shared point + overlap', () => {
@@ -116,6 +165,7 @@ describe('intersection', () => {
     const b = new Segment([1, 1], [5, 5])
     const inters = [[1, 1], [5, 5]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(inters)
   })
 
   test('mutual overlap', () => {
@@ -123,6 +173,7 @@ describe('intersection', () => {
     const b = new Segment([0, 0], [5, 5])
     const inters = [[3, 3], [5, 5]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(inters)
   })
 
   test('full overlap', () => {
@@ -130,6 +181,7 @@ describe('intersection', () => {
     const b = new Segment([0, 0], [1, 1])
     const inters = [[0, 0], [1, 1]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(inters)
   })
 
   test('full overlap, orientation', () => {
@@ -137,58 +189,67 @@ describe('intersection', () => {
     const b = new Segment([0, 0], [1, 1])
     const inters = [[0, 0], [1, 1]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(inters)
   })
 
-  test('collinear, shared point', () => {
+  test('colinear, shared point', () => {
     const a = new Segment([0, 0], [1, 1])
     const b = new Segment([1, 1], [2, 2])
     const inters = [[1, 1]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
-  test('collinear, shared other point', () => {
+  test('colinear, shared other point', () => {
     const a = new Segment([1, 1], [0, 0])
     const b = new Segment([1, 1], [2, 2])
     const inters = [[1, 1]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
-  test('collinear, one encloses other', () => {
+  test('colinear, one encloses other', () => {
     const a = new Segment([0, 0], [4, 4])
     const b = new Segment([1, 1], [2, 2])
     const inters = [[1, 1], [2, 2]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(inters)
   })
 
-  test('collinear, one encloses other 2', () => {
+  test('colinear, one encloses other 2', () => {
     const a = new Segment([4, 0], [0, 4])
     const b = new Segment([3, 1], [1, 3])
     const inters = [[1, 3], [3, 1]]
     expect(a.getIntersections(b)).toEqual(inters)
+    expect(a.getOverlap(b)).toEqual(inters)
   })
 
-  test('collinear, no overlap', () => {
+  test('colinear, no overlap', () => {
     const a = new Segment([0, 0], [1, 1])
     const b = new Segment([2, 2], [4, 4])
     expect(a.getIntersections(b)).toEqual([])
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('parallel', () => {
     const a = new Segment([0, 0], [1, 1])
     const b = new Segment([0, -1], [1, 0])
     expect(a.getIntersections(b)).toEqual([])
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('parallel, orientation', () => {
     const a = new Segment([1, 1], [0, 0])
     const b = new Segment([0, -1], [1, 0])
     expect(a.getIntersections(b)).toEqual([])
+    expect(a.getOverlap(b)).toEqual(null)
   })
 
   test('parallel, position', () => {
     const a = new Segment([0, -1], [1, 0])
     const b = new Segment([0, 0], [1, 1])
     expect(a.getIntersections(b)).toEqual([])
+    expect(a.getOverlap(b)).toEqual(null)
   })
 })
 

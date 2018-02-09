@@ -1,4 +1,4 @@
-const { getBbox, getBboxOverlap, getOtherCorners } = require('./bbox')
+const { getBboxOverlap, getOtherCorners } = require('./bbox')
 const {
   arePointsColinear,
   arePointsEqual,
@@ -20,6 +20,44 @@ class Segment {
     this.rightSE = new SweepEvent(rp, this)
   }
 
+  get xmin () {
+    return this.leftSE.point[0]
+  }
+  get xmax () {
+    return this.rightSE.point[0]
+  }
+  get ymin () {
+    return Math.min(this.leftSE.point[1], this.rightSE.point[1])
+  }
+  get ymax () {
+    return Math.max(this.leftSE.point[1], this.rightSE.point[1])
+  }
+
+  get bbox () {
+    return [[this.xmin, this.ymin], [this.xmax, this.ymax]]
+  }
+
+  /* A vector from the left point to the right */
+  get vector () {
+    return [
+      this.rightSE.point[0] - this.leftSE.point[0],
+      this.rightSE.point[1] - this.leftSE.point[1]
+    ]
+  }
+
+  get isVertical () {
+    return this.leftSE.point[0] === this.rightSE.point[0]
+  }
+
+  get isHorizontal () {
+    return this.leftSE.point[1] === this.rightSE.point[1]
+  }
+
+  /* an array of left point, right point */
+  get points () {
+    return [this.leftSE.point, this.rightSE.point]
+  }
+
   getOtherSE (se) {
     if (se === this.leftSE) return this.rightSE
     if (se === this.rightSE) return this.leftSE
@@ -27,10 +65,35 @@ class Segment {
   }
 
   isAnEndpoint (point) {
-    return (
-      arePointsEqual(this.leftSE.point, point) ||
-      arePointsEqual(this.rightSE.point, point)
-    )
+    return this.points.some(pt => arePointsEqual(pt, point))
+  }
+
+  /**
+   * Given another segment, returns an array of intersection points
+   * representing the overlap, if it exists, between the two segments.
+   * The overlap will be an array of two points, ordered as the
+   * sweep line would encounter them.
+   * If no overlap exists, null will be returned.
+   * If the two segments intersect at just a point, they are not
+   * considered to be overlapping.
+   */
+  getOverlap (other) {
+    // If bboxes don't overlap, there can't be any overlap
+    const bboxOverlap = getBboxOverlap(this.bbox, other.bbox)
+    if (bboxOverlap === null) return null
+
+    // parallel segments that aren't colinear can't intersect
+    if (!arePointsColinear(...this.points, ...other.points)) return null
+
+    // colinear segments that have bboxes that overlap on just a point
+    // only intersect at that point - there's no overlap
+    if (arePointsEqual(bboxOverlap[0], bboxOverlap[1])) return null
+
+    // We have colinear segments with overlapping bboxes - thus the
+    // segments overlap. The only question is which two oposing corners
+    // of the bbox overlap represent the segment overlap.
+    const goesUpAndToTheRight = this.leftSE.point[1] <= this.rightSE.point[1]
+    return goesUpAndToTheRight ? bboxOverlap : getOtherCorners(bboxOverlap)
   }
 
   /**
@@ -42,38 +105,28 @@ class Segment {
    *                  Will be ordered as sweep line would encounter them.
    */
   getIntersections (other) {
-    const [a1, a2] = [this.leftSE.point, this.rightSE.point]
-    const [b1, b2] = [other.leftSE.point, other.rightSE.point]
-
     // If bboxes don't overlap, there can't be any intersections
-    const [aBbox, bBbox] = [getBbox(a1, a2), getBbox(b1, b2)]
-    const bboxOverlap = getBboxOverlap(aBbox, bBbox)
+    const bboxOverlap = getBboxOverlap(this.bbox, other.bbox)
     if (bboxOverlap === null) return []
 
-    const va = [a2[0] - a1[0], a2[1] - a1[1]]
-    const vb = [b2[0] - b1[0], b2[1] - b1[1]]
+    const [va, vb] = [this.vector, other.vector]
 
     if (areVectorsParallel(va, vb)) {
-      // parallel segments that aren't colinear can't intersect
-      if (!arePointsColinear(a1, a2, b1, b2)) return []
+      const overlap = this.getOverlap(other)
+      if (overlap !== null) return overlap
 
-      // colinear segments with just a point of bbox overlap
-      // that point must be the one and only intersection
-      if (arePointsEqual(...bboxOverlap)) return [bboxOverlap[0]]
-
-      // We have colinear segments with overlap - thus two intersections.
-      // The only question is which two oposing corners of the overlap bbox
-      // are the intersections.
-      const goesUpAndToTheRight = aBbox.some(pt => arePointsEqual(a1, pt))
-      return goesUpAndToTheRight ? bboxOverlap : getOtherCorners(bboxOverlap)
+      // check to see if they just touch on an endpoint
+      if (this.isAnEndpoint(other.leftSE.point)) return [other.leftSE.point]
+      if (this.isAnEndpoint(other.rightSE.point)) return [other.rightSE.point]
     }
 
     // General case with non-parallel segments.
-    const krossVaVb = crossProduct(va, vb)
+    const [a1, a2, b1, b2] = [...this.points, ...other.points]
     const ve = [b1[0] - a1[0], b1[1] - a1[1]]
+    const kross = crossProduct(va, vb)
 
     // not on line segment a
-    const s = crossProduct(ve, vb) / krossVaVb
+    const s = crossProduct(ve, vb) / kross
     if (s < 0 || s > 1) return []
 
     // on an endpoint of line segment a
@@ -81,7 +134,7 @@ class Segment {
     if (s === 1) return [a2]
 
     // not on line segment b
-    const t = crossProduct(ve, va) / krossVaVb
+    const t = crossProduct(ve, va) / kross
     if (t < 0 || t > 1) return []
 
     // on an endpoint of line segment b

@@ -79,10 +79,6 @@ class SweepEvent {
     else return kross < 0 ? 1 : -1
   }
 
-  isVertical () {
-    return this.point[0] === this.otherSE.point[0]
-  }
-
   get isLeft () {
     return this === this.segment.leftSE
   }
@@ -173,7 +169,7 @@ class SweepEvent {
       if (this.isSubject === this.prevEvent.isSubject) {
         return this.prevEvent.isInsideOther
       } else {
-        return this.prevEvent.isVertical()
+        return this.prevEvent.segment.isVertical
           ? !this.prevEvent.sweepLineEnters
           : this.prevEvent.sweepLineEnters
       }
