@@ -345,3 +345,31 @@ describe('is in interior', () => {
     expect(seg.isInInterior([0, 0.0000001])).toBeFalsy()
   })
 })
+
+describe('is coincident with', () => {
+  test('yup', () => {
+    const a = new Segment([0, -1], [1, 0])
+    const b = new Segment([0, -1], [1, 0])
+    expect(a.isCoincidentWith(b)).toBeTruthy()
+  })
+
+  describe('nope', () => {
+    test('nowhere near', () => {
+      const a = new Segment([5, -1], [20, 10])
+      const b = new Segment([0, -1], [1, 0])
+      expect(a.isCoincidentWith(b)).toBeFalsy()
+    })
+
+    test('intersect', () => {
+      const a = new Segment([-1, 0], [0, 1])
+      const b = new Segment([0, -1], [1, 0])
+      expect(a.isCoincidentWith(b)).toBeFalsy()
+    })
+
+    test('colinear with some overlap but not total', () => {
+      const a = new Segment([0, -1], [1, 0])
+      const b = new Segment([0, 0], [1, 0])
+      expect(a.isCoincidentWith(b)).toBeFalsy()
+    })
+  })
+})

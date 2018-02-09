@@ -1,24 +1,22 @@
 const Tree = require('avl')
-const { arePointsEqual } = require('./point')
 const compareSegments = require('./compare-segments')
+const { arePointsEqual } = require('./point')
 
 const possibleIntersection = (se1, se2) => {
   const inters = se1.segment.getIntersections(se2.segment)
-  const newEvents = []
-  inters.forEach(intersection =>
-    [se1, se2].forEach(evt =>
-      evt.segment.attemptSplit(intersection).forEach(evt => newEvents.push(evt))
-    )
-  )
-  return newEvents
-}
-
-const checkCoincidence = (se1, se2) => {
-  const overlap = se1.segment.getOverlap(se2.segment)
-  if (overlap !== null && arePointsEqual(overlap[0], se1.point)) {
-    se1.registerCoincidentEvent(se2, true)
-    se2.registerCoincidentEvent(se1, false)
+  let splitOn
+  if (inters.length === 0) return []
+  if (inters.length === 1) splitOn = inters[0]
+  if (inters.length === 2) {
+    // we only need to split on first intersection that's not coincident
+    // with the current event. The next intersection one will be handled
+    // in another pass of the event loop.
+    splitOn = arePointsEqual(se1.point, inters[0]) ? inters[1] : inters[0]
   }
+  return [
+    ...se1.segment.attemptSplit(splitOn),
+    ...se2.segment.attemptSplit(splitOn)
+  ]
 }
 
 module.exports = eventQueue => {
@@ -39,18 +37,23 @@ module.exports = eventQueue => {
 
       event.registerPrevEvent(prevEvent)
 
-      if (nextEvent) {
-        eventQueue.push(...possibleIntersection(event, nextEvent))
-        checkCoincidence(event, nextEvent)
-      }
-
-      if (prevEvent) {
-        eventQueue.push(...possibleIntersection(prevEvent, event))
-        checkCoincidence(prevEvent, event)
-      }
+      if (nextEvent) eventQueue.push(...possibleIntersection(event, nextEvent))
+      if (prevEvent) eventQueue.push(...possibleIntersection(prevEvent, event))
     }
 
-    if (!event.isLeft) sweepLine.remove(event.otherSE)
+    if (event.isRight) {
+      const leftEvent = event.otherSE
+      const leftNode = sweepLine.find(leftEvent)
+      const nextNode = sweepLine.next(leftNode)
+      const nextEvent = nextNode ? nextNode.key : null
+
+      if (nextEvent && leftEvent.segment.isCoincidentWith(nextEvent.segment)) {
+        leftEvent.registerCoincidentEvent(nextEvent, true)
+        nextEvent.registerCoincidentEvent(leftEvent, false)
+      }
+
+      sweepLine.remove(leftEvent)
+    }
   }
 
   return sortedEvents

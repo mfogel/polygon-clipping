@@ -81,6 +81,13 @@ class Segment {
     return false
   }
 
+  isCoincidentWith (other) {
+    return (
+      arePointsEqual(this.leftSE.point, other.leftSE.point) &&
+      arePointsEqual(this.rightSE.point, other.rightSE.point)
+    )
+  }
+
   /**
    * Given another segment, returns an array of intersection points
    * representing the overlap, if it exists, between the two segments.
