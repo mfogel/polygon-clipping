@@ -4,7 +4,7 @@ const { arePointsEqual } = require('./point')
 
 // TODO: move all these writes to Segment internals within the class
 
-module.exports = function divideSegment (se, p, queue) {
+module.exports = function divideSegment (se, p) {
   // construct with throwaway points
   const newSeg = new Segment([0, 0], [1, 1], se.isSubject)
 
@@ -24,6 +24,5 @@ module.exports = function divideSegment (se, p, queue) {
   // FIXME: this breaks the tests. It shouldn't.
   // r.isExteriorRing = l.isExteriorRing = se.isExteriorRing
 
-  queue.push(l, r)
-  return queue
+  return [l, r]
 }

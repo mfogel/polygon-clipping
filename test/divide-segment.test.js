@@ -18,40 +18,29 @@ describe('divide segments', () => {
   test('divide 2 segments', () => {
     const se1 = new Segment([0, 0], [5, 5], true).leftSE
     const se2 = new Segment([0, 5], [5, 0], false).leftSE
-    const q = new EventQueue()
-    q.push(se1, se2)
 
     const iter = se1.segment.getIntersections(se2.segment)
-    divideSegment(se1, iter[0], q)
-    divideSegment(se2, iter[0], q)
-
-    expect(q.getLength()).toBe(6)
+    expect(divideSegment(se1, iter[0]).length).toBe(2)
+    expect(divideSegment(se2, iter[0]).length).toBe(2)
   })
 
   test('possible intersections', () => {
-    const q = new EventQueue()
-
     const se1 = new Segment(s[0][3], s[0][2], true).leftSE
     const se2 = new Segment(c[0][0], c[0][1], false).leftSE
 
-    expect(possibleIntersection(se1, se2, q)).toBeFalsy()
-    expect(q.getLength()).toBe(4)
+    const newEvents = possibleIntersection(se1, se2)
+    expect(newEvents.length).toBe(4)
 
-    let e = q.pop()
-    expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherSE.point).toEqual([56, 181])
+    const inter = [100.79403384562251, 233.41363754101192]
+    newEvents.forEach(e => expect(e.point).toEqual(inter))
 
-    e = q.pop()
-    expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherSE.point).toEqual([16, 282])
-
-    e = q.pop()
-    expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherSE.point).toEqual([153, 203.5])
-
-    e = q.pop()
-    expect(e.point).toEqual([100.79403384562251, 233.41363754101192])
-    expect(e.otherSE.point).toEqual([153, 294.5])
+    // order doesn't matter
+    const otherPoints = [s[0][3], s[0][2], c[0][0], c[0][1]]
+    otherPoints.forEach(op =>
+      expect(
+        newEvents.filter(e => arePointsEqual(e.otherSE.point, op)).length
+      ).toBe(1)
+    )
   })
 
   test('possible intersections on 2 polygons', () => {

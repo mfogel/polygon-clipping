@@ -22,7 +22,8 @@ module.exports = eventQueue => {
       event.registerPrevEvent(prevEvent)
 
       if (nextEvent) {
-        possibleIntersection(event, nextEvent, eventQueue)
+        eventQueue.push(...possibleIntersection(event, nextEvent, eventQueue))
+
         const overlap = event.segment.getOverlap(nextEvent.segment)
         if (overlap !== null && arePointsEqual(overlap[0], event.point)) {
           event.registerCoincidentEvent(nextEvent, true)
@@ -31,7 +32,8 @@ module.exports = eventQueue => {
       }
 
       if (prevEvent) {
-        possibleIntersection(prevEvent, event, eventQueue)
+        eventQueue.push(...possibleIntersection(prevEvent, event))
+
         const overlap = prevEvent.segment.getOverlap(event.segment)
         if (overlap !== null && arePointsEqual(overlap[0], prevEvent.point)) {
           prevEvent.registerCoincidentEvent(event, true)
