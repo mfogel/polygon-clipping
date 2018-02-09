@@ -6,14 +6,14 @@ const { arePointsEqual } = require('./point')
 
 module.exports = function divideSegment (se, p, queue) {
   // construct with throwaway points
-  const newSeg = new Segment([0, 0], [1, 1])
+  const newSeg = new Segment([0, 0], [1, 1], se.isSubject)
 
-  const l = new SweepEvent(p, se.isSubject, newSeg)
+  const l = new SweepEvent(p, newSeg)
   newSeg.leftSE = l
   newSeg.rightSE = se.otherSE
   se.otherSE.segment = newSeg
 
-  const r = new SweepEvent(p, se.isSubject, se.segment)
+  const r = new SweepEvent(p, se.segment)
   se.segment.rightSE = r
 
   if (arePointsEqual(se.point, se.otherSE.point)) {

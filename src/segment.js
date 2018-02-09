@@ -7,9 +7,11 @@ class Segment {
       throw new Error('Unable to build segment for identical points')
     }
 
+    this.isSubject = isSubject
+
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
-    this.leftSE = new SweepEvent(lp, isSubject, this)
-    this.rightSE = new SweepEvent(rp, isSubject, this)
+    this.leftSE = new SweepEvent(lp, this)
+    this.rightSE = new SweepEvent(rp, this)
   }
 
   getOtherSE (se) {

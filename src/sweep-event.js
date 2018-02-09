@@ -42,9 +42,8 @@ class SweepEvent {
     return 0
   }
 
-  constructor (point, isSubject, segment) {
+  constructor (point, segment) {
     this.point = point
-    this.isSubject = isSubject
     this.segment = segment
 
     // TODO: I am skeptical about these.
@@ -94,6 +93,10 @@ class SweepEvent {
 
   get otherSE () {
     return this.segment.getOtherSE(this)
+  }
+
+  get isSubject () {
+    return this.segment.isSubject
   }
 
   isCoincidenceWinner () {
