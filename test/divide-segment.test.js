@@ -2,7 +2,6 @@
 
 const EventQueue = require('../src/event-queue')
 const Segment = require('../src/segment')
-const intersection = require('../src/segment-intersection')
 const { arePointsEqual } = require('../src/point')
 const divideSegment = require('../src/divide-segment')
 const subdivideSegments = require('../src/subdivide-segments')
@@ -22,13 +21,7 @@ describe('divide segments', () => {
     const q = new EventQueue()
     q.push(se1, se2)
 
-    const iter = intersection(
-      se1.point,
-      se1.otherSE.point,
-      se2.point,
-      se2.otherSE.point
-    )
-
+    const iter = se1.segment.getIntersections(se2.segment)
     divideSegment(se1, iter[0], q)
     divideSegment(se2, iter[0], q)
 

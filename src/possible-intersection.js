@@ -1,5 +1,4 @@
 const divideSegment = require('./divide-segment')
-const intersection = require('./segment-intersection')
 const { arePointsEqual } = require('./point')
 const SweepEvent = require('./sweep-event')
 
@@ -13,12 +12,7 @@ module.exports = (se1, se2, queue) => {
   // did cost us half a day, so I'll leave it
   // out of respect
   // if (se1.isSubject === se2.isSubject) return;
-  const inters = intersection(
-    se1.point,
-    se1.otherSE.point,
-    se2.point,
-    se2.otherSE.point
-  )
+  const inters = se1.segment.getIntersections(se2.segment)
 
   if (inters.length === 1) {
     // if the intersection point is not an endpoint of se1
