@@ -5,7 +5,7 @@
  *
  */
 
-const isInBbox = (point, bbox) => {
+const isInBbox = (bbox, point) => {
   const [[xmin, ymin], [xmax, ymax], [xpt, ypt]] = [...bbox, point]
   return xmin <= xpt && xpt <= xmax && ymin <= ypt && ypt <= ymax
 }

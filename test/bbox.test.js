@@ -38,19 +38,19 @@ describe('get bbox', () => {
 describe('is in bbox', () => {
   test('outside', () => {
     const bbox = [[1, 2], [5, 6]]
-    expect(isInBbox([0, 3], bbox)).toBeFalsy()
-    expect(isInBbox([3, 30], bbox)).toBeFalsy()
-    expect(isInBbox([3, -30], bbox)).toBeFalsy()
-    expect(isInBbox([9, 3], bbox)).toBeFalsy()
+    expect(isInBbox(bbox, [0, 3])).toBeFalsy()
+    expect(isInBbox(bbox, [3, 30])).toBeFalsy()
+    expect(isInBbox(bbox, [3, -30])).toBeFalsy()
+    expect(isInBbox(bbox, [9, 3])).toBeFalsy()
   })
 
   test('inside', () => {
     const bbox = [[1, 2], [5, 6]]
-    expect(isInBbox([1, 2], bbox)).toBeTruthy()
-    expect(isInBbox([5, 6], bbox)).toBeTruthy()
-    expect(isInBbox([1, 6], bbox)).toBeTruthy()
-    expect(isInBbox([5, 2], bbox)).toBeTruthy()
-    expect(isInBbox([3, 4], bbox)).toBeTruthy()
+    expect(isInBbox(bbox, [1, 2])).toBeTruthy()
+    expect(isInBbox(bbox, [5, 6])).toBeTruthy()
+    expect(isInBbox(bbox, [1, 6])).toBeTruthy()
+    expect(isInBbox(bbox, [5, 2])).toBeTruthy()
+    expect(isInBbox(bbox, [3, 4])).toBeTruthy()
   })
 })
 

@@ -1,13 +1,10 @@
 const SweepEvent = require('./sweep-event')
-const { arePointsColinear } = require('./point')
 
 module.exports = function compareSegments (le1, le2) {
   if (le1 === le2) return 0
-
-  const pts = [le1.point, le1.otherSE.point, le2.point, le2.otherSE.point]
   const [seg1, seg2] = [le1.segment, le2.segment]
 
-  if (!arePointsColinear(...pts)) {
+  if (!seg1.isColinearWith(seg2)) {
     // If they share their left endpoint use the right endpoint to sort
     if (le1.hasSamePoint(le2)) {
       return seg1.isPointBelow(le2.otherSE.point) ? -1 : 1
