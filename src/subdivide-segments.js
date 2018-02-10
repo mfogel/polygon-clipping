@@ -1,5 +1,4 @@
-const Tree = require('avl')
-const compareSegments = require('./compare-segments')
+const SweepLine = require('./sweep-line')
 
 const possibleIntersection = (se1, se2) => {
   const inters = se1.segment.getIntersections(se2.segment)
@@ -19,7 +18,7 @@ const possibleIntersection = (se1, se2) => {
 }
 
 module.exports = eventQueue => {
-  const sweepLine = new Tree(compareSegments)
+  const sweepLine = new SweepLine()
   const sortedEvents = []
 
   while (!eventQueue.isEmpty) {
@@ -27,12 +26,9 @@ module.exports = eventQueue => {
     sortedEvents.push(event)
 
     if (event.isLeft) {
-      const eventNode = sweepLine.insert(event)
-      const prevNode = sweepLine.prev(eventNode)
-      const nextNode = sweepLine.next(eventNode)
-
-      const prevEvent = prevNode ? prevNode.key : null
-      const nextEvent = nextNode ? nextNode.key : null
+      const node = sweepLine.insert(event)
+      const prevEvent = sweepLine.prevKey(node)
+      const nextEvent = sweepLine.nextKey(node)
 
       event.registerPrevEvent(prevEvent)
 
@@ -42,9 +38,8 @@ module.exports = eventQueue => {
 
     if (event.isRight) {
       const leftEvent = event.otherSE
-      const leftNode = sweepLine.find(leftEvent)
-      const nextNode = sweepLine.next(leftNode)
-      const nextEvent = nextNode ? nextNode.key : null
+      const node = sweepLine.find(leftEvent)
+      const nextEvent = sweepLine.nextKey(node)
 
       if (nextEvent && leftEvent.segment.isCoincidentWith(nextEvent.segment)) {
         leftEvent.registerCoincidentEvent(nextEvent, true)

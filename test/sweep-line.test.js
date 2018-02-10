@@ -1,43 +1,91 @@
 /* eslint-env jest */
 
-const Tree = require('avl')
-const compareSegments = require('../src/compare-segments')
-const Segment = require('../src/segment')
+const SweepLine = require('../src/sweep-line')
+
+const comparator = (a, b) => {
+  if (a === b) return 0
+  return a < b ? -1 : 1
+}
 
 describe('sweep line', () => {
-  const s = [[[16, 282], [298, 359], [153, 203.5], [16, 282]]]
-  const c = [[[56, 181], [153, 294.5], [241.5, 229.5], [108.5, 120], [56, 181]]]
+  test('fill it up then empty it out', () => {
+    const sl = new SweepLine(comparator)
+    const k1 = 4
+    const k2 = 9
+    const k3 = 13
+    const k4 = 44
 
-  test('general', () => {
-    const EF = new Segment(s[0][0], s[0][2], true).leftSE
-    const EG = new Segment(s[0][0], s[0][1], true).leftSE
+    let n1 = sl.insert(k1)
+    let n2 = sl.insert(k2)
+    let n4 = sl.insert(k4)
+    let n3 = sl.insert(k3)
 
-    const tree = new Tree(compareSegments)
-    tree.insert(EF)
-    tree.insert(EG)
+    expect(sl.find(k1)).toBe(n1)
+    expect(sl.find(k2)).toBe(n2)
+    expect(sl.find(k3)).toBe(n3)
+    expect(sl.find(k4)).toBe(n4)
 
-    expect(tree.find(EF).key).toBe(EF)
-    expect(tree.minNode().key).toBe(EF)
-    expect(tree.maxNode().key).toBe(EG)
+    expect(sl.prevKey(n1)).toBeNull()
+    expect(sl.nextKey(n1)).toBe(k2)
 
-    let it = tree.find(EF)
-    expect(tree.next(it).key).toBe(EG)
-    it = tree.find(EG)
-    expect(tree.prev(it).key).toBe(EF)
+    expect(sl.prevKey(n2)).toBe(k1)
+    expect(sl.nextKey(n2)).toBe(k3)
 
-    const DA = new Segment(c[0][0], c[0][2], true).leftSE
-    const DC = new Segment(c[0][0], c[0][1], true).leftSE
+    expect(sl.prevKey(n3)).toBe(k2)
+    expect(sl.nextKey(n3)).toBe(k4)
 
-    tree.insert(DA)
-    tree.insert(DC)
+    expect(sl.prevKey(n4)).toBe(k3)
+    expect(sl.nextKey(n4)).toBeNull()
 
-    let node = tree.minNode()
-    expect(node.key).toBe(DA)
-    node = tree.next(node)
-    expect(node.key).toBe(DC)
-    node = tree.next(node)
-    expect(node.key).toBe(EF)
-    node = tree.next(node)
-    expect(node.key).toBe(EG)
+    sl.remove(k2)
+    expect(sl.find(k2)).toBeNull()
+
+    expect(() => sl.nextKey(n1)).toThrow()
+    expect(() => sl.nextKey(n2)).toThrow()
+    expect(() => sl.nextKey(n3)).toThrow()
+    expect(() => sl.nextKey(n4)).toThrow()
+
+    n1 = sl.find(k1)
+    n3 = sl.find(k3)
+    n4 = sl.find(k4)
+
+    expect(sl.prevKey(n1)).toBeNull()
+    expect(sl.nextKey(n1)).toBe(k3)
+
+    expect(sl.prevKey(n3)).toBe(k1)
+    expect(sl.nextKey(n3)).toBe(k4)
+
+    expect(sl.prevKey(n4)).toBe(k3)
+    expect(sl.nextKey(n4)).toBeNull()
+
+    sl.remove(k4)
+    expect(sl.find(k4)).toBeNull()
+
+    expect(() => sl.prevKey(n1)).toThrow()
+    expect(() => sl.prevKey(n3)).toThrow()
+    expect(() => sl.prevKey(n4)).toThrow()
+
+    n1 = sl.find(k1)
+    n3 = sl.find(k3)
+
+    expect(sl.prevKey(n1)).toBeNull()
+    expect(sl.nextKey(n1)).toBe(k3)
+
+    expect(sl.prevKey(n3)).toBe(k1)
+    expect(sl.nextKey(n3)).toBeNull()
+
+    sl.remove(k1)
+    expect(sl.find(k1)).toBeNull()
+
+    expect(() => sl.nextKey(n1)).toThrow()
+    expect(() => sl.nextKey(n4)).toThrow()
+
+    n3 = sl.find(k3)
+
+    expect(sl.prevKey(n3)).toBeNull()
+    expect(sl.nextKey(n3)).toBeNull()
+
+    sl.remove(k3)
+    expect(sl.find(k3)).toBeNull()
   })
 })
