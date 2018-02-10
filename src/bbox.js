@@ -52,15 +52,20 @@ const getBboxOverlap = (b1, b2) => {
   return [[x1, y1], [x2, y2]]
 }
 
-/* Returns a box of [[xmin, ymax], [xmax, ymin]] */
-const getOtherCorners = bbox => {
-  return [[bbox[0][0], bbox[1][1]], [bbox[1][0], bbox[0][1]]]
+/* Returns a list of unique corners.
+ * Will contain one, two or four points */
+const getUniqueCorners = bbox => {
+  const [[xmin, ymin], [xmax, ymax]] = bbox
+  if (xmin === xmax && ymin === ymax) return [[xmin, ymin]]
+  if (xmin === xmax) return [[xmin, ymin], [xmin, ymax]]
+  if (ymin === ymax) return [[xmin, ymin], [xmax, ymin]]
+  return [[xmin, ymin], [xmin, ymax], [xmax, ymin], [xmax, ymax]]
 }
 
 module.exports = {
   doBboxesOverlap,
   getBbox,
   getBboxOverlap,
-  getOtherCorners,
+  getUniqueCorners,
   isInBbox
 }

@@ -1,4 +1,4 @@
-const { isInBbox, getBboxOverlap, getOtherCorners } = require('./bbox')
+const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
 const { arePointsEqual, crossProduct } = require('./point')
 const SweepEvent = require('./sweep-event')
 
@@ -67,12 +67,8 @@ class Segment {
     return this.points.some(pt => arePointsEqual(pt, point))
   }
 
-  isInInterior (point) {
-    return (
-      isInBbox(this.bbox, point) &&
-      !this.isAnEndpoint(point) &&
-      this.isPointColinear(point)
-    )
+  isPointOn (point) {
+    return isInBbox(this.bbox, point) && this.isPointColinear(point)
   }
 
   isCoincidentWith (other) {
@@ -111,28 +107,18 @@ class Segment {
     const bboxOverlap = getBboxOverlap(this.bbox, other.bbox)
     if (bboxOverlap === null) return []
 
-    if (arePointsEqual(bboxOverlap[0], bboxOverlap[1])) {
-      // with bboxes that overlap at just one point, then that point
-      // is the only intersection iff:
-      //  * that point is an endpoint of either line or
-      //  * both lines are horizontal or vertical
-      const pt = bboxOverlap[0]
-      return (this.isVertical && other.isHorizontal) ||
-        (this.isHorizontal && other.isVertical) ||
-        (this.isAnEndpoint(pt) && other.isAnEndpoint(pt))
-        ? [pt]
-        : []
-    }
+    // The general algorithim doesn't handle overlapping colinear segments.
+    // Overlapping colinear segments, if present, will have intersections
+    // of one pair of opposing corners of the bbox overlap. Thus we just
+    // manually check those coordinates.
+    //
+    // Note this also handles the cases of a collapsed (just one point)
+    // bbox and semi-collapsed (a vertical or horizontal line) as well.
+    const isOnBoth = pt => this.isPointOn(pt) && other.isPointOn(pt)
+    const intersections = getUniqueCorners(bboxOverlap).filter(isOnBoth)
+    if (intersections.length > 0) return intersections
 
-    // with non-trivial bbox overlap, iff the segments are colinear then they
-    // overlap to/from one set of opposing corners of the overlap bbox. We
-    // just have to figure out if it's the ll -> ur or ul -> lr.
-    if (this.isColinearWith(other)) {
-      const goesUpAndToTheRight = this.leftSE.point[1] <= this.rightSE.point[1]
-      return goesUpAndToTheRight ? bboxOverlap : getOtherCorners(bboxOverlap)
-    }
-
-    // General case with non-parallel segments.
+    // General case for non-overlapping segments.
     // This algorithm is based on Schneider and Eberly.
     // http://www.cimec.org.ar/~ncalvo/Schneider_Eberly.pdf - pg 244
     const [a1, a2, b1, b2] = [...this.points, ...other.points]
@@ -173,7 +159,7 @@ class Segment {
    *    will be returned.
    */
   attemptSplit (point) {
-    if (!this.isInInterior(point)) return []
+    if (this.isAnEndpoint(point) || !this.isPointOn(point)) return []
 
     const newSeg = this.clone()
 
@@ -195,7 +181,7 @@ class Segment {
     let va = [point[0] - this.points[0][0], point[1] - this.points[0][1]]
     let vb = [point[0] - this.points[1][0], point[1] - this.points[1][1]]
     const kross = crossProduct(va, vb)
-    if (kross * kross < Number.EPSILON) return 0
+    if (kross * kross < Number.EPSILON * Number.EPSILON) return 0
     return kross > 0 ? 1 : -1
   }
 }

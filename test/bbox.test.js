@@ -4,7 +4,7 @@ const {
   doBboxesOverlap,
   getBbox,
   getBboxOverlap,
-  getOtherCorners,
+  getUniqueCorners,
   isInBbox
 } = require('../src/bbox')
 
@@ -161,34 +161,40 @@ describe('bbox overlap', () => {
         expect(doBboxesOverlap(b1, b2)).toBeFalsy()
         expect(getBboxOverlap(b1, b2)).toBeNull()
       })
+
       test('point overlap', () => {
         const b2 = [[6, 0], [6, 4]]
         expect(doBboxesOverlap(b1, b2)).toBeTruthy()
         expect(getBboxOverlap(b1, b2)).toEqual([[6, 4], [6, 4]])
       })
+
       test('line overlap', () => {
         const b2 = [[5, 0], [5, 9]]
         expect(doBboxesOverlap(b1, b2)).toBeTruthy()
         expect(getBboxOverlap(b1, b2)).toEqual([[5, 4], [5, 6]])
       })
     })
+
     describe('horizontal line & normal', () => {
       test('no overlap', () => {
         const b2 = [[3, 7], [6, 7]]
         expect(doBboxesOverlap(b1, b2)).toBeFalsy()
         expect(getBboxOverlap(b1, b2)).toBeNull()
       })
+
       test('point overlap', () => {
         const b2 = [[1, 6], [4, 6]]
         expect(doBboxesOverlap(b1, b2)).toBeTruthy()
         expect(getBboxOverlap(b1, b2)).toEqual([[4, 6], [4, 6]])
       })
+
       test('line overlap', () => {
         const b2 = [[4, 6], [6, 6]]
         expect(doBboxesOverlap(b1, b2)).toBeTruthy()
         expect(getBboxOverlap(b1, b2)).toEqual([[4, 6], [6, 6]])
       })
     })
+
     describe('two vertical lines', () => {
       const v1 = [[4, 4], [4, 6]]
       test('no overlap', () => {
@@ -196,11 +202,13 @@ describe('bbox overlap', () => {
         expect(doBboxesOverlap(v1, v2)).toBeFalsy()
         expect(getBboxOverlap(v1, v2)).toBeNull()
       })
+
       test('point overlap', () => {
         const v2 = [[4, 3], [4, 4]]
         expect(doBboxesOverlap(v1, v2)).toBeTruthy()
         expect(getBboxOverlap(v1, v2)).toEqual([[4, 4], [4, 4]])
       })
+
       test('line overlap', () => {
         const v2 = [[4, 3], [4, 5]]
         expect(doBboxesOverlap(v1, v2)).toBeTruthy()
@@ -214,11 +222,13 @@ describe('bbox overlap', () => {
         expect(doBboxesOverlap(h1, h2)).toBeFalsy()
         expect(getBboxOverlap(h1, h2)).toBeNull()
       })
+
       test('point overlap', () => {
         const h2 = [[7, 6], [8, 6]]
         expect(doBboxesOverlap(h1, h2)).toBeTruthy()
         expect(getBboxOverlap(h1, h2)).toEqual([[7, 6], [7, 6]])
       })
+
       test('line overlap', () => {
         const h2 = [[4, 6], [7, 6]]
         expect(doBboxesOverlap(h1, h2)).toBeTruthy()
@@ -232,11 +242,26 @@ describe('bbox overlap', () => {
         expect(doBboxesOverlap(h1, v1)).toBeFalsy()
         expect(getBboxOverlap(h1, v1)).toBeNull()
       })
+
       test('point overlap', () => {
         const h1 = [[4, 6], [8, 6]]
         const v1 = [[5, 5], [5, 9]]
         expect(doBboxesOverlap(h1, v1)).toBeTruthy()
         expect(getBboxOverlap(h1, v1)).toEqual([[5, 6], [5, 6]])
+      })
+    })
+
+    describe('produced line box', () => {
+      test('horizontal', () => {
+        const b2 = [[4, 6], [8, 8]]
+        expect(doBboxesOverlap(b1, b2)).toBeTruthy()
+        expect(getBboxOverlap(b1, b2)).toEqual([[4, 6], [6, 6]])
+      })
+
+      test('vertical', () => {
+        const b2 = [[6, 2], [8, 8]]
+        expect(doBboxesOverlap(b1, b2)).toBeTruthy()
+        expect(getBboxOverlap(b1, b2)).toEqual([[6, 4], [6, 6]])
       })
     })
   })
@@ -284,25 +309,25 @@ describe('bbox overlap', () => {
   })
 })
 
-describe('get other corners', () => {
-  test('general', () => {
+describe('get unique corners', () => {
+  test('normal', () => {
     const bbox = [[2, 3], [4, 5]]
-    const expected = [[2, 5], [4, 3]]
-    expect(getOtherCorners(bbox)).toEqual(expected)
+    const expected = [[2, 3], [2, 5], [4, 3], [4, 5]]
+    expect(getUniqueCorners(bbox)).toEqual(expected)
   })
 
   test('horizontal', () => {
     const bbox = [[2, 3], [4, 3]]
-    expect(getOtherCorners(bbox)).toEqual(bbox)
+    expect(getUniqueCorners(bbox)).toEqual(bbox)
   })
 
   test('vertical', () => {
     const bbox = [[2, 3], [2, 5]]
-    expect(getOtherCorners(bbox)).toEqual(bbox.reverse())
+    expect(getUniqueCorners(bbox)).toEqual(bbox)
   })
 
   test('point', () => {
-    const bbox = [[2, 2], [2, 2]]
-    expect(getOtherCorners(bbox)).toEqual(bbox)
+    const pt = [2, 2]
+    expect(getUniqueCorners([pt, pt])).toEqual([pt])
   })
 })

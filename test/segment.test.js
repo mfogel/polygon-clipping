@@ -170,24 +170,24 @@ describe('is an endpoint', () => {
   })
 })
 
-describe('is in interior', () => {
+describe('is Point On', () => {
   const p1 = [-1, -1]
   const p2 = [1, 1]
   const seg = new Segment(p1, p2)
 
   test('yup', () => {
-    expect(seg.isInInterior([0, 0])).toBeTruthy()
-    expect(seg.isInInterior([0.5, 0.5])).toBeTruthy()
+    expect(seg.isPointOn(p1)).toBeTruthy()
+    expect(seg.isPointOn(p2)).toBeTruthy()
+    expect(seg.isPointOn([0, 0])).toBeTruthy()
+    expect(seg.isPointOn([0.5, 0.5])).toBeTruthy()
   })
 
   test('nope', () => {
-    expect(seg.isInInterior(p1)).toBeFalsy()
-    expect(seg.isInInterior(p2)).toBeFalsy()
-    expect(seg.isInInterior([-234, 23421])).toBeFalsy()
+    expect(seg.isPointOn([-234, 23421])).toBeFalsy()
   })
 
   test('nope really close', () => {
-    expect(seg.isInInterior([0, 0.0000001])).toBeFalsy()
+    expect(seg.isPointOn([0, Number.EPSILON])).toBeFalsy()
   })
 })
 
@@ -264,6 +264,22 @@ describe('comparison with point', () => {
     expect(s2.isPointAbove([0, 0])).toBeFalsy()
     expect(s2.isPointAbove([5, -1])).toBeTruthy()
   })
+
+  test('barely above', () => {
+    const s1 = new Segment([0, 1], [3, 1])
+    const pt = [2, 1 - Number.EPSILON]
+    expect(s1.isPointAbove(pt)).toBeTruthy()
+    expect(s1.isPointColinear(pt)).toBeFalsy()
+    expect(s1.isPointBelow(pt)).toBeFalsy()
+  })
+
+  test('barely below', () => {
+    const s1 = new Segment([0, 1], [3, 1])
+    const pt = [2, 1 + Number.EPSILON]
+    expect(s1.isPointAbove(pt)).toBeFalsy()
+    expect(s1.isPointColinear(pt)).toBeFalsy()
+    expect(s1.isPointBelow(pt)).toBeTruthy()
+  })
 })
 
 describe('is colinear with', () => {
@@ -324,10 +340,9 @@ describe('is colinear with', () => {
       expect(s1.isColinearWith(s2)).toBeFalsy()
     })
 
-    // TODO: get this better the 1e8 fudge factor is too high
-    test('almost colinear - to 15 decimal places', () => {
+    test('almost colinear', () => {
       const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([2, 2], [3, 3 + 1e8 * Number.EPSILON])
+      const s2 = new Segment([0, 0], [1, 1 + Number.EPSILON])
       expect(s1.isColinearWith(s2)).toBeFalsy()
     })
   })
