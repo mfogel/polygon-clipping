@@ -88,6 +88,18 @@ class Segment {
     )
   }
 
+  isPointBelow (point) {
+    return this._compareWithPoint(point) > 0
+  }
+
+  isPointColinear (point) {
+    return this._compareWithPoint(point) === 0
+  }
+
+  isPointAbove (point) {
+    return this._compareWithPoint(point) < 0
+  }
+
   /**
    * Given another segment, returns an array of intersection points
    * representing the overlap, if it exists, between the two segments.
@@ -194,6 +206,15 @@ class Segment {
     // r.isExteriorRing = l.isExteriorRing = se.isExteriorRing
 
     return [this.rightSE, newSeg.leftSE]
+  }
+
+  _compareWithPoint (point) {
+    const [p0, p1, p2] = [this.leftSE.point, this.rightSE.point, point]
+    const p20 = [p0[0] - p2[0], p0[1] - p2[1]]
+    const p21 = [p1[0] - p2[0], p1[1] - p2[1]]
+    const kross = crossProduct(p20, p21)
+    if (kross === 0) return 0
+    return kross > 0 ? 1 : -1
   }
 }
 

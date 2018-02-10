@@ -1,5 +1,4 @@
 const operationTypes = require('./operation-types')
-const { arePointsColinear, crossProduct } = require('./point')
 
 const edgeTypes = {
   NORMAL: 0,
@@ -24,8 +23,8 @@ class SweepEvent {
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
 
     // favor events where the line segment is lower
-    if (!arePointsColinear(a.point, a.otherSE.point, b.otherSE.point)) {
-      return !a.isBelow(b.otherSE.point) ? 1 : -1
+    if (!a.segment.isPointColinear(b.otherSE.point)) {
+      return !a.segment.isPointBelow(b.otherSE.point) ? 1 : -1
     }
 
     // favor events from subject over clipping
@@ -67,28 +66,6 @@ class SweepEvent {
 
     // cache of dynamically computed properies
     this._clearCache()
-  }
-
-  isBelow (point) {
-    return this.compareWithPoint(point) > 0
-  }
-
-  isColinear (point) {
-    return this.compareWithPoint(point) === 0
-  }
-
-  isAbove (point) {
-    return this.compareWithPoint(point) < 0
-  }
-
-  compareWithPoint (point) {
-    const [p0, p1, p2] = [this.point, this.otherSE.point, point]
-    const p20 = [p0[0] - p2[0], p0[1] - p2[1]]
-    const p21 = [p1[0] - p2[0], p1[1] - p2[1]]
-    const kross = crossProduct(p20, p21)
-    if (kross === 0) return 0
-    if (this.isLeft) return kross > 0 ? 1 : -1
-    else return kross < 0 ? 1 : -1
   }
 
   isPointEqual (point) {

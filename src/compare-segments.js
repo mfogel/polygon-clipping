@@ -5,11 +5,12 @@ module.exports = function compareSegments (le1, le2) {
   if (le1 === le2) return 0
 
   const pts = [le1.point, le1.otherSE.point, le2.point, le2.otherSE.point]
+  const [seg1, seg2] = [le1.segment, le2.segment]
 
   if (!arePointsColinear(...pts)) {
     // If they share their left endpoint use the right endpoint to sort
     if (le1.hasSamePoint(le2)) {
-      return le1.isBelow(le2.otherSE.point) ? -1 : 1
+      return seg1.isPointBelow(le2.otherSE.point) ? -1 : 1
     }
 
     // Different left endpoint: use the left endpoint to sort
@@ -20,12 +21,12 @@ module.exports = function compareSegments (le1, le2) {
     // has the line segment associated to e1 been inserted
     // into S after the line segment associated to e2 ?
     if (SweepEvent.compare(le1, le2) === 1) {
-      return le2.isAbove(le1.point) || le2.isColinear(le1.point) ? -1 : 1
+      return !seg2.isPointBelow(le1.point) ? -1 : 1
     }
 
     // The line segment associated to e2 has been inserted
     // into S after the line segment associated to e1
-    return le1.isBelow(le2.point) ? -1 : 1
+    return seg1.isPointBelow(le2.point) ? -1 : 1
   }
 
   if (le1.isSubject === le2.isSubject) {

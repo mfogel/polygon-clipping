@@ -39,22 +39,22 @@ describe('compare segments are not collinear', () => {
     const se4 = new Segment([-1, 0], [3, 1]).leftSE
 
     expect(SweepEvent.compare(se1, se2)).toBe(1)
-    expect(se2.isBelow(se1.point)).toBeFalsy()
-    expect(se2.isColinear(se1.point)).toBeTruthy()
-    expect(se2.isAbove(se1.point)).toBeFalsy()
+    expect(se2.segment.isPointBelow(se1.point)).toBeFalsy()
+    expect(se2.segment.isPointColinear(se1.point)).toBeTruthy()
+    expect(se2.segment.isPointAbove(se1.point)).toBeFalsy()
 
     expect(compareSegments(se1, se2)).toBe(-1)
     expect(compareSegments(se2, se1)).toBe(1)
 
     expect(SweepEvent.compare(se3, se4)).toBe(1)
-    expect(se4.isAbove(se3.point)).toBeFalsy()
+    expect(se4.segment.isPointAbove(se3.point)).toBeFalsy()
   })
 
   test('first point is below', () => {
     const se1 = new Segment([-1, 0], [2, 3]).leftSE
     const se2 = new Segment([0, 1], [2, 1]).leftSE
 
-    expect(se1.isBelow(se2.point)).toBeFalsy()
+    expect(se1.segment.isPointBelow(se2.point)).toBeFalsy()
     expect(compareSegments(se1, se2)).toBe(1)
   })
 })

@@ -373,3 +373,50 @@ describe('is coincident with', () => {
     })
   })
 })
+
+describe('comparison with point', () => {
+  test('isPointBelow', () => {
+    const s1 = new Segment([0, 0], [1, 1])
+    const s2 = new Segment([0, 1], [0, 0])
+
+    expect(s1.isPointBelow([0, 1])).toBeTruthy()
+    expect(s1.isPointBelow([1, 2])).toBeTruthy()
+    expect(s1.isPointBelow([0, 0])).toBeFalsy()
+    expect(s1.isPointBelow([5, -1])).toBeFalsy()
+
+    expect(s2.isPointBelow([0, 1])).toBeFalsy()
+    expect(s2.isPointBelow([1, 2])).toBeFalsy()
+    expect(s2.isPointBelow([0, 0])).toBeFalsy()
+    expect(s2.isPointBelow([5, -1])).toBeFalsy()
+  })
+
+  test('isPointColinear', () => {
+    const s1 = new Segment([0, 0], [1, 1])
+    const s2 = new Segment([0, 1], [0, 0])
+
+    expect(s1.isPointColinear([0, 1])).toBeFalsy()
+    expect(s1.isPointColinear([1, 2])).toBeFalsy()
+    expect(s1.isPointColinear([0, 0])).toBeTruthy()
+    expect(s1.isPointColinear([5, -1])).toBeFalsy()
+
+    expect(s2.isPointColinear([0, 1])).toBeTruthy()
+    expect(s2.isPointColinear([1, 2])).toBeFalsy()
+    expect(s2.isPointColinear([0, 0])).toBeTruthy()
+    expect(s2.isPointColinear([5, -1])).toBeFalsy()
+  })
+
+  test('isPointAbove', () => {
+    const s1 = new Segment([0, 0], [1, 1])
+    const s2 = new Segment([0, 1], [0, 0])
+
+    expect(s1.isPointAbove([0, 1])).toBeFalsy()
+    expect(s1.isPointAbove([1, 2])).toBeFalsy()
+    expect(s1.isPointAbove([0, 0])).toBeFalsy()
+    expect(s1.isPointAbove([5, -1])).toBeTruthy()
+
+    expect(s2.isPointAbove([0, 1])).toBeFalsy()
+    expect(s2.isPointAbove([1, 2])).toBeTruthy()
+    expect(s2.isPointAbove([0, 0])).toBeFalsy()
+    expect(s2.isPointAbove([5, -1])).toBeTruthy()
+  })
+})
