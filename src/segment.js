@@ -3,6 +3,48 @@ const { arePointsEqual, crossProduct } = require('./point')
 const SweepEvent = require('./sweep-event')
 
 class Segment {
+  // TODO: this needs:
+  //  * a solid test suite
+  //  * some rounds of simplification
+  static compare (a, b) {
+    if (a === b) return 0
+
+    if (!a.isColinearWith(b)) {
+      // If they share their left endpoint use the right endpoint to sort
+      if (a.leftSE.hasSamePoint(b.leftSE)) {
+        return a.isPointBelow(b.rightSE.point) ? -1 : 1
+      }
+
+      // Different left endpoint: use the left endpoint to sort
+      if (a.leftSE.point[0] === b.leftSE.point[0]) {
+        return a.leftSE.point[1] < b.leftSE.point[1] ? -1 : 1
+      }
+
+      // has the line segment associated to e1 been inserted
+      // into S after the line segment associated to e2 ?
+      if (SweepEvent.compare(a.leftSE, b.leftSE) === 1) {
+        return !b.isPointBelow(a.leftSE.point) ? -1 : 1
+      }
+
+      // The line segment associated to e2 has been inserted
+      // into S after the line segment associated to e1
+      return a.isPointBelow(b.leftSE.point) ? -1 : 1
+    }
+
+    if (a.isSubject === b.isSubject) {
+      // same polygon
+      if (a.leftSE.hasSamePoint(b.leftSE)) {
+        if (a.rightSE.hasSamePoint(b.rightSE)) return 0
+        else return a.leftSE.ringId > b.leftSE.ringId ? 1 : -1
+      }
+    } else {
+      // Segments are collinear, but belong to separate polygons
+      return a.isSubject ? -1 : 1
+    }
+
+    return SweepEvent.compare(a.leftSE, b.leftSE) === 1 ? 1 : -1
+  }
+
   constructor (point1, point2, isSubject) {
     if (arePointsEqual(point1, point2)) {
       throw new Error('Unable to build segment for identical points')

@@ -1,5 +1,5 @@
 const Tree = require('avl')
-const compareSegments = require('./compare-segments')
+const Segment = require('./segment')
 
 /**
  * NOTE:  It appears if you pull out a node from the AVL tree,
@@ -12,7 +12,7 @@ const compareSegments = require('./compare-segments')
  */
 
 class SweepLine {
-  constructor (comparator = compareSegments) {
+  constructor (comparator = Segment.compare) {
     this.tree = new Tree(comparator)
     this.removeCounter = 1
     this.sortedEvents = []
@@ -20,31 +20,31 @@ class SweepLine {
 
   process (event) {
     this.sortedEvents.push(event)
+    const segment = event.segment
 
     if (event.isLeft) {
-      const node = this.insert(event)
-      const prev = this.prevKey(node)
-      const next = this.nextKey(node)
+      const node = this.insert(segment)
+      const prevSeg = this.prevKey(node)
+      const nextSeg = this.nextKey(node)
 
-      event.registerPrevEvent(prev)
+      event.registerPrevEvent(prevSeg ? prevSeg.leftSE : null)
 
       const newEvents = []
-      if (next) newEvents.push(...this._checkIntersection(event, next))
-      if (prev) newEvents.push(...this._checkIntersection(prev, event))
+      if (nextSeg) newEvents.push(...this._checkIntersection(segment, nextSeg))
+      if (prevSeg) newEvents.push(...this._checkIntersection(prevSeg, segment))
       return newEvents
     }
 
     if (event.isRight) {
-      const leftEvent = event.otherSE
-      const node = this.find(leftEvent)
-      const nextEvent = this.nextKey(node)
+      const node = this.find(segment)
+      const nextSeg = this.nextKey(node)
 
-      if (nextEvent && leftEvent.segment.isCoincidentWith(nextEvent.segment)) {
-        leftEvent.registerCoincidentEvent(nextEvent, true)
-        nextEvent.registerCoincidentEvent(leftEvent, false)
+      if (nextSeg && segment.isCoincidentWith(nextSeg)) {
+        segment.leftSE.registerCoincidentEvent(nextSeg.leftSE, true)
+        nextSeg.leftSE.registerCoincidentEvent(segment.leftSE, false)
       }
 
-      this.remove(leftEvent)
+      this.remove(segment)
       return []
     }
   }
@@ -82,21 +82,18 @@ class SweepLine {
     this.tree.remove(key)
   }
 
-  _checkIntersection (se1, se2) {
-    const inters = se1.segment.getIntersections(se2.segment)
+  _checkIntersection (seg1, seg2) {
+    const inters = seg1.getIntersections(seg2)
     let splitOn
     if (inters.length === 0) return []
     if (inters.length === 1) splitOn = inters[0]
     if (inters.length === 2) {
       // we only need to split on first intersection that's not coincident
-      // with the current event. The next intersection one will be handled
+      // with the left event. The next intersection one will be handled
       // in another pass of the event loop.
-      splitOn = se1.isPointEqual(inters[0]) ? inters[1] : inters[0]
+      splitOn = seg1.leftSE.isPointEqual(inters[0]) ? inters[1] : inters[0]
     }
-    return [
-      ...se1.segment.attemptSplit(splitOn),
-      ...se2.segment.attemptSplit(splitOn)
-    ]
+    return [...seg1.attemptSplit(splitOn), ...seg2.attemptSplit(splitOn)]
   }
 
   _checkNode (node) {

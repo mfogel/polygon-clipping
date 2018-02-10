@@ -1,6 +1,8 @@
 /* eslint-env jest */
 
+const Tree = require('avl')
 const Segment = require('../src/segment')
+const SweepEvent = require('../src/sweep-event')
 
 describe('constructor', () => {
   test('cannot build segment with identical points', () => {
@@ -607,5 +609,99 @@ describe('get intersections 2', () => {
     const b = new Segment([0, 0], [1, 1])
     expect(a.getIntersections(b)).toEqual([])
     expect(b.getIntersections(a)).toEqual([])
+  })
+})
+
+describe('compare segments that are not collinear', () => {
+  test('shared left point - right point first', () => {
+    const tree = new Tree(Segment.compare)
+    const pt = [0.0, 0.0]
+    const seg1 = new Segment(pt, [1, 1])
+    const seg2 = new Segment(pt, [2, 3])
+
+    tree.insert(seg1)
+    tree.insert(seg2)
+
+    expect(tree.maxNode().key.rightSE.point).toEqual([2, 3])
+    expect(tree.minNode().key.rightSE.point).toEqual([1, 1])
+  })
+
+  test('different left point - right point y coord to sort', () => {
+    const tree = new Tree(Segment.compare)
+    const seg1 = new Segment([0, 1], [1, 1])
+    const seg2 = new Segment([0, 2], [2, 3])
+
+    tree.insert(seg1)
+    tree.insert(seg2)
+
+    expect(tree.minNode().key.rightSE.point).toEqual([1, 1])
+    expect(tree.maxNode().key.rightSE.point).toEqual([2, 3])
+  })
+
+  test('events order in sweep line', () => {
+    const seg1 = new Segment([0, 1], [2, 1])
+    const seg2 = new Segment([-1, 0], [2, 3])
+
+    const se3 = new Segment([0, 1], [3, 4])
+    const se4 = new Segment([-1, 0], [3, 1])
+
+    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(1)
+    expect(seg2.isPointBelow(seg1.leftSE.point)).toBeFalsy()
+    expect(seg2.isPointColinear(seg1.leftSE.point)).toBeTruthy()
+    expect(seg2.isPointAbove(seg1.leftSE.point)).toBeFalsy()
+
+    expect(Segment.compare(seg1, seg2)).toBe(-1)
+    expect(Segment.compare(seg2, seg1)).toBe(1)
+
+    expect(SweepEvent.compare(se3.leftSE, se4.leftSE)).toBe(1)
+    expect(se4.isPointAbove(se3.leftSE.point)).toBeFalsy()
+  })
+
+  test('first point is below', () => {
+    const seg1 = new Segment([-1, 0], [2, 3])
+    const seg2 = new Segment([0, 1], [2, 1])
+
+    expect(seg1.isPointBelow(seg2.leftSE.point)).toBeFalsy()
+    expect(Segment.compare(seg1, seg2)).toBe(1)
+  })
+})
+
+describe('compare segments that are collinear', () => {
+  test('general', () => {
+    const seg1 = new Segment([1, 1], [5, 1], true)
+    const seg2 = new Segment([2, 1], [3, 1], false)
+
+    expect(seg1.isSubject).not.toBe(seg2.isSubject)
+    expect(Segment.compare(seg1, seg2)).toBe(-1)
+  })
+
+  test('left point', () => {
+    const pt = [0, 1]
+
+    const seg1 = new Segment(pt, [5, 1])
+    const seg2 = new Segment(pt, [3, 1])
+
+    seg1.leftSE.ringId = 1
+    seg2.leftSE.ringId = 2
+
+    expect(seg1.isSubject).toBe(seg2.isSubject)
+    expect(seg1.leftSE.point).toBe(seg2.leftSE.point)
+
+    expect(Segment.compare(seg1, seg2)).toBe(-1)
+
+    seg1.leftSE.ringId = 2
+    seg2.leftSE.ringId = 1
+
+    expect(Segment.compare(seg1, seg2)).toBe(1)
+  })
+
+  test('same polygon different left points', () => {
+    const seg1 = new Segment([1, 1], [5, 1])
+    const seg2 = new Segment([2, 1], [3, 1])
+
+    expect(seg1.isSubject).toBe(seg2.isSubject)
+    expect(seg1.leftSE.point).not.toEqual(seg2.leftSE.point)
+    expect(Segment.compare(seg1, seg2)).toBe(-1)
+    expect(Segment.compare(seg2, seg1)).toBe(1)
   })
 })
