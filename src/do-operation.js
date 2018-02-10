@@ -2,7 +2,7 @@ const cleanInput = require('./clean-input.js')
 const connectEdges = require('./connect-edges')
 const EventQueue = require('./event-queue')
 const operationTypes = require('./operation-types')
-const subdivideSegments = require('./subdivide-segments')
+const SweepLine = require('./sweep-line')
 
 const doOperation = (subject, clipping, operationType) => {
   operationTypes.setActive(operationType)
@@ -13,10 +13,13 @@ const doOperation = (subject, clipping, operationType) => {
   eventQueue.consume(subject, true)
   eventQueue.consume(clipping, false)
 
-  const sortedEvents = subdivideSegments(eventQueue)
+  const sweepLine = new SweepLine()
+  while (!eventQueue.isEmpty) {
+    eventQueue.push(...sweepLine.process(eventQueue.pop()))
+  }
+  const sortedEvents = sweepLine.getResults()
 
   const result = connectEdges(sortedEvents)
-
   return result
 }
 

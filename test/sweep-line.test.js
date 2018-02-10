@@ -8,7 +8,7 @@ const comparator = (a, b) => {
 }
 
 describe('sweep line', () => {
-  test('fill it up then empty it out', () => {
+  test('test filling up the tree then emptying it out', () => {
     const sl = new SweepLine(comparator)
     const k1 = 4
     const k2 = 9

@@ -15,6 +15,42 @@ class SweepLine {
   constructor (comparator = compareSegments) {
     this.tree = new Tree(comparator)
     this.removeCounter = 1
+    this.sortedEvents = []
+  }
+
+  process (event) {
+    this.sortedEvents.push(event)
+
+    if (event.isLeft) {
+      const node = this.insert(event)
+      const prev = this.prevKey(node)
+      const next = this.nextKey(node)
+
+      event.registerPrevEvent(prev)
+
+      const newEvents = []
+      if (next) newEvents.push(...this._checkIntersection(event, next))
+      if (prev) newEvents.push(...this._checkIntersection(prev, event))
+      return newEvents
+    }
+
+    if (event.isRight) {
+      const leftEvent = event.otherSE
+      const node = this.find(leftEvent)
+      const nextEvent = this.nextKey(node)
+
+      if (nextEvent && leftEvent.segment.isCoincidentWith(nextEvent.segment)) {
+        leftEvent.registerCoincidentEvent(nextEvent, true)
+        nextEvent.registerCoincidentEvent(leftEvent, false)
+      }
+
+      this.remove(leftEvent)
+      return []
+    }
+  }
+
+  getResults () {
+    return this.sortedEvents
   }
 
   /* Returns the new node associated with the key */
@@ -44,6 +80,23 @@ class SweepLine {
   remove (key) {
     this.removeCounter++
     this.tree.remove(key)
+  }
+
+  _checkIntersection (se1, se2) {
+    const inters = se1.segment.getIntersections(se2.segment)
+    let splitOn
+    if (inters.length === 0) return []
+    if (inters.length === 1) splitOn = inters[0]
+    if (inters.length === 2) {
+      // we only need to split on first intersection that's not coincident
+      // with the current event. The next intersection one will be handled
+      // in another pass of the event loop.
+      splitOn = se1.isPointEqual(inters[0]) ? inters[1] : inters[0]
+    }
+    return [
+      ...se1.segment.attemptSplit(splitOn),
+      ...se2.segment.attemptSplit(splitOn)
+    ]
   }
 
   _checkNode (node) {
