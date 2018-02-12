@@ -184,8 +184,11 @@ class Segment {
     // of one pair of opposing corners of the bbox overlap. Thus we just
     // manually check those coordinates.
     //
-    // Note this also handles the cases of a collapsed (just one point)
-    // bbox and semi-collapsed (a vertical or horizontal line) as well.
+    // Note this also handles the cases of a collapsed bbox (just one point)
+    // and semi-collapsed bbox (a vertical or horizontal line) as well.
+    //
+    // In addition, in the case of a T-intersection, this ensures that the
+    // interseciton returned matches exactly an endpoint - no rounding error.
     const isOnBoth = pt => this.isPointOn(pt) && other.isPointOn(pt)
     const intersections = getUniqueCorners(bboxOverlap).filter(isOnBoth)
     if (intersections.length > 0) return intersections
@@ -193,29 +196,21 @@ class Segment {
     // General case for non-overlapping segments.
     // This algorithm is based on Schneider and Eberly.
     // http://www.cimec.org.ar/~ncalvo/Schneider_Eberly.pdf - pg 244
-    const [a1, a2, b1, b2] = [...this.points, ...other.points]
+    const [al, bl] = [this.leftSE.point, other.leftSE.point]
     const [va, vb] = [this.vector, other.vector]
-    const ve = [b1[0] - a1[0], b1[1] - a1[1]]
+    const ve = [bl[0] - al[0], bl[1] - al[1]]
     const kross = crossProduct(va, vb)
 
     // not on line segment a
     const s = crossProduct(ve, vb) / kross
     if (s < 0 || s > 1) return []
 
-    // on an endpoint of line segment a
-    if (s === 0) return [a1]
-    if (s === 1) return [a2]
-
     // not on line segment b
     const t = crossProduct(ve, va) / kross
     if (t < 0 || t > 1) return []
 
-    // on an endpoint of line segment b
-    if (t === 0) return [b1]
-    if (t === 1) return [b2]
-
     // intersection is in a midpoint of both lines, let's use a
-    return [[a1[0] + s * va[0], a1[1] + s * va[1]]]
+    return [[al[0] + s * va[0], al[1] + s * va[1]]]
   }
 
   /**
