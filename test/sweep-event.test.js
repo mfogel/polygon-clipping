@@ -73,21 +73,3 @@ describe('sweep event compare points', () => {
   test('equal coord', () =>
     expect(SweepEvent.comparePoints([1, 1], [1, 1])).toBe(0))
 })
-
-describe('is point Equal', () => {
-  const se = new SweepEvent([5, 4])
-  test('yes', () => expect(se.isPointEqual([5, 4])).toBeTruthy())
-  test('no', () => expect(se.isPointEqual([1, 0])).toBeFalsy())
-})
-
-describe('has same point', () => {
-  const se = new SweepEvent([5, 4])
-  test('yes', () => {
-    const se2 = new SweepEvent([5, 4])
-    expect(se.hasSamePoint(se2)).toBeTruthy()
-  })
-  test('no', () => {
-    const se2 = new SweepEvent([2, 4])
-    expect(se.hasSamePoint(se2)).toBeFalsy()
-  })
-})

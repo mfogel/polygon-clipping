@@ -1,6 +1,14 @@
 const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
+const operationTypes = require('./operation-types')
 const { arePointsEqual, crossProduct } = require('./point')
 const SweepEvent = require('./sweep-event')
+
+const edgeTypes = {
+  NORMAL: 0,
+  NON_CONTRIBUTING: 1,
+  SAME_TRANSITION: 2,
+  DIFFERENT_TRANSITION: 3
+}
 
 // Give segments unique ID's to get consistent sorting when segments
 // are otherwise identical
@@ -59,6 +67,9 @@ class Segment {
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
     this.leftSE = new SweepEvent(lp, this)
     this.rightSE = new SweepEvent(rp, this)
+
+    // cache of dynamically computed properies
+    this._clearCache()
   }
 
   clone () {
@@ -147,6 +158,14 @@ class Segment {
     return this._compareWithPoint(point) < 0
   }
 
+  _compareWithPoint (point) {
+    let va = [point[0] - this.points[0][0], point[1] - this.points[0][1]]
+    let vb = [point[0] - this.points[1][0], point[1] - this.points[1][1]]
+    const kross = crossProduct(va, vb)
+    if (kross * kross < Number.EPSILON * Number.EPSILON) return 0
+    return kross > 0 ? 1 : -1
+  }
+
   /**
    * Given another segment, returns an array of intersection points
    * between the two segments. The returned array can contain:
@@ -228,12 +247,117 @@ class Segment {
     return [this.rightSE, newSeg.leftSE]
   }
 
-  _compareWithPoint (point) {
-    let va = [point[0] - this.points[0][0], point[1] - this.points[0][1]]
-    let vb = [point[0] - this.points[1][0], point[1] - this.points[1][1]]
-    const kross = crossProduct(va, vb)
-    if (kross * kross < Number.EPSILON * Number.EPSILON) return 0
-    return kross > 0 ? 1 : -1
+  registerCoincident (other, isWinner) {
+    this.coincident = other
+    if (!isWinner) this.prev = other
+    this._clearCache()
+  }
+
+  registerPrev (other) {
+    this.prev = other
+    this._clearCache()
+  }
+
+  get isCoincidenceWinner () {
+    // declare first segment winner, second looser (arbitrary)
+    return this.coincident && this.coincident !== this.prev
+  }
+
+  get edgeType () {
+    return this._getCached('edgeType', this._calcEdgeType)
+  }
+
+  get sweepLineEnters () {
+    return this._getCached('sweepLineEnters', this._calcSweepLineEnters)
+  }
+
+  get isInsideOther () {
+    return this._getCached('isInsideOther', this._calcIsInsideOther)
+  }
+
+  get isInResult () {
+    return this._getCached('isInResult', this._calcIsInResult)
+  }
+
+  _clearCache () {
+    this._cache = {
+      edgeType: null,
+      sweepLineEnters: null,
+      isInsideOther: null,
+      isInResult: null
+    }
+  }
+
+  _getCached (propName, calcMethod) {
+    // if this._cache[something] isn't set, fill it with this._caclSomething()
+    if (this._cache[propName] === null) {
+      this._cache[propName] = calcMethod.bind(this)()
+    }
+    return this._cache[propName]
+  }
+
+  _calcEdgeType () {
+    if (this.coincident) {
+      if (this.isCoincidenceWinner) {
+        return this.coincident.sweepLineEnters === this.sweepLineEnters
+          ? edgeTypes.SAME_TRANSITION
+          : edgeTypes.DIFFERENT_TRANSITION
+      } else return edgeTypes.NON_CONTRIBUTING
+    } else return edgeTypes.NORMAL
+  }
+
+  _calcSweepLineEnters () {
+    if (!this.prev) return true
+    else {
+      return this.isSubject === this.prev.isSubject
+        ? !this.prev.sweepLineEnters
+        : !this.prev.isInsideOther
+    }
+  }
+
+  _calcIsInsideOther () {
+    if (!this.prev) return false
+    else {
+      if (this.isSubject === this.prev.isSubject) {
+        return this.prev.isInsideOther
+      } else {
+        return this.prev.isVertical
+          ? !this.prev.sweepLineEnters
+          : this.prev.sweepLineEnters
+      }
+    }
+  }
+
+  _calcIsInResult () {
+    switch (this.edgeType) {
+      case edgeTypes.NORMAL:
+        if (operationTypes.isActive(operationTypes.INTERSECTION)) {
+          return this.isInsideOther
+        } else if (operationTypes.isActive(operationTypes.UNION)) {
+          return !this.isInsideOther
+        } else if (operationTypes.isActive(operationTypes.XOR)) {
+          // TODO: is this right?
+          return true
+        } else if (operationTypes.isActive(operationTypes.DIFFERENCE)) {
+          return (
+            (this.isSubject && !this.isInsideOther) ||
+            (!this.isSubject && this.isInsideOther)
+          )
+        } else {
+          throw new Error('No active operationType found')
+        }
+      case edgeTypes.SAME_TRANSITION:
+        return (
+          operationTypes.isActive(operationTypes.INTERSECTION) ||
+          operationTypes.isActive(operationTypes.UNION)
+        )
+      case edgeTypes.DIFFERENT_TRANSITION:
+        return operationTypes.isActive(operationTypes.DIFFERENCE)
+      case edgeTypes.NON_CONTRIBUTING:
+        return false
+      default:
+        throw new Error(`Unrecognized edgeType, '${this.edgeType}'`)
+    }
   }
 }
 

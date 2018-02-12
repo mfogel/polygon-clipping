@@ -1,4 +1,5 @@
 const Tree = require('avl')
+const { arePointsEqual } = require('./point')
 const Segment = require('./segment')
 
 /**
@@ -27,7 +28,7 @@ class SweepLine {
       const prevSeg = this.prevKey(node)
       const nextSeg = this.nextKey(node)
 
-      event.registerPrevEvent(prevSeg ? prevSeg.leftSE : null)
+      segment.registerPrev(prevSeg)
 
       const newEvents = []
       if (nextSeg) newEvents.push(...this._checkIntersection(segment, nextSeg))
@@ -40,8 +41,8 @@ class SweepLine {
       const nextSeg = this.nextKey(node)
 
       if (nextSeg && segment.isCoincidentWith(nextSeg)) {
-        segment.leftSE.registerCoincidentEvent(nextSeg.leftSE, true)
-        nextSeg.leftSE.registerCoincidentEvent(segment.leftSE, false)
+        segment.registerCoincident(nextSeg, true)
+        nextSeg.registerCoincident(segment, false)
       }
 
       this.remove(segment)
@@ -91,7 +92,9 @@ class SweepLine {
       // we only need to split on first intersection that's not coincident
       // with the left event. The next intersection one will be handled
       // in another pass of the event loop.
-      splitOn = seg1.leftSE.isPointEqual(inters[0]) ? inters[1] : inters[0]
+      splitOn = arePointsEqual(seg1.leftSE.point, inters[0])
+        ? inters[1]
+        : inters[0]
     }
     return [...seg1.attemptSplit(splitOn), ...seg2.attemptSplit(splitOn)]
   }
