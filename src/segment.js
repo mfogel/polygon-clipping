@@ -2,54 +2,58 @@ const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
 const { arePointsEqual, crossProduct } = require('./point')
 const SweepEvent = require('./sweep-event')
 
+// Give segments unique ID's to get consistent sorting when segments
+// are otherwise identical
+let creationCnt = 0
+
 class Segment {
-  // TODO: this needs:
-  //  * a solid test suite
-  //  * some rounds of simplification
   static compare (a, b) {
     if (a === b) return 0
 
-    if (!a.isColinearWith(b)) {
-      // If they share their left endpoint use the right endpoint to sort
-      if (a.leftSE.hasSamePoint(b.leftSE)) {
+    const [[alx, aly], [blx, bly]] = [a.leftSE.point, b.leftSE.point]
+    const [arx, brx] = [a.rightSE.point[0], b.rightSE.point[0]]
+
+    // check if they're even in the same vertical plane
+    if (alx > brx) return 1
+    if (blx > arx) return -1
+
+    if (a.isColinearWith(b)) {
+      // colinear segments with non-matching left-endpoints, consider
+      // the more-left endpoint to be earlier
+      if (alx !== blx) return alx < blx ? -1 : 1
+
+      // colinear segments with matching left-endpoints, fall back
+      // on creation order of segments as a tie-breaker
+      // NOTE: we do not use segment length to break a tie here, because
+      //       when segments are split their length changes
+      if (a.creationId !== b.creationId) {
+        return a.creationId < b.creationId ? -1 : 1
+      }
+    } else {
+      // for non-colinear segments with matching left endoints,
+      // consider the one that angles more downward to be earlier
+      if (arePointsEqual(a.leftSE.point, b.leftSE.point)) {
         return a.isPointBelow(b.rightSE.point) ? -1 : 1
       }
 
-      // Different left endpoint: use the left endpoint to sort
-      if (a.leftSE.point[0] === b.leftSE.point[0]) {
-        return a.leftSE.point[1] < b.leftSE.point[1] ? -1 : 1
-      }
+      // their left endpoints are in the same vertical line, lower means ealier
+      if (alx === blx) return aly < bly ? -1 : 1
 
-      // has the line segment associated to e1 been inserted
-      // into S after the line segment associated to e2 ?
-      if (SweepEvent.compare(a.leftSE, b.leftSE) === 1) {
-        return !b.isPointBelow(a.leftSE.point) ? -1 : 1
-      }
-
-      // The line segment associated to e2 has been inserted
-      // into S after the line segment associated to e1
-      return a.isPointBelow(b.leftSE.point) ? -1 : 1
+      // along a vertical line at the rightmore of the two left endpoints,
+      // consider the segment that intersects lower with that line to be earlier
+      if (alx < blx) return a.isPointBelow(b.leftSE.point) ? -1 : 1
+      if (alx > blx) return b.isPointBelow(a.leftSE.point) ? 1 : -1
     }
 
-    if (a.isSubject === b.isSubject) {
-      // same polygon
-      if (a.leftSE.hasSamePoint(b.leftSE)) {
-        if (a.rightSE.hasSamePoint(b.rightSE)) return 0
-        else return a.leftSE.ringId > b.leftSE.ringId ? 1 : -1
-      }
-    } else {
-      // Segments are collinear, but belong to separate polygons
-      return a.isSubject ? -1 : 1
-    }
-
-    return SweepEvent.compare(a.leftSE, b.leftSE) === 1 ? 1 : -1
+    throw new Error('Segment comparison failed... identical but not?')
   }
 
-  constructor (point1, point2, isSubject) {
+  constructor (point1, point2, isSubject, creationId = null) {
     if (arePointsEqual(point1, point2)) {
       throw new Error('Unable to build segment for identical points')
     }
 
+    this.creationId = creationId === null ? creationCnt++ : creationId
     this.isSubject = isSubject
 
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
@@ -58,7 +62,14 @@ class Segment {
   }
 
   clone () {
-    return new Segment(this.leftSE.point, this.rightSE.point, this.isSubject)
+    // A cloned segment gets the same creationId as the parent.
+    // This is to keep sorting consistent when segments are split
+    return new Segment(
+      this.leftSE.point,
+      this.rightSE.point,
+      this.isSubject,
+      this.creationId
+    )
   }
 
   get xmin () {
@@ -211,8 +222,6 @@ class Segment {
 
     this.rightSE = new SweepEvent(point, this)
 
-    // TODO: deal with this
-    this.rightSE.ringId = newSeg.leftSE.ringId = this.leftSE.ringId
     // FIXME: this breaks the tests. It shouldn't.
     // r.isExteriorRing = l.isExteriorRing = se.isExteriorRing
 

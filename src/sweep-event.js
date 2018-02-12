@@ -7,10 +7,6 @@ const edgeTypes = {
   DIFFERENT_TRANSITION: 3
 }
 
-// Give events unique ID's to get consistent sorting when segments
-// are otherwise identical
-let sweepEventId = 1
-
 class SweepEvent {
   static compare (a, b) {
     if (a === b) return 0
@@ -30,15 +26,14 @@ class SweepEvent {
     // favor events from subject over clipping
     if (a.isSubject !== b.isSubject) return a.isSubject ? -1 : 1
 
-    // favor lower sweep event ids just for consistent sorting
-    if (a.id !== b.id) return a.id < b.id ? -1 : 1
+    // as a tie-breaker, favor lower segment creation id
+    const [aId, bId] = [a.segment.creationId, b.segment.creationId]
+    if (aId !== bId) return aId < bId ? -1 : 1
 
     // NOTE:  We don't sort on segment length because that changes
     //        as segments are divided.
 
-    throw new Error(
-      'Unable to compare two SweepEvents seem indentical but are not... ?'
-    )
+    throw new Error('SweepEvent comparison failed... identical but not?')
   }
 
   static comparePoints (a, b) {
@@ -55,11 +50,9 @@ class SweepEvent {
   constructor (point, segment) {
     this.point = point
     this.segment = segment
-    this.id = sweepEventId++
 
-    // TODO: I am skeptical about these.
+    // TODO: clean this up if needed
     this.isExteriorRing = true
-    this.ringId = null
 
     this.prevEvent = null
     this.coincidentEvent = null

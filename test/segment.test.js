@@ -1,8 +1,6 @@
 /* eslint-env jest */
 
-const Tree = require('avl')
 const Segment = require('../src/segment')
-const SweepEvent = require('../src/sweep-event')
 
 describe('constructor', () => {
   test('cannot build segment with identical points', () => {
@@ -612,95 +610,211 @@ describe('get intersections 2', () => {
   })
 })
 
-describe('compare segments that are not collinear', () => {
-  test('shared left point - right point first', () => {
-    const tree = new Tree(Segment.compare)
-    const pt = [0.0, 0.0]
-    const seg1 = new Segment(pt, [1, 1])
-    const seg2 = new Segment(pt, [2, 3])
+describe('compare segments', () => {
+  describe('non intersecting', () => {
+    test('not in same vertical space', () => {
+      const seg1 = new Segment([0, 0], [1, 1])
+      const seg2 = new Segment([4, 3], [6, 7])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
 
-    tree.insert(seg1)
-    tree.insert(seg2)
+    test('in same vertical space, earlier is below', () => {
+      const seg1 = new Segment([0, 0], [4, -4])
+      const seg2 = new Segment([1, 1], [6, 7])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
 
-    expect(tree.maxNode().key.rightSE.point).toEqual([2, 3])
-    expect(tree.minNode().key.rightSE.point).toEqual([1, 1])
+    test('in same vertical space, later is below', () => {
+      const seg1 = new Segment([0, 0], [4, -4])
+      const seg2 = new Segment([-5, -5], [6, -7])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
+
+    test('with left points in same vertical line', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([0, -1], [-5, -5])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
+
+    test('with earlier right point directly under later left point', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([-5, -5], [0, -3])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
+
+    test('with eariler right point directly over earlier left point', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([-5, 5], [0, 3])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
   })
 
-  test('different left point - right point y coord to sort', () => {
-    const tree = new Tree(Segment.compare)
-    const seg1 = new Segment([0, 1], [1, 1])
-    const seg2 = new Segment([0, 2], [2, 3])
+  describe('intersecting not on endpoint', () => {
+    test('earlier comes up from before & below', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([-1, -5], [1, 2])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
 
-    tree.insert(seg1)
-    tree.insert(seg2)
+    test('earlier comes up from directly over & below', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([0, -2], [3, 2])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
 
-    expect(tree.minNode().key.rightSE.point).toEqual([1, 1])
-    expect(tree.maxNode().key.rightSE.point).toEqual([2, 3])
+    test('earlier comes up from after & below', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([1, -2], [3, 2])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
+
+    test('later comes down from before & above', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([-1, 5], [1, -2])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
+
+    test('later comes up from directly over & above', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([0, 2], [3, -2])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
+
+    test('later comes up from after & above', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([1, 2], [3, -2])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
   })
 
-  test('events order in sweep line', () => {
-    const seg1 = new Segment([0, 1], [2, 1])
-    const seg2 = new Segment([-1, 0], [2, 3])
+  describe('intersect but not share on an endpoint', () => {
+    test('intersect on right', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([2, -2], [6, 2])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
 
-    const se3 = new Segment([0, 1], [3, 4])
-    const se4 = new Segment([-1, 0], [3, 1])
+    test('intersect on left from above', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([-2, 2], [2, -2])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
 
-    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(1)
-    expect(seg2.isPointBelow(seg1.leftSE.point)).toBeFalsy()
-    expect(seg2.isPointColinear(seg1.leftSE.point)).toBeTruthy()
-    expect(seg2.isPointAbove(seg1.leftSE.point)).toBeFalsy()
-
-    expect(Segment.compare(seg1, seg2)).toBe(-1)
-    expect(Segment.compare(seg2, seg1)).toBe(1)
-
-    expect(SweepEvent.compare(se3.leftSE, se4.leftSE)).toBe(1)
-    expect(se4.isPointAbove(se3.leftSE.point)).toBeFalsy()
+    test('intersect on left from below', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([-2, -2], [2, 2])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
   })
 
-  test('first point is below', () => {
-    const seg1 = new Segment([-1, 0], [2, 3])
-    const seg2 = new Segment([0, 1], [2, 1])
+  describe('share right endpoint', () => {
+    test('earlier comes up from before & below', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([-1, -5], [4, 0])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
 
-    expect(seg1.isPointBelow(seg2.leftSE.point)).toBeFalsy()
-    expect(Segment.compare(seg1, seg2)).toBe(1)
+    test('earlier comes up from directly over & below', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([0, -2], [4, 0])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
+
+    test('earlier comes up from after & below', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([1, -2], [4, 0])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
+
+    test('later comes down from before & above', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([-1, 5], [4, 0])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
+
+    test('laterjcomes up from directly over & above', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([0, 2], [4, 0])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
+
+    test('later comes up from after & above', () => {
+      const seg1 = new Segment([0, 0], [4, 0])
+      const seg2 = new Segment([1, 2], [4, 0])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
   })
-})
 
-describe('compare segments that are collinear', () => {
-  test('general', () => {
-    const seg1 = new Segment([1, 1], [5, 1], true)
-    const seg2 = new Segment([2, 1], [3, 1], false)
-
-    expect(seg1.isSubject).not.toBe(seg2.isSubject)
-    expect(Segment.compare(seg1, seg2)).toBe(-1)
+  describe('share left endpoint but not colinear', () => {
+    test('earlier comes up from before & below', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([0, 0], [4, 2])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
   })
 
-  test('left point', () => {
-    const pt = [0, 1]
+  describe('colinear', () => {
+    test('partial mutal overlap', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([-1, -1], [2, 2])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
 
-    const seg1 = new Segment(pt, [5, 1])
-    const seg2 = new Segment(pt, [3, 1])
+    test('complete overlap', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([-1, -1], [5, 5])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
 
-    seg1.leftSE.ringId = 1
-    seg2.leftSE.ringId = 2
+    test('right endpoints match', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([-1, -1], [4, 4])
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
 
-    expect(seg1.isSubject).toBe(seg2.isSubject)
-    expect(seg1.leftSE.point).toBe(seg2.leftSE.point)
+    test('left endpoints match - should be sorted in creation order', () => {
+      const seg1 = new Segment([0, 0], [4, 4])
+      const seg2 = new Segment([0, 0], [3, 3])
+      const seg3 = new Segment([0, 0], [5, 5])
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
 
-    expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg3)).toBe(-1)
+      expect(Segment.compare(seg3, seg2)).toBe(1)
 
-    seg1.leftSE.ringId = 2
-    seg2.leftSE.ringId = 1
-
-    expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg1, seg3)).toBe(-1)
+      expect(Segment.compare(seg3, seg1)).toBe(1)
+    })
   })
 
-  test('same polygon different left points', () => {
-    const seg1 = new Segment([1, 1], [5, 1])
-    const seg2 = new Segment([2, 1], [3, 1])
-
-    expect(seg1.isSubject).toBe(seg2.isSubject)
-    expect(seg1.leftSE.point).not.toEqual(seg2.leftSE.point)
+  test('exactly equal segments should be sorted in creation order', () => {
+    const seg1 = new Segment([0, 0], [4, 4])
+    const seg2 = new Segment([0, 0], [4, 4])
     expect(Segment.compare(seg1, seg2)).toBe(-1)
     expect(Segment.compare(seg2, seg1)).toBe(1)
   })

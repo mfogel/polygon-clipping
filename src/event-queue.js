@@ -7,7 +7,6 @@ const operationTypes = require('./operation-types')
 class EventQueue {
   constructor (comparator = SweepEvent.compare) {
     this.tinyQueue = new TinyQueue(null, comparator)
-    this.ringId = 0
   }
 
   consume (multipoly, isSubject) {
@@ -18,7 +17,6 @@ class EventQueue {
           !isSubject && operationTypes.isActive(operationTypes.DIFFERENCE)
             ? false
             : j === 0
-        if (isExteriorRing) this.ringId++
 
         ring.forEach((point, i, ring) => {
           if (i === 0) return
@@ -30,7 +28,6 @@ class EventQueue {
           const seg = new Segment(prevPoint, point, isSubject)
 
           // TODO: if this info is needed, SweepEvent constructor should accept it
-          seg.leftSE.ringId = seg.rightSE.ringId = this.ringId
           seg.leftSE.isExteriorRing = seg.rightSE.isExteriorRing = isExteriorRing
 
           this.push(seg.leftSE, seg.rightSE)
