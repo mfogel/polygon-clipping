@@ -51,7 +51,7 @@ class SweepLine {
   }
 
   getResults () {
-    return this.sortedEvents
+    return this.sortedEvents.filter(evt => evt.isInResult)
   }
 
   /* Returns the new node associated with the key */
