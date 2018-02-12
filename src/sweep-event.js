@@ -41,12 +41,6 @@ class SweepEvent {
   constructor (point, segment) {
     this.point = point
     this.segment = segment
-
-    // TODO: clean this up if needed
-    this.isExteriorRing = true
-
-    this.prevEvent = null
-    this.coincidentEvent = null
   }
 
   get isLeft () {
@@ -67,6 +61,10 @@ class SweepEvent {
 
   get isInResult () {
     return this.segment.isInResult
+  }
+
+  get isExteriorRing () {
+    return this.segment.isExteriorRing
   }
 }
 

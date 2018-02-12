@@ -56,13 +56,14 @@ class Segment {
     throw new Error('Segment comparison failed... identical but not?')
   }
 
-  constructor (point1, point2, isSubject, creationId = null) {
+  constructor (point1, point2, isSubject, isExteriorRing, creationId = null) {
     if (arePointsEqual(point1, point2)) {
       throw new Error('Unable to build segment for identical points')
     }
 
     this.creationId = creationId === null ? creationCnt++ : creationId
     this.isSubject = isSubject
+    this.isExteriorRing = isExteriorRing
 
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
     this.leftSE = new SweepEvent(lp, this)
@@ -79,6 +80,7 @@ class Segment {
       this.leftSE.point,
       this.rightSE.point,
       this.isSubject,
+      this.isExteriorRing,
       this.creationId
     )
   }
@@ -235,9 +237,6 @@ class Segment {
     this.rightSE.segment = newSeg
 
     this.rightSE = new SweepEvent(point, this)
-
-    // FIXME: this breaks the tests. It shouldn't.
-    // r.isExteriorRing = l.isExteriorRing = se.isExteriorRing
 
     return [this.rightSE, newSeg.leftSE]
   }
