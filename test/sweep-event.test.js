@@ -73,3 +73,54 @@ describe('sweep event compare points', () => {
   test('equal coord', () =>
     expect(SweepEvent.comparePoints([1, 1], [1, 1])).toBe(0))
 })
+
+describe('sweep event link', () => {
+  test('no linked events', () => {
+    const se = new SweepEvent()
+    expect(se.availableLinkedEvents).toEqual([])
+  })
+
+  test('cannot link already linked event', () => {
+    const se1 = new SweepEvent()
+    const se2 = new SweepEvent()
+    const se3 = new SweepEvent()
+
+    se2.link(se3)
+    expect(() => se1.link(se3)).toThrow()
+  })
+
+  test('unavailable linked events do not show up', () => {
+    const se = new SweepEvent()
+    const seAlreadyProcessed = new SweepEvent()
+    seAlreadyProcessed.segment = { isInResult: true, isProcessed: true }
+    const seNotInResult = new SweepEvent()
+    seNotInResult.segment = { isInResult: false, isProcessed: false }
+
+    se.link(seAlreadyProcessed)
+    se.link(seNotInResult)
+    expect(se.availableLinkedEvents).toEqual([])
+  })
+
+  test('available linked events show up', () => {
+    const se = new SweepEvent()
+    const seOkay1 = new SweepEvent([0, 0])
+    seOkay1.segment = { isInResult: true, isProcessed: false }
+    const seOkay2 = new SweepEvent([1, 0])
+    seOkay2.segment = { isInResult: true, isProcessed: false }
+
+    se.link(seOkay1)
+    se.link(seOkay2)
+    expect(se.availableLinkedEvents).toEqual([seOkay1, seOkay2])
+  })
+
+  test('link goes both ways', () => {
+    const seOkay1 = new SweepEvent([0, 0])
+    seOkay1.segment = { isInResult: true, isProcessed: false }
+    const seOkay2 = new SweepEvent([1, 0])
+    seOkay2.segment = { isInResult: true, isProcessed: false }
+
+    seOkay1.link(seOkay2)
+    expect(seOkay1.availableLinkedEvents).toEqual([seOkay2])
+    expect(seOkay2.availableLinkedEvents).toEqual([seOkay1])
+  })
+})

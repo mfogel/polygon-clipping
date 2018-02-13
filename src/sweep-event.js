@@ -41,6 +41,23 @@ class SweepEvent {
   constructor (point, segment) {
     this.point = point
     this.segment = segment
+    this._linkedEvents = null
+  }
+
+  link (other) {
+    if (other._linkedEvents) {
+      throw new Error('Cannot link an already-linked event')
+    }
+    if (!this._linkedEvents) this._linkedEvents = [this]
+    this._linkedEvents.push(other)
+    other._linkedEvents = this._linkedEvents
+  }
+
+  get availableLinkedEvents () {
+    if (!this._linkedEvents) return []
+    return this._linkedEvents.filter(
+      evt => evt !== this && evt.segment.isInResult && !evt.segment.isProcessed
+    )
   }
 
   get isLeft () {

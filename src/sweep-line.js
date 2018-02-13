@@ -17,10 +17,16 @@ class SweepLine {
     this.tree = new Tree(comparator)
     this.removeCounter = 1
     this.segments = []
+    this.prevEvent = null
   }
 
   process (event) {
     const segment = event.segment
+
+    if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
+      this.prevEvent.link(event)
+    }
+    this.prevEvent = event
 
     if (event.isLeft) {
       this.segments.push(segment)
