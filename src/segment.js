@@ -64,6 +64,7 @@ class Segment {
     this.creationId = creationId === null ? creationCnt++ : creationId
     this.isSubject = isSubject
     this.isExteriorRing = isExteriorRing
+    this.isProcessed = false
 
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
     this.leftSE = new SweepEvent(lp, this)
@@ -83,6 +84,10 @@ class Segment {
       this.isExteriorRing,
       this.creationId
     )
+  }
+
+  markProcessed () {
+    this.isProcessed = true
   }
 
   get xmin () {

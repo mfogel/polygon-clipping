@@ -2,7 +2,7 @@ const { cosineOfAngle, sineOfAngle } = require('./point')
 
 const getNextSegment = (segments, prevPoint, point) => {
   const candidates = segments.filter(
-    seg => !seg.processed && seg.isAnEndpoint(point)
+    seg => !seg.isProcessed && seg.isAnEndpoint(point)
   )
   if (candidates.length === 0) return null
   if (candidates.length === 1) return candidates[0]
@@ -39,7 +39,7 @@ const buildRing = (segment, segments) => {
     let prevPoint = point
     point = segment.getOtherPoint(point)
     ring.push(point)
-    segment.processed = true
+    segment.markProcessed()
     segment = getNextSegment(segments, prevPoint, point)
   }
   return ring
@@ -49,7 +49,7 @@ const connectEdges = segments => {
   const result = []
 
   segments.forEach((segment, i) => {
-    if (segment.processed) return
+    if (segment.isProcessed) return
     const ring = buildRing(segment, segments)
     // TODO: shouldn't the first ring always be an exterior one?
     if (segment.isExteriorRing || result.length === 0) result.push([])
