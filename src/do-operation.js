@@ -17,9 +17,9 @@ const doOperation = (subject, clipping, operationType) => {
   while (!eventQueue.isEmpty) {
     eventQueue.push(...sweepLine.process(eventQueue.pop()))
   }
-  const sortedEvents = sweepLine.getResults()
+  const sortedSegments = sweepLine.getResults()
 
-  const result = connectEdges(sortedEvents)
+  const result = connectEdges(sortedSegments)
   return result
 }
 

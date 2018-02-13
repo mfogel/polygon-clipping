@@ -16,14 +16,14 @@ class SweepLine {
   constructor (comparator = Segment.compare) {
     this.tree = new Tree(comparator)
     this.removeCounter = 1
-    this.sortedEvents = []
+    this.segments = []
   }
 
   process (event) {
-    this.sortedEvents.push(event)
     const segment = event.segment
 
     if (event.isLeft) {
+      this.segments.push(segment)
       const node = this.insert(segment)
       const prevSeg = this.prevKey(node)
       const nextSeg = this.nextKey(node)
@@ -34,9 +34,8 @@ class SweepLine {
       if (nextSeg) newEvents.push(...this._checkIntersection(segment, nextSeg))
       if (prevSeg) newEvents.push(...this._checkIntersection(prevSeg, segment))
       return newEvents
-    }
-
-    if (event.isRight) {
+    } else {
+      // event.isRight
       const node = this.find(segment)
       const nextSeg = this.nextKey(node)
 
@@ -51,7 +50,7 @@ class SweepLine {
   }
 
   getResults () {
-    return this.sortedEvents.filter(evt => evt.isInResult)
+    return this.segments.filter(seg => seg.isInResult)
   }
 
   /* Returns the new node associated with the key */

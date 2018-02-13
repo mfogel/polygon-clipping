@@ -58,14 +58,6 @@ class SweepEvent {
   get isSubject () {
     return this.segment.isSubject
   }
-
-  get isInResult () {
-    return this.segment.isInResult
-  }
-
-  get isExteriorRing () {
-    return this.segment.isExteriorRing
-  }
 }
 
 module.exports = SweepEvent

@@ -1,42 +1,58 @@
-const { arePointsEqual } = require('./point')
+const { cosineOfAngle, sineOfAngle } = require('./point')
 
-const nextPos = (pos, events, processed, origIndex) => {
-  let newPos
-  // while in range and not the current one by value
-  for (newPos = pos + 1; newPos < events.length; newPos++) {
-    if (!arePointsEqual(events[pos].point, events[newPos].point)) break
-    if (!processed[newPos]) return newPos
+const getNextSegment = (segments, prevPoint, point) => {
+  const candidates = segments.filter(
+    seg => !seg.processed && seg.isAnEndpoint(point)
+  )
+  if (candidates.length === 0) return null
+  if (candidates.length === 1) return candidates[0]
+
+  // we want the candidate that makes the smallest left-side angle
+  // pre-compute the sine and cosine for each candidate
+  candidates.forEach(cand => {
+    const candPoint = cand.getOtherPoint(point)
+    cand.sine = sineOfAngle(point, prevPoint, candPoint)
+    cand.cosine = cosineOfAngle(point, prevPoint, candPoint)
+  })
+
+  // compare function that favors the smallest left-side angle
+  const compareCandidates = (a, b) => {
+    if (a.sine >= 0 && b.sine >= 0) {
+      if (a.cosine === b.cosine) return 0
+      return a.cosine > b.cosine ? -1 : 1
+    }
+    if (a.sine < 0 && b.sine < 0) {
+      if (a.cosine === b.cosine) return 0
+      return a.cosine < b.cosine ? -1 : 1
+    }
+    return a.sine > b.sine ? -1 : 1
   }
-  for (newPos = pos - 1; newPos >= origIndex; newPos--) {
-    if (!processed[newPos]) break
-  }
-  return newPos
+
+  candidates.sort(compareCandidates)
+  return candidates[0]
 }
 
-const buildRing = (events, processed, origIndex) => {
-  let event = events[origIndex]
-  const ring = [event.point]
-  let pos = origIndex
-  while (pos >= origIndex) {
-    ring.push(events[event.pos].point)
-    processed[pos] = processed[event.pos] = true
-    pos = nextPos(event.pos, events, processed, origIndex)
-    event = events[pos]
+const buildRing = (segment, segments) => {
+  let point = segment.leftSE.point
+  const ring = [point]
+  while (segment) {
+    let prevPoint = point
+    point = segment.getOtherPoint(point)
+    ring.push(point)
+    segment.processed = true
+    segment = getNextSegment(segments, prevPoint, point)
   }
   return ring
 }
 
-const connectEdges = events => {
-  // annotate the events with pointers to each other's indexes
-  events.forEach((event, i) => (event.otherSE.pos = i))
-
-  const processed = {} // has that index already been processed?
+const connectEdges = segments => {
   const result = []
 
-  events.forEach((event, i) => {
-    if (processed[i]) return
-    const ring = buildRing(events, processed, i)
-    if (event.isExteriorRing || result.length === 0) result.push([])
+  segments.forEach((segment, i) => {
+    if (segment.processed) return
+    const ring = buildRing(segment, segments)
+    // TODO: shouldn't the first ring always be an exterior one?
+    if (segment.isExteriorRing || result.length === 0) result.push([])
     result[result.length - 1].push(ring)
   })
 

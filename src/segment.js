@@ -129,6 +129,12 @@ class Segment {
     throw new Error('may only be called by own sweep events')
   }
 
+  getOtherPoint (point) {
+    if (arePointsEqual(point, this.leftSE.point)) return this.rightSE.point
+    if (arePointsEqual(point, this.rightSE.point)) return this.leftSE.point
+    throw new Error('may only be called with own point')
+  }
+
   isAnEndpoint (point) {
     return this.points.some(pt => arePointsEqual(pt, point))
   }

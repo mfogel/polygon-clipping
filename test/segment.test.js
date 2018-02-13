@@ -154,6 +154,23 @@ describe('segment getOtherSE', () => {
   })
 })
 
+describe('segment getOtherPoint', () => {
+  test('left to right', () => {
+    const seg = new Segment([0, 0], [1, 0])
+    expect(seg.getOtherPoint([0, 0])).toEqual([1, 0])
+  })
+
+  test('right to left', () => {
+    const seg = new Segment([0, 0], [1, 0])
+    expect(seg.getOtherPoint([1, 0])).toEqual([0, 0])
+  })
+
+  test('doesnt work for points that are not one of the endpoints', () => {
+    const seg = new Segment([0, 0], [1, 0])
+    expect(() => seg.getOtherPoint([5, 5])).toThrow()
+  })
+})
+
 describe('is an endpoint', () => {
   const p1 = [0, -1]
   const p2 = [1, 0]
