@@ -17,6 +17,9 @@ describe('end to end', () => {
   targets.forEach(target => {
     if (targetOnly && target !== targetOnly) return
 
+    // ignore dotfiles like .DS_Store
+    if (target.startsWith('.')) return
+
     describe(target, () => {
       const targetDir = path.join(endToEndDir, target)
       const argsGeojson = load.sync(path.join(targetDir, 'args.geojson'))
