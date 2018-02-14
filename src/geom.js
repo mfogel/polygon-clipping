@@ -11,8 +11,7 @@ class Ring {
   }
 
   get geom () {
-    // TODO: reverse the winding for interior rings
-    return this._points
+    return this.isExteriorRing ? this._points : this._points.reverse()
   }
 
   get enclosingRing () {
