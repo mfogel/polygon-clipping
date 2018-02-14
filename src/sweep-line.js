@@ -7,15 +7,13 @@ const Segment = require('./segment')
  *        then do a remove() on the tree, the nodes can get
  *        messed up: https://github.com/w8r/avl/issues/15
  *
- *        As such, the methods here which accept nodes back from
- *        the client will throw an exception if remove() has been
- *        called since that node was first given to the client.
+ *        As such, the methods here are careful not to re-use
+ *        any nodes they're holding on to after calling remove().
  */
 
 class SweepLine {
   constructor (comparator = Segment.compare) {
     this.tree = new Tree(comparator)
-    this.removeCounter = 1
     this.segments = []
     this.prevEvent = null
   }
@@ -24,9 +22,9 @@ class SweepLine {
     const segment = event.segment
 
     if (event.isLeft) {
-      const node = this.insert(segment)
-      const prevSeg = this.prevKey(node)
-      const nextSeg = this.nextKey(node)
+      const node = this._insert(segment)
+      const prevSeg = this._prevKey(node)
+      const nextSeg = this._nextKey(node)
 
       const newEvents = []
       if (nextSeg) newEvents.push(...this._checkIntersection(segment, nextSeg))
@@ -38,7 +36,7 @@ class SweepLine {
         // determine which ring encloses which) we abort the processing of this
         // event, put all the events back in the queue and restart
         newEvents.push(event)
-        this.remove(segment)
+        this._remove(segment)
         return newEvents
       }
 
@@ -46,15 +44,15 @@ class SweepLine {
       segment.registerPrev(prevSeg)
     } else {
       // event.isRight
-      const node = this.find(segment)
-      const nextSeg = this.nextKey(node)
+      const node = this._find(segment)
+      const nextSeg = this._nextKey(node)
 
       if (nextSeg && segment.isCoincidentWith(nextSeg)) {
         segment.registerCoincident(nextSeg, true)
         nextSeg.registerCoincident(segment, false)
       }
 
-      this.remove(segment)
+      this._remove(segment)
     }
 
     if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
@@ -69,32 +67,25 @@ class SweepLine {
     return this.segments.filter(seg => seg.isInResult)
   }
 
-  /* Returns the new node associated with the key */
-  insert (key) {
-    const node = this.tree.insert(key)
-    return this._annotateNode(node)
+  _insert (key) {
+    return this.tree.insert(key)
   }
 
-  /* Returns the node associated with the key */
-  find (key, returnNeighbors = false) {
-    const node = this.tree.find(key)
-    return this._annotateNode(node)
+  _find (key) {
+    return this.tree.find(key)
   }
 
-  prevKey (node) {
-    this._checkNode(node)
+  _prevKey (node) {
     const prevNode = this.tree.prev(node)
     return prevNode ? prevNode.key : null
   }
 
-  nextKey (node) {
-    this._checkNode(node)
+  _nextKey (node) {
     const nextNode = this.tree.next(node)
     return nextNode ? nextNode.key : null
   }
 
-  remove (key) {
-    this.removeCounter++
+  _remove (key) {
     this.tree.remove(key)
   }
 
@@ -112,18 +103,6 @@ class SweepLine {
         : inters[0]
     }
     return [...seg1.attemptSplit(splitOn), ...seg2.attemptSplit(splitOn)]
-  }
-
-  _checkNode (node) {
-    /* defensively working around https://github.com/w8r/avl/issues/15 */
-    if (node.removeCounter !== this.removeCounter) {
-      throw new Error('Tried to use stale node')
-    }
-  }
-
-  _annotateNode (node) {
-    if (node !== null) node.removeCounter = this.removeCounter
-    return node
   }
 }
 
