@@ -23,23 +23,27 @@ class SweepLine {
   process (event) {
     const segment = event.segment
 
-    if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
-      this.prevEvent.link(event)
-    }
-    this.prevEvent = event
-
     if (event.isLeft) {
-      this.segments.push(segment)
       const node = this.insert(segment)
       const prevSeg = this.prevKey(node)
       const nextSeg = this.nextKey(node)
 
-      segment.registerPrev(prevSeg)
-
       const newEvents = []
       if (nextSeg) newEvents.push(...this._checkIntersection(segment, nextSeg))
       if (prevSeg) newEvents.push(...this._checkIntersection(prevSeg, segment))
-      return newEvents
+
+      if (newEvents.length) {
+        // Some segments have been split. To make our sweep line sorting
+        // perfectly correct (used later via the segment 'previous' pointers to
+        // determine which ring encloses which) we abort the processing of this
+        // event, put all the events back in the queue and restart
+        newEvents.push(event)
+        this.remove(segment)
+        return newEvents
+      }
+
+      this.segments.push(segment)
+      segment.registerPrev(prevSeg)
     } else {
       // event.isRight
       const node = this.find(segment)
@@ -51,8 +55,14 @@ class SweepLine {
       }
 
       this.remove(segment)
-      return []
     }
+
+    if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
+      this.prevEvent.link(event)
+    }
+    this.prevEvent = event
+
+    return []
   }
 
   getResults () {

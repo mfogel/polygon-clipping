@@ -1,9 +1,8 @@
 const cleanInput = require('./clean-input.js')
 const EventQueue = require('./event-queue')
-const MultiPoly = require('./multipoly')
 const operationTypes = require('./operation-types')
-const Ring = require('./ring')
 const SweepLine = require('./sweep-line')
+const { MultiPoly, Ring } = require('./geom')
 
 const doOperation = (subject, clipping, operationType) => {
   operationTypes.setActive(operationType)
@@ -30,7 +29,7 @@ const doOperation = (subject, clipping, operationType) => {
 
   /* Compile those rings into a multipolygon */
   const result = new MultiPoly(rings)
-  return result.asPoints()
+  return result.geom
 }
 
 module.exports = doOperation

@@ -11,8 +11,6 @@ class EventQueue {
   consume (multipoly, isSubject) {
     multipoly.forEach(poly => {
       poly.forEach((ring, j) => {
-        const isExteriorRing = j === 0
-
         ring.forEach((point, i, ring) => {
           if (i === 0) return
           const prevPoint = ring[i - 1]
@@ -20,7 +18,7 @@ class EventQueue {
           // repeated point in a ring? Skip over it
           if (arePointsEqual(prevPoint, point)) return
 
-          const seg = new Segment(prevPoint, point, isSubject, isExteriorRing)
+          const seg = new Segment(prevPoint, point, isSubject)
           this.push(seg.leftSE, seg.rightSE)
         })
       })
