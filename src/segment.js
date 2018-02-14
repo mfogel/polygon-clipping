@@ -351,8 +351,7 @@ class Segment {
         } else if (operationTypes.isActive(operationTypes.UNION)) {
           return !this.isInsideOther
         } else if (operationTypes.isActive(operationTypes.XOR)) {
-          // TODO: is this right?
-          return true
+          return true // all sides from both INTERSECTION and UNION
         } else if (operationTypes.isActive(operationTypes.DIFFERENCE)) {
           return (
             (this.isSubject && !this.isInsideOther) ||
