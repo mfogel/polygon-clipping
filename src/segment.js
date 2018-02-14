@@ -64,7 +64,7 @@ class Segment {
     this.creationId = creationId === null ? creationCnt++ : creationId
     this.isSubject = isSubject
     this.isExteriorRing = isExteriorRing
-    this.isProcessed = false
+    this.ring = null
 
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
     this.leftSE = new SweepEvent(lp, this)
@@ -86,8 +86,8 @@ class Segment {
     )
   }
 
-  markProcessed () {
-    this.isProcessed = true
+  registerRing (ring) {
+    this.ring = ring
   }
 
   get xmin () {
@@ -272,14 +272,19 @@ class Segment {
     return this._getCached('edgeType', this._calcEdgeType)
   }
 
+  /* Does the sweep line, when intersecting the left event, *enter* (
+   * rather than exit) the polygon this segment is part of? */
   get sweepLineEnters () {
     return this._getCached('sweepLineEnters', this._calcSweepLineEnters)
   }
 
+  /* Is this segment within the 'other' polygon? (ie. if this is part of
+   * the clipping, is it within the subject?) */
   get isInsideOther () {
     return this._getCached('isInsideOther', this._calcIsInsideOther)
   }
 
+  /* Is this segment part of the final result? */
   get isInResult () {
     return this._getCached('isInResult', this._calcIsInResult)
   }

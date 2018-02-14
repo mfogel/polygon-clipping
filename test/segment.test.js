@@ -171,6 +171,20 @@ describe('segment getOtherPoint', () => {
   })
 })
 
+describe('segment register ring', () => {
+  test('unregistered at first', () => {
+    const seg = new Segment([0, 0], [1, 0])
+    expect(seg.ring).toBeNull()
+  })
+
+  test('register it', () => {
+    const seg = new Segment([0, 0], [1, 0])
+    const ring = {}
+    seg.registerRing(ring)
+    expect(seg.ring).toBe(ring)
+  })
+})
+
 describe('is an endpoint', () => {
   const p1 = [0, -1]
   const p2 = [1, 0]

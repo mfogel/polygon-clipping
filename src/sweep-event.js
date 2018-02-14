@@ -1,3 +1,5 @@
+const { cosineOfAngle, sineOfAngle } = require('./point')
+
 class SweepEvent {
   static compare (a, b) {
     if (a === b) return 0
@@ -56,8 +58,48 @@ class SweepEvent {
   get availableLinkedEvents () {
     if (!this._linkedEvents) return []
     return this._linkedEvents.filter(
-      evt => evt !== this && evt.segment.isInResult && !evt.segment.isProcessed
+      evt => evt !== this && evt.segment.isInResult && !evt.segment.ring
     )
+  }
+
+  /**
+   * Returns a comparator function for sorting linked events that will
+   * favor the event that will give us the smallest left-side angle.
+   * All ring construction starts as low as possible heading to the right,
+   * so by always turning left as sharp as possible we'll get polygons
+   * without uncessary loops & holes.
+   *
+   * The comparator function has a compute cache such that it avoids
+   * re-computing already-computed values.
+   */
+  getLeftmostComparator (baseEvent) {
+    const cache = new Map()
+
+    const fillCache = linkedEvent => {
+      const nextEvent = linkedEvent.otherSE
+      cache.set(linkedEvent, {
+        sine: sineOfAngle(this.point, baseEvent.point, nextEvent.point),
+        cosine: cosineOfAngle(this.point, baseEvent.point, nextEvent.point)
+      })
+    }
+
+    return (a, b) => {
+      if (!cache.has(a)) fillCache(a)
+      if (!cache.has(b)) fillCache(b)
+
+      const { sine: asine, cosine: acosine } = cache.get(a)
+      const { sine: bsine, cosine: bcosine } = cache.get(b)
+
+      if (asine >= 0 && bsine >= 0) {
+        if (acosine === bcosine) return 0
+        return acosine > bcosine ? -1 : 1
+      }
+      if (asine < 0 && bsine < 0) {
+        if (acosine === bcosine) return 0
+        return acosine < bcosine ? -1 : 1
+      }
+      return asine > bsine ? -1 : 1
+    }
   }
 
   get isLeft () {
