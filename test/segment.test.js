@@ -23,18 +23,6 @@ describe('constructor', () => {
     expect(seg.leftSE.point).toEqual(p2)
     expect(seg.rightSE.point).toEqual(p1)
   })
-
-  test('is subject set 1', () => {
-    const seg = new Segment([0, 0], [1, 0], true)
-    expect(seg.leftSE.isSubject).toBeTruthy()
-    expect(seg.rightSE.isSubject).toBeTruthy()
-  })
-
-  test('is subject set 2', () => {
-    const seg = new Segment([0, 0], [1, 0], false)
-    expect(seg.leftSE.isSubject).toBeFalsy()
-    expect(seg.rightSE.isSubject).toBeFalsy()
-  })
 })
 
 describe('clone', () => {
@@ -76,7 +64,6 @@ describe('attempt split', () => {
     expect(evts[1].point).toEqual(pt)
     expect(evts[1].isLeft).toBeTruthy()
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
-    expect(evts[1].isSubject).toBeTruthy()
   })
   test('yep: on interior point 2', () => {
     const seg = new Segment([0, 10], [10, 0], false)
@@ -89,7 +76,6 @@ describe('attempt split', () => {
     expect(evts[1].point).toEqual(pt)
     expect(evts[1].isLeft).toBeTruthy()
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
-    expect(evts[1].isSubject).toBeFalsy()
   })
 })
 

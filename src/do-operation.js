@@ -11,8 +11,8 @@ const doOperation = (subject, clipping, operationType) => {
 
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()
-  eventQueue.consume(subject, true)
-  eventQueue.consume(clipping, false)
+  eventQueue.consume(subject, false)
+  eventQueue.consume(clipping, true)
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()

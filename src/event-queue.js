@@ -8,7 +8,7 @@ class EventQueue {
     this.tinyQueue = new TinyQueue(null, comparator)
   }
 
-  consume (multipoly, isSubject) {
+  consume (multipoly, isClipping) {
     multipoly.forEach(poly => {
       poly.forEach((ring, j) => {
         ring.forEach((point, i, ring) => {
@@ -18,7 +18,7 @@ class EventQueue {
           // repeated point in a ring? Skip over it
           if (arePointsEqual(prevPoint, point)) return
 
-          const seg = new Segment(prevPoint, point, isSubject)
+          const seg = new Segment(prevPoint, point, isClipping)
           this.push(seg.leftSE, seg.rightSE)
         })
       })

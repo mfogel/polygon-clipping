@@ -56,13 +56,13 @@ class Segment {
     throw new Error('Segment comparison failed... identical but not?')
   }
 
-  constructor (point1, point2, isSubject, creationId = null) {
+  constructor (point1, point2, isClipping) {
     if (arePointsEqual(point1, point2)) {
       throw new Error('Unable to build segment for identical points')
     }
 
-    this.creationId = creationId === null ? creationCnt++ : creationId
-    this.isSubject = isSubject
+    this.creationId = creationCnt++
+    this.isClipping = isClipping
     this.ring = null
 
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
@@ -79,7 +79,7 @@ class Segment {
     return new Segment(
       this.leftSE.point,
       this.rightSE.point,
-      this.isSubject,
+      this.isClipping,
       this.creationId
     )
   }
@@ -324,7 +324,7 @@ class Segment {
   _calcSweepLineEnters () {
     if (!this.prev) return true
     else {
-      return this.isSubject === this.prev.isSubject
+      return this.isClipping === this.prev.isClipping
         ? !this.prev.sweepLineEnters
         : !this.prev.isInsideOther
     }
@@ -333,7 +333,7 @@ class Segment {
   _calcIsInsideOther () {
     if (!this.prev) return false
     else {
-      if (this.isSubject === this.prev.isSubject) {
+      if (this.isClipping === this.prev.isClipping) {
         return this.prev.isInsideOther
       } else {
         return this.prev.isVertical
@@ -353,10 +353,7 @@ class Segment {
         } else if (operationTypes.isActive(operationTypes.XOR)) {
           return true // all sides from both INTERSECTION and UNION
         } else if (operationTypes.isActive(operationTypes.DIFFERENCE)) {
-          return (
-            (this.isSubject && !this.isInsideOther) ||
-            (!this.isSubject && this.isInsideOther)
-          )
+          return this.isClipping === this.isInsideOther
         } else {
           throw new Error('No active operationType found')
         }

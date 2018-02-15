@@ -16,9 +16,6 @@ class SweepEvent {
       return !a.segment.isPointBelow(b.otherSE.point) ? 1 : -1
     }
 
-    // favor events from subject over clipping
-    if (a.isSubject !== b.isSubject) return a.isSubject ? -1 : 1
-
     // as a tie-breaker, favor lower segment creation id
     const [aId, bId] = [a.segment.creationId, b.segment.creationId]
     if (aId !== bId) return aId < bId ? -1 : 1
@@ -112,10 +109,6 @@ class SweepEvent {
 
   get otherSE () {
     return this.segment.getOtherSE(this)
-  }
-
-  get isSubject () {
-    return this.segment.isSubject
   }
 }
 

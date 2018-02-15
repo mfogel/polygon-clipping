@@ -32,13 +32,6 @@ describe('sweep event compare', () => {
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
-  test('then favor subject', () => {
-    const s1 = new Segment([0, 0], [5, 5], true).leftSE
-    const s2 = new Segment([0, 0], [4, 4], false).leftSE
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
-  })
-
   test('then favor earlier created first', () => {
     const s1 = new Segment([0, 0], [5, 5], true).leftSE
     const s2 = new Segment([0, 0], [4, 4], true).leftSE
