@@ -16,13 +16,14 @@ const polygonClipping = require('polygon-clipping')
 
 const poly1 = [[[0,0],[2,0],[0,2],[0,0]]]
 const poly2 = [[[-1,0],[1,0],[0,1],[-1,0]]]
-const poly3 = [[[0,-1],[1,0],[0,1],[0,-1]]]
 
-polygonClipping.clean       (poly1)
-polygonClipping.difference  (poly1, poly2)
-polygonClipping.union       (poly1, poly2, poly3)
-polygonClipping.intersection(poly1, poly2, poly3)
-polygonClipping.xor         (poly1, poly2, poly3)
+polygonClipping.union       (poly1, poly2 /* , poly3, ... */)
+polygonClipping.intersection(poly1, poly2 /* , poly3, ... */)
+polygonClipping.xor         (poly1, poly2 /* , poly3, ... */)
+
+polygonClipping.difference(poly1, poly2)
+
+polygonClipping.clean(poly1)
 ```
 
 ## API
@@ -49,7 +50,7 @@ Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon.
 Follows the [geojson Polygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.6), with the following notes/modifications:
 * rings of the polygon are not required to be self-closing
 * winding order of rings of Polygon does not matter
-* interior rings may extend outside exterior rings
+* interior rings may extend outside exterior rings (effectively swaping which is interior and which exterior)
 * interior rings may touch or overlap each other
 * rings may be self-intersecting
 
@@ -84,8 +85,8 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 ## Authors
 
 * [Mike Fogel](https://github.com/mfogel)
-* [Alexander Milevski](https://github.com/w8r/)
-* [Vladimir Ovsyannikov](https://github.com/sh1ng/)
+* [Alexander Milevski](https://github.com/w8r)
+* [Vladimir Ovsyannikov](https://github.com/sh1ng)
 
 ## Based on
 
