@@ -1,18 +1,19 @@
 const cleanInput = require('./clean-input.js')
 const EventQueue = require('./event-queue')
-const operationTypes = require('./operation-types')
 const SweepLine = require('./sweep-line')
 const { MultiPoly, Ring } = require('./geom')
 
-const doOperation = (subject, clipping, operationType) => {
-  operationTypes.setActive(operationType)
-  cleanInput(subject)
-  cleanInput(clipping)
+// TODO: change this to actually accept multiple subjects
+const doOperation = (subject, clipping = null) => {
+  const subjects = [subject]
+
+  subjects.forEach(s => cleanInput(s))
+  if (clipping) cleanInput(clipping)
 
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()
-  eventQueue.consume(subject, false)
-  eventQueue.consume(clipping, true)
+  subjects.forEach(s => eventQueue.consume(s, false))
+  if (clipping) eventQueue.consume(clipping, true)
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
