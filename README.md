@@ -47,21 +47,21 @@ Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon.
 
 #### Polygon
 
-Follows the [geojson Polygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.6), with the following notes/modifications:
+Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.6), with the following notes/modifications:
 * rings of the polygon are not required to be self-closing
 * winding order of rings of Polygon does not matter
-* interior rings may extend outside exterior rings (effectively swaping which is interior and which exterior)
+* interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
 * interior rings may touch or overlap each other
-* rings may be self-intersecting
+* rings may be self-intersecting (interior sub-ring of rings are dropped)
 
 #### MultiPolygon
 
-Follows the [geojson MultiPolygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.7), with the following notes/modifications:
+Follows the [GeoJSON MultiPolygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.7), with the following notes/modifications:
 * may contain touching or overlapping Polygons
 
 ### Output
 
-Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing Polygons. The Polygons will follow the geojson spec, meaning:
+Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing Polygons. The Polygons will follow the GeoJSON spec, meaning:
 * the outer ring will be wound counter-clockwise, and inner rings clockwise.
 * inner rings will not extend outside the outer ring, nor share an edge with the outer ring
 * inner rings will not overlap, nor share an edge with each other

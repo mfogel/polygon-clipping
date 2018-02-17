@@ -9,14 +9,22 @@ const polygonClipping = require('../main')
 const targetOnly = ''
 const opOnly = ''
 
+/** USE ME TO SKIP TESTS **/
+const targetsSkip = [
+  'clean-multipoly-with-polys-overlapping',
+  'clean-poly-with-exterior-self-intersecting-ring-1',
+  'clean-poly-with-interior-self-intersecting-ring-1',
+  'clean-poly-with-interior-ring-overlapping-exterior',
+  'clean-poly-with-interior-rings-overlapping'
+]
+const opsSkip = []
+
 const endToEndDir = 'test/end-to-end'
 
 describe('end to end', () => {
   const targets = fs.readdirSync(endToEndDir)
 
   targets.forEach(target => {
-    if (targetOnly && target !== targetOnly) return
-
     // ignore dotfiles like .DS_Store
     if (target.startsWith('.')) return
 
@@ -31,9 +39,13 @@ describe('end to end', () => {
         .map(fn => [fn.slice(0, -'.geojson'.length), path.join(targetDir, fn)])
 
       resultPathsAndOperationTypes.forEach(([operationType, resultPath]) => {
-        if (opOnly && operationType !== opOnly) return
+        let doTest = test
+        if (targetsSkip.includes(target)) doTest = test.skip
+        if (opsSkip.includes(operationType)) doTest = test.skip
+        if (targetOnly && target === targetOnly) doTest = test.only
+        if (opOnly && operationType === opOnly) doTest = test.only
 
-        test(operationType, () => {
+        doTest(operationType, () => {
           const resultGeojson = load.sync(resultPath)
           const expected = resultGeojson.geometry.coordinates
 
