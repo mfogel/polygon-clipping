@@ -14,7 +14,7 @@ describe('test doOperation calls the right stuff', () => {
     const subject2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
 
     // TODO: change when doOperation api changes
-    doOperation(subject1, subject2)
+    doOperation(null, subject1, subject2)
     expect(cleanInput).toHaveBeenCalledTimes(2)
     expect(cleanInput).toHaveBeenCalledWith(subject1)
     expect(cleanInput).toHaveBeenCalledWith(subject2)
@@ -25,7 +25,7 @@ describe('test doOperation calls the right stuff', () => {
     const clipping = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
 
     // TODO: change when doOperation api changes
-    doOperation(subject, clipping)
+    doOperation(null, subject, clipping)
     expect(cleanInput).toHaveBeenCalledTimes(2)
     expect(cleanInput).toHaveBeenCalledWith(subject)
     expect(cleanInput).toHaveBeenCalledWith(clipping)

@@ -1,10 +1,12 @@
 const cleanInput = require('./clean-input.js')
 const EventQueue = require('./event-queue')
 const SweepLine = require('./sweep-line')
+const operationTypes = require('./operation-types')
 const { MultiPoly, Ring } = require('./geom')
 
 // TODO: change this to actually accept multiple subjects
-const doOperation = (subject, clipping = null) => {
+const doOperation = (operationType, subject, clipping = null) => {
+  operationTypes.setActive(operationType)
   const subjects = [subject]
 
   subjects.forEach(s => cleanInput(s))
