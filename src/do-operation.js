@@ -1,8 +1,8 @@
 const cleanInput = require('./clean-input.js')
+const geomOut = require('./geom-out')
 const EventQueue = require('./event-queue')
 const SweepLine = require('./sweep-line')
 const operationTypes = require('./operation-types')
-const { MultiPoly, Ring } = require('./geom')
 
 // TODO: change this to actually accept multiple subjects
 const doOperation = (operationType, ...geoms) => {
@@ -23,11 +23,11 @@ const doOperation = (operationType, ...geoms) => {
   /* Collect the segments we're keeping in a series of rings */
   const rings = []
   segments.forEach(segment => {
-    if (!segment.ring) rings.push(new Ring(segment))
+    if (!segment.ring) rings.push(new geomOut.Ring(segment))
   })
 
   /* Compile those rings into a multipolygon */
-  const result = new MultiPoly(rings)
+  const result = new geomOut.MultiPoly(rings)
   return result.geom
 }
 

@@ -4,7 +4,7 @@
 // do is operate off of the result of the sweep line sweep
 
 const Segment = require('../src/segment')
-const { Ring, Poly, MultiPoly } = require('../src/geom')
+const { Ring, Poly, MultiPoly } = require('../src/geom-out')
 
 describe('ring', () => {
   test('basic', () => {
