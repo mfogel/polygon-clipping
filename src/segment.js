@@ -3,13 +3,6 @@ const operationTypes = require('./operation-types')
 const { arePointsEqual, crossProduct } = require('./point')
 const SweepEvent = require('./sweep-event')
 
-const edgeTypes = {
-  NORMAL: 0,
-  NON_CONTRIBUTING: 1,
-  SAME_TRANSITION: 2,
-  DIFFERENT_TRANSITION: 3
-}
-
 // Give segments unique ID's to get consistent sorting when segments
 // are otherwise identical
 let creationCnt = 0
@@ -266,10 +259,6 @@ class Segment {
     return this.coincident && this.coincident !== this.prev
   }
 
-  get edgeType () {
-    return this._getCached('edgeType', this._calcEdgeType)
-  }
-
   /* Does the sweep line, when intersecting the left event, *enter* (
    * rather than exit) the polygon this segment is part of? */
   get sweepLineEnters () {
@@ -296,7 +285,6 @@ class Segment {
 
   _clearCache () {
     this._cache = {
-      edgeType: null,
       sweepLineEnters: null,
       isInsideOther: null,
       isInResult: null
@@ -309,16 +297,6 @@ class Segment {
       this._cache[propName] = calcMethod.bind(this)()
     }
     return this._cache[propName]
-  }
-
-  _calcEdgeType () {
-    if (this.coincident) {
-      if (this.isCoincidenceWinner) {
-        return this.coincident.sweepLineEnters === this.sweepLineEnters
-          ? edgeTypes.SAME_TRANSITION
-          : edgeTypes.DIFFERENT_TRANSITION
-      } else return edgeTypes.NON_CONTRIBUTING
-    } else return edgeTypes.NORMAL
   }
 
   _calcSweepLineEnters () {
@@ -344,28 +322,33 @@ class Segment {
   }
 
   _calcIsInResult () {
-    switch (this.edgeType) {
-      case edgeTypes.NORMAL:
-        if (operationTypes.isActive(operationTypes.INTERSECTION)) {
-          return this.isInsideOther
-        } else if (operationTypes.isActive(operationTypes.UNION)) {
-          return !this.isInsideOther
-        } else if (operationTypes.isActive(operationTypes.XOR)) {
-          return true // all sides from both INTERSECTION and UNION
-        } else {
-          throw new Error('No active operationType found')
-        }
-      case edgeTypes.SAME_TRANSITION:
-        return (
-          operationTypes.isActive(operationTypes.INTERSECTION) ||
-          operationTypes.isActive(operationTypes.UNION)
-        )
-      case edgeTypes.DIFFERENT_TRANSITION:
-      case edgeTypes.NON_CONTRIBUTING:
-        return false
-      default:
-        throw new Error(`Unrecognized edgeType, '${this.edgeType}'`)
+    if (!this.coincident) {
+      if (operationTypes.isActive(operationTypes.INTERSECTION)) {
+        return this.isInsideOther
+      }
+
+      if (operationTypes.isActive(operationTypes.UNION)) {
+        return !this.isInsideOther
+      }
+
+      if (operationTypes.isActive(operationTypes.XOR)) {
+        return true // all sides from both INTERSECTION and UNION
+      }
+
+      throw new Error('No active operationType found')
     }
+
+    if (
+      this.isCoincidenceWinner &&
+      this.coincident.sweepLineEnters === this.sweepLineEnters
+    ) {
+      return (
+        operationTypes.isActive(operationTypes.INTERSECTION) ||
+        operationTypes.isActive(operationTypes.UNION)
+      )
+    }
+
+    return false
   }
 }
 
