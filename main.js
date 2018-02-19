@@ -19,7 +19,11 @@ const xor = (poly1, poly2) => {
 }
 
 const difference = (subject, clipping) => {
-  return doOperation(operationTypes.DIFFERENCE, subject, clipping)
+  // Doing this in two passes for simplicity, at the expense of performance.
+  // It is certainly possible to do this in one pass, PR's happily considered
+  const inter = doOperation(operationTypes.INTERSECTION, subject, clipping)
+  if (inter.length === 0) return subject
+  return doOperation(operationTypes.XOR, subject, inter)
 }
 
 const clean = poly => {

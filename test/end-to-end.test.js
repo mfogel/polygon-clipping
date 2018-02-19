@@ -42,8 +42,12 @@ describe('end to end', () => {
         let doTest = test
         if (targetsSkip.includes(target)) doTest = test.skip
         if (opsSkip.includes(operationType)) doTest = test.skip
-        if (targetOnly && target === targetOnly) doTest = test.only
-        if (opOnly && operationType === opOnly) doTest = test.only
+        if (targetOnly && opOnly) {
+          if (target === targetOnly && operationType === opOnly) {
+            doTest = test.only
+          }
+        } else if (targetOnly && target === targetOnly) doTest = test.only
+        else if (opOnly && operationType === opOnly) doTest = test.only
 
         doTest(operationType, () => {
           const resultGeojson = load.sync(resultPath)
