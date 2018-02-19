@@ -4,8 +4,7 @@ let activeOperationType = null
 const operationTypes = {
   INTERSECTION: 0,
   UNION: 1,
-  DIFFERENCE: 2,
-  XOR: 3,
+  XOR: 2,
   setActive: type => (activeOperationType = type),
   isActive: type => type === activeOperationType
 }

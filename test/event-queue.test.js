@@ -5,8 +5,7 @@ const EventQueue = require('../src/event-queue')
 const s = [[[[20, -23.5], [170, 74], [226.5, -113.5], [20, -23.5]]]]
 const c = [[[[54.5, -170.5], [140.5, 33.5], [239.5, -198], [54.5, -170.5]]]]
 const q = new EventQueue()
-q.consume(s, true)
-q.consume(c, false)
+q.consume([s, c])
 
 describe('event queue', () => {
   test('point 0', () => {

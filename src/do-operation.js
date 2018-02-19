@@ -5,17 +5,13 @@ const operationTypes = require('./operation-types')
 const { MultiPoly, Ring } = require('./geom')
 
 // TODO: change this to actually accept multiple subjects
-const doOperation = (operationType, subject, clipping = null) => {
+const doOperation = (operationType, ...geoms) => {
   operationTypes.setActive(operationType)
-  const subjects = [subject]
-
-  subjects.forEach(s => cleanInput(s))
-  if (clipping) cleanInput(clipping)
+  geoms.forEach(s => cleanInput(s))
 
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()
-  subjects.forEach(s => eventQueue.consume(s, false))
-  if (clipping) eventQueue.consume(clipping, true)
+  eventQueue.consume(geoms)
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()

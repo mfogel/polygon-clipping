@@ -1,21 +1,18 @@
 const doOperation = require('./src/do-operation')
 const operationTypes = require('./src/operation-types')
 
-// TODO: expand to handle more than two polys
-const union = (poly1, poly2) => {
-  return doOperation(operationTypes.UNION, poly1, poly2)
+const union = (geom1, geom2, ...moreGeoms) => {
+  return doOperation(operationTypes.UNION, geom1, geom2, ...moreGeoms)
 }
 
-// TODO: expand to handle more than two polys
-const intersection = (poly1, poly2) => {
+const intersection = (geom1, geom2, ...moreGeoms) => {
   operationTypes.setActive(operationTypes.INTERSECTION)
-  return doOperation(operationTypes.INTERSECTION, poly1, poly2)
+  return doOperation(operationTypes.INTERSECTION, geom1, geom2, ...moreGeoms)
 }
 
-// TODO: expand to handle more than two polys
-const xor = (poly1, poly2) => {
+const xor = (geom1, geom2, ...moreGeoms) => {
   operationTypes.setActive(operationTypes.XOR)
-  return doOperation(operationTypes.XOR, poly1, poly2)
+  return doOperation(operationTypes.XOR, geom1, geom2, ...moreGeoms)
 }
 
 const difference = (subject, clipping) => {
@@ -26,9 +23,9 @@ const difference = (subject, clipping) => {
   return doOperation(operationTypes.XOR, subject, inter)
 }
 
-const clean = poly => {
+const clean = geom => {
   // note that INTERSECTION or XOR would work the same as UNION here
-  return doOperation(operationTypes.UNION, poly)
+  return doOperation(operationTypes.UNION, geom)
 }
 
 module.exports = { union, difference, xor, intersection, clean }
