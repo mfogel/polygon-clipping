@@ -52,7 +52,7 @@ Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3
 * winding order of rings of Polygon does not matter
 * interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
 * interior rings may touch or overlap each other
-* rings may be self-intersecting (interior sub-ring of rings are dropped)
+* rings may be self-intersecting (interior portions of sub-rings are dropped)
 
 #### MultiPolygon
 
