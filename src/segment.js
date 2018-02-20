@@ -49,12 +49,12 @@ class Segment {
     throw new Error('Segment comparison failed... identical but not?')
   }
 
-  constructor (point1, point2, ring) {
+  constructor (point1, point2, ring, creationId = null) {
     if (arePointsEqual(point1, point2)) {
       throw new Error('Unable to build segment for identical points')
     }
 
-    this.creationId = creationCnt++
+    this.creationId = creationId !== null ? creationId : creationCnt++
     this.ringIn = ring
     this.ringOut = null
 

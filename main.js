@@ -6,12 +6,10 @@ const union = (geom1, geom2, ...moreGeoms) => {
 }
 
 const intersection = (geom1, geom2, ...moreGeoms) => {
-  operationTypes.setActive(operationTypes.INTERSECTION)
   return doOperation(operationTypes.INTERSECTION, geom1, geom2, ...moreGeoms)
 }
 
 const xor = (geom1, geom2, ...moreGeoms) => {
-  operationTypes.setActive(operationTypes.XOR)
   return doOperation(operationTypes.XOR, geom1, geom2, ...moreGeoms)
 }
 
@@ -28,4 +26,4 @@ const clean = geom => {
   return doOperation(operationTypes.UNION, geom)
 }
 
-module.exports = { union, difference, xor, intersection, clean }
+module.exports = { union, intersection, xor, difference, clean }

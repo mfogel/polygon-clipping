@@ -28,12 +28,14 @@ describe('constructor', () => {
 describe('clone', () => {
   test('general', () => {
     const [pt1, pt2] = [[0, 5], [10, 15]]
-    const seg = new Segment(pt1, pt2)
+    const seg = new Segment(pt1, pt2, {})
     const clone = seg.clone()
     expect(clone.leftSE).not.toBe(seg.leftSE)
     expect(clone.rightSE).not.toBe(seg.rightSE)
     expect(clone.leftSE.point).toEqual(seg.leftSE.point)
     expect(clone.rightSE.point).toEqual(seg.rightSE.point)
+    expect(clone.ringIn).toBe(seg.ringIn)
+    expect(clone.creationId).toBe(seg.creationId)
   })
 })
 

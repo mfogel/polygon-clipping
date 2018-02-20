@@ -4,7 +4,6 @@ const EventQueue = require('./event-queue')
 const SweepLine = require('./sweep-line')
 const operationTypes = require('./operation-types')
 
-// TODO: change this to actually accept multiple subjects
 const doOperation = (operationType, ...geoms) => {
   operationTypes.setActive(operationType)
   geoms.forEach(g => cleanInput.forceMultiPoly(g))

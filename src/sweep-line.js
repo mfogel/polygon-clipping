@@ -45,13 +45,7 @@ class SweepLine {
     } else {
       // event.isRight
       const node = this._find(segment)
-      const prevSeg = this._prevKey(node)
       const nextSeg = this._nextKey(node)
-
-      if (prevSeg && segment.isCoincidentWith(prevSeg)) {
-        prevSeg.registerCoincident(segment, true)
-        segment.registerCoincident(prevSeg, false)
-      }
 
       if (nextSeg && segment.isCoincidentWith(nextSeg)) {
         segment.registerCoincident(nextSeg, true)
