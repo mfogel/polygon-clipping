@@ -5,29 +5,42 @@ const cleanInput = require('../src/clean-input')
 const doOperation = require('../src/do-operation')
 
 afterEach(() => {
-  cleanInput.mockClear()
+  cleanInput.closeAllRings.mockClear()
+  cleanInput.errorOnSelfIntersectingRings.mockClear()
+  cleanInput.forceMultiPoly.mockClear()
 })
 
-describe('test doOperation calls the right stuff', () => {
-  test('clean-input called correctly with multiple subjects', () => {
-    const subject1 = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
-    const subject2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+describe('doOperation calls the right stuff', () => {
+  test('closeAllRings() called correctly', () => {
+    const poly1 = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
+    const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+    const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
 
-    // TODO: change when doOperation api changes
-    doOperation(null, subject1, subject2)
-    expect(cleanInput).toHaveBeenCalledTimes(2)
-    expect(cleanInput).toHaveBeenCalledWith(subject1)
-    expect(cleanInput).toHaveBeenCalledWith(subject2)
+    doOperation(null, poly1, poly2, poly3)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledTimes(3)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly1)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly2)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly3)
   })
 
-  test('clean-input called correctly with clipping', () => {
-    const subject = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
-    const clipping = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+  test('forceMultiPoly() called correctly', () => {
+    const poly1 = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
+    const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+    const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
 
-    // TODO: change when doOperation api changes
-    doOperation(null, subject, clipping)
-    expect(cleanInput).toHaveBeenCalledTimes(2)
-    expect(cleanInput).toHaveBeenCalledWith(subject)
-    expect(cleanInput).toHaveBeenCalledWith(clipping)
+    doOperation(null, poly1, poly2, poly3)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledTimes(3)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly1)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly2)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly3)
+  })
+
+  test('errorOnSelfIntersectingRings() called', () => {
+    const poly1 = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
+    const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+    const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+
+    doOperation(null, poly1, poly2, poly3)
+    expect(cleanInput.errorOnSelfIntersectingRings).toHaveBeenCalledTimes(1)
   })
 })

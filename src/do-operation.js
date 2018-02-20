@@ -7,7 +7,8 @@ const operationTypes = require('./operation-types')
 // TODO: change this to actually accept multiple subjects
 const doOperation = (operationType, ...geoms) => {
   operationTypes.setActive(operationType)
-  geoms.forEach(s => cleanInput(s))
+  geoms.forEach(g => cleanInput.forceMultiPoly(g))
+  geoms.forEach(g => cleanInput.closeAllRings(g))
 
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()
@@ -18,16 +19,19 @@ const doOperation = (operationType, ...geoms) => {
   while (!eventQueue.isEmpty) {
     eventQueue.push(...sweepLine.process(eventQueue.pop()))
   }
-  const segments = sweepLine.getResults()
+
+  /* Self-intersecting input rings are ambigious */
+  cleanInput.errorOnSelfIntersectingRings(sweepLine.segments)
 
   /* Collect the segments we're keeping in a series of rings */
-  const rings = []
-  segments.forEach((segment, i) => {
-    if (!segment.ringOut) rings.push(new geomOut.Ring(segment))
+  const ringsOut = []
+  sweepLine.segments.forEach(segment => {
+    if (!segment.isInResult || segment.ringOut) return
+    ringsOut.push(new geomOut.Ring(segment))
   })
 
   /* Compile those rings into a multipolygon */
-  const result = new geomOut.MultiPoly(rings)
+  const result = new geomOut.MultiPoly(ringsOut)
   return result.geom
 }
 

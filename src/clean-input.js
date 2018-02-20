@@ -43,8 +43,23 @@ const closeAllRings = multipoly => {
   })
 }
 
-/* WARN: input modified directly */
-module.exports = geom => {
-  forceMultiPoly(geom)
-  closeAllRings(geom)
+/* Scan the already-linked events of the segments for any
+ * self-intersecting input rings (which are not supported) */
+const errorOnSelfIntersectingRings = segments => {
+  segments.forEach(seg => {
+    const events = [seg.leftSE, seg.rightSE]
+    events.forEach(evt => {
+      if (evt.linkedEvents.length <= 2) return
+      const fromSameRing = e => e.segment.ringIn === evt.segment.ringIn
+      if (evt.linkedEvents.filter(fromSameRing).length > 2) {
+        throw new Error(`Self-intersecting input ring found at ${evt.point}`)
+      }
+    })
+  })
+}
+
+module.exports = {
+  closeAllRings,
+  errorOnSelfIntersectingRings,
+  forceMultiPoly
 }

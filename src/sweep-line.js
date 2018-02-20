@@ -69,10 +69,6 @@ class SweepLine {
     return []
   }
 
-  getResults () {
-    return this.segments.filter(seg => seg.isInResult)
-  }
-
   _insert (key) {
     return this.tree.insert(key)
   }

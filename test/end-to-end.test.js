@@ -12,8 +12,6 @@ const opOnly = ''
 /** USE ME TO SKIP TESTS **/
 const targetsSkip = [
   'clean-multipoly-with-polys-overlapping',
-  'clean-poly-with-exterior-self-intersecting-ring',
-  'clean-poly-with-interior-self-intersecting-ring',
   'clean-poly-with-interior-ring-overlapping-exterior',
   'clean-poly-with-interior-rings-overlapping',
   'triple-coincident-segments'

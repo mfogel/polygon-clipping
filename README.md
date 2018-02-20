@@ -52,7 +52,7 @@ Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3
 * winding order of rings of Polygon does not matter
 * interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
 * interior rings may touch or overlap each other
-* rings may be self-intersecting (interior portions of sub-rings are dropped)
+* rings may **not** be self-intersecting. If a self-intersecting ring is found, an exception will be thrown. To clean up self-intersecting rings, you may want to use the [Non-zero rule](https://en.wikipedia.org/wiki/Nonzero-rule) or the [Even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
 
 #### MultiPolygon
 
