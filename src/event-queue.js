@@ -1,4 +1,5 @@
 const TinyQueue = require('tinyqueue')
+const geomIn = require('./geom-in')
 const Segment = require('./segment')
 const SweepEvent = require('./sweep-event')
 const { arePointsEqual } = require('./point')
@@ -9,11 +10,15 @@ class EventQueue {
   }
 
   consume (multipolys) {
-    let polyId = 0
-
     multipolys.forEach(multipoly => {
+      const multiPolyGeom = new geomIn.MultiPoly()
+
       multipoly.forEach(poly => {
+        const polyGeom = new geomIn.Poly(multiPolyGeom)
+
         poly.forEach((ring, j) => {
+          const ringGeom = new geomIn.Ring(polyGeom, j === 0)
+
           ring.forEach((point, i, ring) => {
             if (i === 0) return
             const prevPoint = ring[i - 1]
@@ -21,12 +26,10 @@ class EventQueue {
             // repeated point in a ring? Skip over it
             if (arePointsEqual(prevPoint, point)) return
 
-            const seg = new Segment(prevPoint, point, polyId)
+            const seg = new Segment(prevPoint, point, ringGeom)
             this.push(seg.leftSE, seg.rightSE)
           })
         })
-
-        polyId += 1
       })
     })
   }

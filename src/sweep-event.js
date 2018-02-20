@@ -55,7 +55,7 @@ class SweepEvent {
   get availableLinkedEvents () {
     if (!this._linkedEvents) return []
     return this._linkedEvents.filter(
-      evt => evt !== this && evt.segment.isInResult && !evt.segment.ring
+      evt => evt !== this && evt.segment.isInResult && !evt.segment.ringOut
     )
   }
 

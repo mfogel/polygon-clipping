@@ -85,9 +85,9 @@ describe('sweep event link', () => {
   test('unavailable linked events do not show up', () => {
     const se = new SweepEvent()
     const seAlreadyProcessed = new SweepEvent()
-    seAlreadyProcessed.segment = { isInResult: true, ring: {} }
+    seAlreadyProcessed.segment = { isInResult: true, ringOut: {} }
     const seNotInResult = new SweepEvent()
-    seNotInResult.segment = { isInResult: false, ring: null }
+    seNotInResult.segment = { isInResult: false, ringOut: null }
 
     se.link(seAlreadyProcessed)
     se.link(seNotInResult)
@@ -97,9 +97,9 @@ describe('sweep event link', () => {
   test('available linked events show up', () => {
     const se = new SweepEvent()
     const seOkay1 = new SweepEvent([0, 0])
-    seOkay1.segment = { isInResult: true, ring: null }
+    seOkay1.segment = { isInResult: true, ringOut: null }
     const seOkay2 = new SweepEvent([1, 0])
-    seOkay2.segment = { isInResult: true, ring: null }
+    seOkay2.segment = { isInResult: true, ringOut: null }
 
     se.link(seOkay1)
     se.link(seOkay2)
@@ -108,9 +108,9 @@ describe('sweep event link', () => {
 
   test('link goes both ways', () => {
     const seOkay1 = new SweepEvent([0, 0])
-    seOkay1.segment = { isInResult: true, ring: null }
+    seOkay1.segment = { isInResult: true, ringOut: null }
     const seOkay2 = new SweepEvent([1, 0])
-    seOkay2.segment = { isInResult: true, ring: null }
+    seOkay2.segment = { isInResult: true, ringOut: null }
 
     seOkay1.link(seOkay2)
     expect(seOkay1.availableLinkedEvents).toEqual([seOkay2])

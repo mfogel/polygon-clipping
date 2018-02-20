@@ -15,7 +15,8 @@ const targetsSkip = [
   'clean-poly-with-exterior-self-intersecting-ring',
   'clean-poly-with-interior-self-intersecting-ring',
   'clean-poly-with-interior-ring-overlapping-exterior',
-  'clean-poly-with-interior-rings-overlapping'
+  'clean-poly-with-interior-rings-overlapping',
+  'triple-coincident-segments'
 ]
 const opsSkip = []
 

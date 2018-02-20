@@ -39,7 +39,7 @@ class Ring {
       event = nextEvent
 
       this._points.push(event.point)
-      event.segment.registerRing(this)
+      event.segment.registerRingOut(this)
 
       const linkedEvents = event.availableLinkedEvents
       if (linkedEvents.length === 0) break
@@ -62,14 +62,15 @@ class Ring {
 
       // no segments below prev segment found, thus the ring of the prev
       // segment must loop back around and enclose us
-      if (!prevPrevSeg) return prevSeg.ring
+      if (!prevPrevSeg) return prevSeg.ringOut
 
       // if the two segments are of different rings, the ring of the prev
       // segment must either loop around us or the ring of the prev prev
       // seg, which would make us and the ring of the prev peers
-      if (prevPrevSeg.ring !== prevSeg.ring) {
-        if (prevPrevSeg.ring.enclosingRing !== prevSeg.ring) return prevSeg.ring
-        else return prevSeg.ring.enclosingRing
+      if (prevPrevSeg.ringOut !== prevSeg.ringOut) {
+        if (prevPrevSeg.ringOut.enclosingRing !== prevSeg.ringOut) {
+          return prevSeg.ringOut
+        } else return prevSeg.ringOut.enclosingRing
       }
 
       // two segments are from the same ring, so this was a penisula

@@ -160,14 +160,14 @@ describe('segment getOtherPoint', () => {
 describe('segment register ring', () => {
   test('unregistered at first', () => {
     const seg = new Segment([0, 0], [1, 0])
-    expect(seg.ring).toBeNull()
+    expect(seg.ringOut).toBeNull()
   })
 
   test('register it', () => {
     const seg = new Segment([0, 0], [1, 0])
     const ring = {}
-    seg.registerRing(ring)
-    expect(seg.ring).toBe(ring)
+    seg.registerRingOut(ring)
+    expect(seg.ringOut).toBe(ring)
   })
 })
 

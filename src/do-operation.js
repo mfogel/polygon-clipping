@@ -22,8 +22,8 @@ const doOperation = (operationType, ...geoms) => {
 
   /* Collect the segments we're keeping in a series of rings */
   const rings = []
-  segments.forEach(segment => {
-    if (!segment.ring) rings.push(new geomOut.Ring(segment))
+  segments.forEach((segment, i) => {
+    if (!segment.ringOut) rings.push(new geomOut.Ring(segment))
   })
 
   /* Compile those rings into a multipolygon */

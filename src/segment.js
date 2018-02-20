@@ -49,14 +49,14 @@ class Segment {
     throw new Error('Segment comparison failed... identical but not?')
   }
 
-  constructor (point1, point2, polyId) {
+  constructor (point1, point2, ring) {
     if (arePointsEqual(point1, point2)) {
       throw new Error('Unable to build segment for identical points')
     }
 
     this.creationId = creationCnt++
-    this.polyId = polyId
-    this.ring = null
+    this.ringIn = ring
+    this.ringOut = null
 
     const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
     this.leftSE = new SweepEvent(lp, this)
@@ -72,13 +72,13 @@ class Segment {
     return new Segment(
       this.leftSE.point,
       this.rightSE.point,
-      this.polyId,
+      this.ringIn,
       this.creationId
     )
   }
 
-  registerRing (ring) {
-    this.ring = ring
+  registerRingOut (ring) {
+    this.ringOut = ring
   }
 
   get xmin () {
@@ -302,7 +302,7 @@ class Segment {
   _calcSweepLineEnters () {
     if (!this.prev) return true
     else {
-      return this.polyId === this.prev.polyId
+      return this.ringIn.poly === this.prev.ringIn.poly
         ? !this.prev.sweepLineEnters
         : !this.prev.isInsideOther
     }
@@ -311,7 +311,7 @@ class Segment {
   _calcIsInsideOther () {
     if (!this.prev) return false
     else {
-      if (this.polyId === this.prev.polyId) {
+      if (this.ringIn.poly === this.prev.ringIn.poly) {
         return this.prev.isInsideOther
       } else {
         return this.prev.isVertical
