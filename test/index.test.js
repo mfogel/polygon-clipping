@@ -2,7 +2,7 @@
 
 jest.mock('../src/clean-input')
 const cleanInput = require('../src/clean-input')
-const doOperation = require('../src/do-operation')
+const doIt = require('../src')
 
 afterEach(() => {
   cleanInput.closeAllRings.mockClear()
@@ -16,7 +16,7 @@ describe('doOperation calls the right stuff', () => {
     const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
     const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
 
-    doOperation(null, poly1, poly2, poly3)
+    doIt(null, poly1, poly2, poly3)
     expect(cleanInput.closeAllRings).toHaveBeenCalledTimes(3)
     expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly1)
     expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly2)
@@ -28,7 +28,7 @@ describe('doOperation calls the right stuff', () => {
     const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
     const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
 
-    doOperation(null, poly1, poly2, poly3)
+    doIt(null, poly1, poly2, poly3)
     expect(cleanInput.forceMultiPoly).toHaveBeenCalledTimes(3)
     expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly1)
     expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly2)
@@ -40,7 +40,7 @@ describe('doOperation calls the right stuff', () => {
     const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
     const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
 
-    doOperation(null, poly1, poly2, poly3)
+    doIt(null, poly1, poly2, poly3)
     expect(cleanInput.errorOnSelfIntersectingRings).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,7 +1,7 @@
-const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
-const operationTypes = require('./operation-types')
-const { arePointsEqual, crossProduct } = require('./point')
+const operation = require('./operation')
 const SweepEvent = require('./sweep-event')
+const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
+const { arePointsEqual, crossProduct } = require('./point')
 
 // Give segments unique ID's to get consistent sorting when segments
 // are otherwise identical
@@ -259,16 +259,14 @@ class Segment {
     return this.coincident && this.coincident !== this.prev
   }
 
-  /* Does the sweep line, when intersecting the left event, *enter* (
-   * rather than exit) the polygon this segment is part of? */
-  get sweepLineEnters () {
-    return this._getCached('sweepLineEnters')
+  /* Is this segment inside all the other input multipolys? */
+  get isInsideAllOthers () {
+    return this.otherMultiPolysInsideOf.length === operation.numberOfGeoms - 1
   }
 
-  /* Is this segment within the 'other' polygon? (ie. if this is part of
-   * the clipping, is it within the subject?) */
-  get isInsideOther () {
-    return this._getCached('isInsideOther')
+  /* Is this segment outside all the other input multipolys? */
+  get isOutsideAllOthers () {
+    return this.otherMultiPolysInsideOf.length === 0
   }
 
   /* Does the sweep line, when it intersects this segment, enter or exit the ring? */
@@ -305,8 +303,6 @@ class Segment {
 
   _clearCache () {
     this._cache = {
-      sweepLineEnters: null,
-      isInsideOther: null,
       isInResult: null,
       sweepLineEntersRing: null,
       otherRingsInsideOf: null,
@@ -322,19 +318,6 @@ class Segment {
       this._cache[propName] = calcMethod()
     }
     return this._cache[propName]
-  }
-
-  _sweepLineEnters () {
-    if (!this.prev) return true
-    else {
-      return this.ringIn.poly === this.prev.ringIn.poly
-        ? !this.prev.sweepLineEnters
-        : !this.prev.isInsideOther
-    }
-  }
-
-  _isInsideOther () {
-    return this.otherMultiPolysInsideOf.length > 0
   }
 
   _sweepLineEntersRing () {
@@ -365,29 +348,28 @@ class Segment {
 
   _isInResult () {
     if (!this.coincident) {
-      if (operationTypes.isActive(operationTypes.INTERSECTION)) {
-        return this.isInsideOther
-      }
+      switch (operation.type) {
+        case operation.types.INTERSECTION:
+          return this.isInsideAllOthers
 
-      if (operationTypes.isActive(operationTypes.UNION)) {
-        return !this.isInsideOther
-      }
+        case operation.types.UNION:
+          return this.isOutsideAllOthers
 
-      if (operationTypes.isActive(operationTypes.XOR)) {
-        return true // all sides from both INTERSECTION and UNION
-      }
+        case operation.types.XOR:
+          // all sides from both INTERSECTION and UNION
+          return this.isInsideAllOthers || this.isOutsideAllOthers
 
-      throw new Error('No active operationType found')
+        default:
+          throw new Error(`Unrecognized operation type found ${operation.type}`)
+      }
     }
 
     if (
       this.isCoincidenceWinner &&
-      this.coincident.sweepLineEnters === this.sweepLineEnters
+      this.coincident.sweepLineEntersRing === this.sweepLineEntersRing // FIXME
     ) {
-      return (
-        operationTypes.isActive(operationTypes.INTERSECTION) ||
-        operationTypes.isActive(operationTypes.UNION)
-      )
+      const types = [operation.types.INTERSECTION, operation.types.UNION]
+      return types.includes(operation.type)
     }
 
     return false

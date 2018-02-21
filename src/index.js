@@ -1,11 +1,13 @@
 const cleanInput = require('./clean-input.js')
-const geomOut = require('./geom-out')
 const EventQueue = require('./event-queue')
+const geomOut = require('./geom-out')
+const operation = require('./operation')
 const SweepLine = require('./sweep-line')
-const operationTypes = require('./operation-types')
 
-const doOperation = (operationType, ...geoms) => {
-  operationTypes.setActive(operationType)
+const doIt = (operationType, ...geoms) => {
+  operation.setType(operationType)
+  operation.setNumberOfGeoms(geoms.length)
+
   geoms.forEach(g => cleanInput.forceMultiPoly(g))
   geoms.forEach(g => cleanInput.closeAllRings(g))
 
@@ -34,4 +36,4 @@ const doOperation = (operationType, ...geoms) => {
   return result.geom
 }
 
-module.exports = doOperation
+module.exports = doIt
