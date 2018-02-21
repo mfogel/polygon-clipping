@@ -262,18 +262,18 @@ class Segment {
   /* Does the sweep line, when intersecting the left event, *enter* (
    * rather than exit) the polygon this segment is part of? */
   get sweepLineEnters () {
-    return this._getCached('sweepLineEnters', this._calcSweepLineEnters)
+    return this._getCached('sweepLineEnters')
   }
 
   /* Is this segment within the 'other' polygon? (ie. if this is part of
    * the clipping, is it within the subject?) */
   get isInsideOther () {
-    return this._getCached('isInsideOther', this._calcIsInsideOther)
+    return this._getCached('isInsideOther')
   }
 
   /* Is this segment part of the final result? */
   get isInResult () {
-    return this._getCached('isInResult', this._calcIsInResult)
+    return this._getCached('isInResult')
   }
 
   /* The first segment previous segment chain that is in the result */
@@ -294,12 +294,13 @@ class Segment {
   _getCached (propName, calcMethod) {
     // if this._cache[something] isn't set, fill it with this._caclSomething()
     if (this._cache[propName] === null) {
-      this._cache[propName] = calcMethod.bind(this)()
+      const calcMethod = this[`_${propName}`].bind(this)
+      this._cache[propName] = calcMethod()
     }
     return this._cache[propName]
   }
 
-  _calcSweepLineEnters () {
+  _sweepLineEnters () {
     if (!this.prev) return true
     else {
       return this.ringIn.poly === this.prev.ringIn.poly
@@ -308,7 +309,7 @@ class Segment {
     }
   }
 
-  _calcIsInsideOther () {
+  _isInsideOther () {
     if (!this.prev) return false
     else {
       if (this.ringIn.poly === this.prev.ringIn.poly) {
@@ -321,7 +322,7 @@ class Segment {
     }
   }
 
-  _calcIsInResult () {
+  _isInResult () {
     if (!this.coincident) {
       if (operationTypes.isActive(operationTypes.INTERSECTION)) {
         return this.isInsideOther
