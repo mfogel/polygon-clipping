@@ -62,6 +62,8 @@ class Segment {
     this.leftSE = new SweepEvent(lp, this)
     this.rightSE = new SweepEvent(rp, this)
 
+    this.coincidents = [this]
+
     // cache of dynamically computed properies
     this._clearCache()
   }
@@ -243,20 +245,31 @@ class Segment {
     return [this.rightSE, newSeg.leftSE]
   }
 
-  registerCoincident (other, isWinner) {
-    this.coincident = other
-    if (!isWinner) this.prev = other
-    this._clearCache()
-  }
-
   registerPrev (other) {
     this.prev = other
     this._clearCache()
   }
 
+  registerCoincidence (other) {
+    this.coincidents.push(...other.coincidents)
+    this.coincidents = Array.from(new Set(this.coincidents))
+    other.coincidents = this.coincidents
+  }
+
+  get isCoincident () {
+    return this.coincidents.length > 1
+  }
+
   get isCoincidenceWinner () {
-    // declare first segment winner, second looser (arbitrary)
-    return this.coincident && this.coincident !== this.prev
+    // arbitary - winner is the one with lowest creationId
+    const creationIds = this.coincidents.map(seg => seg.creationId)
+    return this.creationId === Math.min(...creationIds)
+  }
+
+  // TODO: s/Ring/Poly/
+  get coincidentsSweepLineEntersRingAllMatch () {
+    const values = this.coincidents.map(c => c.sweepLineEntersRing)
+    return values.every(v => v === this.sweepLineEntersRing)
   }
 
   /* Is this segment inside all the other input multipolys? */
@@ -347,7 +360,7 @@ class Segment {
   }
 
   _isInResult () {
-    if (!this.coincident) {
+    if (!this.isCoincident) {
       switch (operation.type) {
         case operation.types.INTERSECTION:
           return this.isInsideAllOthers
@@ -364,15 +377,11 @@ class Segment {
       }
     }
 
-    if (
-      this.isCoincidenceWinner &&
-      this.coincident.sweepLineEntersRing === this.sweepLineEntersRing // FIXME
-    ) {
-      const types = [operation.types.INTERSECTION, operation.types.UNION]
-      return types.includes(operation.type)
-    }
+    if (operation.type === operation.types.XOR) return false
+    if (!this.isCoincidenceWinner) return false
+    if (!this.coincidentsSweepLineEntersRingAllMatch) return false
 
-    return false
+    return true
   }
 }
 

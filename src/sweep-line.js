@@ -48,8 +48,7 @@ class SweepLine {
       const nextSeg = this._nextKey(node)
 
       if (nextSeg && segment.isCoincidentWith(nextSeg)) {
-        segment.registerCoincident(nextSeg, true)
-        nextSeg.registerCoincident(segment, false)
+        segment.registerCoincidence(nextSeg)
       }
 
       this._remove(segment)
