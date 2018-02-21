@@ -22,6 +22,14 @@ class Poly {
   addInteriorRing (ring) {
     this.interiorRings.push(ring)
   }
+
+  /* If a segment is within the given array of rings,
+   * is that segment within this polygon? */
+  isInside (rings) {
+    if (!rings.includes(this.exteriorRing)) return false
+    if (this.interiorRings.some(r => rings.includes(r))) return false
+    return true
+  }
 }
 
 class MultiPoly {

@@ -271,6 +271,26 @@ class Segment {
     return this._getCached('isInsideOther')
   }
 
+  /* Does the sweep line, when it intersects this segment, enter or exit the ring? */
+  get sweepLineEntersRing () {
+    return this._getCached('sweepLineEntersRing')
+  }
+
+  /* Array of input rings this segments is inside of, not including own ring. */
+  get otherRingsInsideOf () {
+    return this._getCached('otherRingsInsideOf')
+  }
+
+  /* Array of polys this segments is inside of, not including it's own. */
+  get otherPolysInsideOf () {
+    return this._getCached('otherPolysInsideOf')
+  }
+
+  /* Array of polys this segments is inside of, not including it's own. */
+  get otherMultiPolysInsideOf () {
+    return this._getCached('otherMultiPolysInsideOf')
+  }
+
   /* Is this segment part of the final result? */
   get isInResult () {
     return this._getCached('isInResult')
@@ -287,7 +307,11 @@ class Segment {
     this._cache = {
       sweepLineEnters: null,
       isInsideOther: null,
-      isInResult: null
+      isInResult: null,
+      sweepLineEntersRing: null,
+      otherRingsInsideOf: null,
+      otherPolysInsideOf: null,
+      otherMultiPolysInsideOf: null
     }
   }
 
@@ -310,16 +334,33 @@ class Segment {
   }
 
   _isInsideOther () {
-    if (!this.prev) return false
-    else {
-      if (this.ringIn.poly === this.prev.ringIn.poly) {
-        return this.prev.isInsideOther
-      } else {
-        return this.prev.isVertical
-          ? !this.prev.sweepLineEnters
-          : this.prev.sweepLineEnters
-      }
-    }
+    return this.otherMultiPolysInsideOf.length > 0
+  }
+
+  _sweepLineEntersRing () {
+    if (!this.prev) return true
+    if (this.prev.ringIn === this.ringIn) return false
+    return !this.prev.otherRingsInsideOf.includes(this.ringIn)
+  }
+
+  _otherRingsInsideOf () {
+    if (!this.prev) return []
+    if (this.prev.ringIn === this.ringIn) return this.prev.otherRingsInsideOf
+
+    const rings = this.prev.otherRingsInsideOf.filter(r => r !== this.ringIn)
+    if (this.prev.sweepLineEntersRing) return [this.prev.ringIn, ...rings]
+    else return rings.filter(r => r !== this.prev.ringIn)
+  }
+
+  _otherPolysInsideOf () {
+    const polys = Array.from(new Set(this.otherRingsInsideOf.map(r => r.poly)))
+    return polys.filter(
+      p => p !== this.ringIn.poly && p.isInside(this.otherRingsInsideOf)
+    )
+  }
+
+  _otherMultiPolysInsideOf () {
+    return Array.from(new Set(this.otherPolysInsideOf.map(p => p.multipoly)))
   }
 
   _isInResult () {
