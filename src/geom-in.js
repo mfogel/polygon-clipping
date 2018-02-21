@@ -2,6 +2,7 @@ class Ring {
   constructor (poly, isExterior) {
     this.poly = poly
     this.isExterior = isExterior
+    this.isInterior = !isExterior
     if (isExterior) poly.setExteriorRing(this)
     else poly.addInteriorRing(this)
   }

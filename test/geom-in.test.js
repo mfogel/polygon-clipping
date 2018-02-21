@@ -8,6 +8,7 @@ describe('Ring', () => {
     const ring = new Ring(polyMock, true)
 
     expect(ring.isExterior).toBeTruthy()
+    expect(ring.isInterior).toBeFalsy()
     expect(polyMock.setExteriorRing).toHaveBeenCalledTimes(1)
     expect(polyMock.setExteriorRing).toHaveBeenCalledWith(ring)
     expect(polyMock.addInteriorRing).not.toHaveBeenCalled()
@@ -18,6 +19,7 @@ describe('Ring', () => {
     const ring = new Ring(polyMock, false)
 
     expect(ring.isExterior).toBeFalsy()
+    expect(ring.isInterior).toBeTruthy()
     expect(polyMock.setExteriorRing).not.toHaveBeenCalled()
     expect(polyMock.addInteriorRing).toHaveBeenCalledTimes(1)
     expect(polyMock.addInteriorRing).toHaveBeenCalledWith(ring)

@@ -62,7 +62,7 @@ class Segment {
     this.leftSE = new SweepEvent(lp, this)
     this.rightSE = new SweepEvent(rp, this)
 
-    this.coincidents = [this]
+    this._coincidents = [this]
 
     // cache of dynamically computed properies
     this._clearCache()
@@ -251,24 +251,24 @@ class Segment {
   }
 
   registerCoincidence (other) {
-    this.coincidents.push(...other.coincidents)
-    this.coincidents = Array.from(new Set(this.coincidents))
-    other.coincidents = this.coincidents
+    this._coincidents.push(...other._coincidents)
+    this._coincidents = Array.from(new Set(this._coincidents))
+    other._coincidents = this._coincidents
   }
 
   get isCoincident () {
-    return this.coincidents.length > 1
+    return this._coincidents.length > 1
   }
 
   get isCoincidenceWinner () {
     // arbitary - winner is the one with lowest creationId
-    const creationIds = this.coincidents.map(seg => seg.creationId)
+    const creationIds = this._coincidents.map(seg => seg.creationId)
     return this.creationId === Math.min(...creationIds)
   }
 
   // TODO: s/Ring/Poly/
   get coincidentsSweepLineEntersRingAllMatch () {
-    const values = this.coincidents.map(c => c.sweepLineEntersRing)
+    const values = this._coincidents.map(c => c.sweepLineEntersRing)
     return values.every(v => v === this.sweepLineEntersRing)
   }
 
@@ -302,6 +302,14 @@ class Segment {
     return this._getCached('otherMultiPolysInsideOf')
   }
 
+  /* Is this segment part a valid part of its own input Geom?
+   * Examples of invalid segments:
+   *  - interior seg outside of exterior ring
+   *  - interior seg inside other interior ring */
+  get isValid () {
+    return this._getCached('isValid')
+  }
+
   /* Is this segment part of the final result? */
   get isInResult () {
     return this._getCached('isInResult')
@@ -316,6 +324,7 @@ class Segment {
 
   _clearCache () {
     this._cache = {
+      isValid: null,
       isInResult: null,
       sweepLineEntersRing: null,
       otherRingsInsideOf: null,
@@ -325,7 +334,7 @@ class Segment {
   }
 
   _getCached (propName, calcMethod) {
-    // if this._cache[something] isn't set, fill it with this._caclSomething()
+    // if this._cache[something] isn't set, fill it with this._something()
     if (this._cache[propName] === null) {
       const calcMethod = this[`_${propName}`].bind(this)
       this._cache[propName] = calcMethod()
@@ -359,7 +368,19 @@ class Segment {
     return Array.from(new Set(this.otherPolysInsideOf.map(p => p.multipoly)))
   }
 
+  _isValid () {
+    const insideOfs = this.otherRingsInsideOf
+    const exterior = this.ringIn.poly.exteriorRing
+    const interiors = this.ringIn.poly.interiorRings
+
+    if (insideOfs.some(r => interiors.includes(r))) return false
+    if (this.ringIn.isInterior && !insideOfs.includes(exterior)) return false
+    return true
+  }
+
   _isInResult () {
+    if (!this.isValid) return false
+
     if (!this.isCoincident) {
       switch (operation.type) {
         case operation.types.INTERSECTION:
