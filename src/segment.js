@@ -1,7 +1,7 @@
 const operation = require('./operation')
 const SweepEvent = require('./sweep-event')
 const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
-const { arePointsEqual, crossProduct } = require('./point')
+const { arePointsEqual, crossProduct, compareVectorAngles } = require('./point')
 
 // Give segments unique ID's to get consistent sorting when segments
 // are otherwise identical
@@ -165,11 +165,7 @@ class Segment {
   }
 
   _compareWithPoint (point) {
-    let va = [point[0] - this.points[0][0], point[1] - this.points[0][1]]
-    let vb = [point[0] - this.points[1][0], point[1] - this.points[1][1]]
-    const kross = crossProduct(va, vb)
-    if (kross * kross < Number.EPSILON * Number.EPSILON) return 0
-    return kross > 0 ? 1 : -1
+    return compareVectorAngles(point, this.points[0], this.points[1])
   }
 
   /**

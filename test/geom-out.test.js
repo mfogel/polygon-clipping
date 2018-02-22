@@ -15,6 +15,15 @@ describe('ring', () => {
     expect(ring.enclosingRing).toBeNull()
     expect(ring.isExteriorRing).toBeTruthy()
   })
+
+  test('removes superfluous points', () => {
+    const seg = new Segment([0, 0], [1, 1])
+    const ring = new Ring(seg)
+    ring._points.push([2, 2])
+    ring._points.push([3, 3])
+
+    expect(ring.geom).toEqual([[0, 0], [3, 3]])
+  })
 })
 
 describe('poly', () => {

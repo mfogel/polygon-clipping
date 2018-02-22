@@ -49,6 +49,7 @@ Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon.
 
 Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.6), with the following notes/modifications:
 * rings of the polygon are not required to be self-closing
+* rings may contain repeated points (which are ignored)
 * winding order of rings of Polygon does not matter
 * interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
 * interior rings may touch or overlap each other
@@ -66,6 +67,8 @@ Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing P
 * inner rings will not extend outside the outer ring, nor share an edge with the outer ring
 * inner rings will not overlap, nor share an edge with each other
 * rings will be self-closing
+* rings will not contain repeated points
+* rings will not contain superfluous points (intermediate points along a straight line)
 * rings will not be self-intersecting
 
 In the event that the result of the operation is the empty set, the output will be an empty array: `[]`.

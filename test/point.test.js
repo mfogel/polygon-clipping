@@ -4,8 +4,9 @@ const {
   arePointsEqual,
   crossProduct,
   dotProduct,
-  sineOfAngle,
-  cosineOfAngle
+  compareVectorAngles,
+  cosineOfAngle,
+  sineOfAngle
 } = require('../src/point')
 
 describe('are points equal', () => {
@@ -19,6 +20,30 @@ describe('cross product', () => {
 
 describe('dot product', () => {
   test('general', () => expect(dotProduct([1, 2], [3, 4])).toEqual(11))
+})
+
+describe('compare vector angles', () => {
+  test('colinear', () => {
+    const pt1 = [1, 1]
+    const pt2 = [2, 2]
+    const pt3 = [3, 3]
+
+    expect(compareVectorAngles(pt1, pt2, pt3)).toBe(0)
+    expect(compareVectorAngles(pt2, pt1, pt3)).toBe(0)
+    expect(compareVectorAngles(pt2, pt3, pt1)).toBe(0)
+    expect(compareVectorAngles(pt3, pt2, pt1)).toBe(0)
+  })
+
+  test('offset', () => {
+    const pt1 = [0, 0]
+    const pt2 = [1, 1]
+    const pt3 = [1, 0]
+
+    expect(compareVectorAngles(pt1, pt2, pt3)).toBe(-1)
+    expect(compareVectorAngles(pt2, pt1, pt3)).toBe(1)
+    expect(compareVectorAngles(pt2, pt3, pt1)).toBe(-1)
+    expect(compareVectorAngles(pt3, pt2, pt1)).toBe(1)
+  })
 })
 
 describe('sine and cosine of angle', () => {

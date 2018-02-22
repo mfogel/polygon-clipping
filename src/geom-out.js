@@ -1,3 +1,5 @@
+const { compareVectorAngles } = require('./point')
+
 class Ring {
   constructor (segment) {
     this.firstSegment = segment
@@ -11,7 +13,16 @@ class Ring {
   }
 
   get geom () {
-    return this.isExteriorRing ? this._points : this._points.reverse()
+    // remove superfluous points (ie extra points along a straight line)
+    const points = [this._points[0]]
+    for (let i = 1; i < this._points.length - 1; i++) {
+      const [prevPoint, point, nextPoint] = this._points.slice(i - 1, i + 2)
+      if (compareVectorAngles(point, prevPoint, nextPoint) !== 0) {
+        points.push(point)
+      }
+    }
+    points.push(this._points[this._points.length - 1])
+    return this.isExteriorRing ? points : points.reverse()
   }
 
   get enclosingRing () {
