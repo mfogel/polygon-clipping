@@ -256,20 +256,23 @@ class Segment {
     other._coincidents = this._coincidents
   }
 
+  get validCoincidents () {
+    return this._coincidents.filter(seg => seg.isValid)
+  }
+
   get isCoincident () {
-    return this._coincidents.length > 1
+    return this.validCoincidents.length > 1
   }
 
   get isCoincidenceWinner () {
     // arbitary - winner is the one with lowest creationId
-    const creationIds = this._coincidents.map(seg => seg.creationId)
+    const creationIds = this.validCoincidents.map(seg => seg.creationId)
     return this.creationId === Math.min(...creationIds)
   }
 
-  // TODO: s/Ring/Poly/
-  get coincidentsSweepLineEntersRingAllMatch () {
-    const values = this._coincidents.map(c => c.sweepLineEntersRing)
-    return values.every(v => v === this.sweepLineEntersRing)
+  get coincidentsSweepLineEntersPolyAllMatch () {
+    const values = this.validCoincidents.map(c => c.sweepLineEntersPoly)
+    return values.every(v => v === this.sweepLineEntersPoly)
   }
 
   /* Is this segment inside all the other input multipolys? */
@@ -285,6 +288,11 @@ class Segment {
   /* Does the sweep line, when it intersects this segment, enter or exit the ring? */
   get sweepLineEntersRing () {
     return this._getCached('sweepLineEntersRing')
+  }
+
+  /* Does the sweep line, when it intersects this segment, enter or exit the poly? */
+  get sweepLineEntersPoly () {
+    return this._getCached('sweepLineEntersPoly')
   }
 
   /* Array of input rings this segments is inside of, not including own ring. */
@@ -327,6 +335,7 @@ class Segment {
       isValid: null,
       isInResult: null,
       sweepLineEntersRing: null,
+      sweepLineEntersPoly: null,
       otherRingsInsideOf: null,
       otherPolysInsideOf: null,
       otherMultiPolysInsideOf: null
@@ -346,6 +355,11 @@ class Segment {
     if (!this.prev) return true
     if (this.prev.ringIn === this.ringIn) return false
     return !this.prev.otherRingsInsideOf.includes(this.ringIn)
+  }
+
+  _sweepLineEntersPoly () {
+    const sleRing = this.sweepLineEntersRing
+    return this.ringIn.isInterior ? !sleRing : sleRing
   }
 
   _otherRingsInsideOf () {
@@ -400,7 +414,7 @@ class Segment {
 
     if (operation.type === operation.types.XOR) return false
     if (!this.isCoincidenceWinner) return false
-    if (!this.coincidentsSweepLineEntersRingAllMatch) return false
+    if (!this.coincidentsSweepLineEntersPolyAllMatch) return false
 
     return true
   }
