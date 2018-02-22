@@ -62,7 +62,7 @@ class Segment {
     this.leftSE = new SweepEvent(lp, this)
     this.rightSE = new SweepEvent(rp, this)
 
-    this._coincidents = [this]
+    this.coincidents = [this]
 
     // cache of dynamically computed properies
     this._clearCache()
@@ -247,13 +247,13 @@ class Segment {
   }
 
   registerCoincidence (other) {
-    this._coincidents.push(...other._coincidents)
-    this._coincidents = Array.from(new Set(this._coincidents))
-    other._coincidents = this._coincidents
+    this.coincidents.push(...other.coincidents)
+    this.coincidents = Array.from(new Set(this.coincidents))
+    other.coincidents = this.coincidents
   }
 
   get validCoincidents () {
-    return this._coincidents.filter(seg => seg.isValid)
+    return this.coincidents.filter(seg => seg.isValid)
   }
 
   get isCoincident () {
@@ -271,14 +271,15 @@ class Segment {
     return values.every(v => v === this.sweepLineEntersPoly)
   }
 
-  /* Is this segment inside all the other input multipolys? */
-  get isInsideAllOthers () {
-    return this.otherMultiPolysInsideOf.length === operation.numberOfGeoms - 1
+  /* Is this segment inside all the input geoms? */
+  get isInsideAllInputGeoms () {
+    return this.multiPolysInsideOf.length === operation.numberOfGeoms
   }
 
-  /* Is this segment outside all the other input multipolys? */
-  get isOutsideAllOthers () {
-    return this.otherMultiPolysInsideOf.length === 0
+  /* Is this segment inside only its own poly? */
+  get isInsideJustOwnPoly () {
+    const polys = this.polysInsideOf
+    return polys.length === 1 && polys[0] === this.ringIn.poly
   }
 
   /* Does the sweep line, when it intersects this segment, enter or exit the ring? */
@@ -291,19 +292,19 @@ class Segment {
     return this._getCached('sweepLineEntersPoly')
   }
 
-  /* Array of input rings this segments is inside of, not including own ring. */
-  get otherRingsInsideOf () {
-    return this._getCached('otherRingsInsideOf')
+  /* Array of input rings this segments is inside of, including own ring. */
+  get ringsInsideOf () {
+    return this._getCached('ringsInsideOf')
   }
 
-  /* Array of polys this segments is inside of, not including it's own. */
-  get otherPolysInsideOf () {
-    return this._getCached('otherPolysInsideOf')
+  /* Array of polys this segments is inside of */
+  get polysInsideOf () {
+    return this._getCached('polysInsideOf')
   }
 
-  /* Array of polys this segments is inside of, not including it's own. */
-  get otherMultiPolysInsideOf () {
-    return this._getCached('otherMultiPolysInsideOf')
+  /* Array of multipolys this segments is inside of */
+  get multiPolysInsideOf () {
+    return this._getCached('multiPolysInsideOf')
   }
 
   /* Is this segment part a valid part of its own input Geom?
@@ -332,9 +333,9 @@ class Segment {
       isInResult: null,
       sweepLineEntersRing: null,
       sweepLineEntersPoly: null,
-      otherRingsInsideOf: null,
-      otherPolysInsideOf: null,
-      otherMultiPolysInsideOf: null
+      ringsInsideOf: null,
+      polysInsideOf: null,
+      multiPolysInsideOf: null
     }
   }
 
@@ -349,8 +350,7 @@ class Segment {
 
   _sweepLineEntersRing () {
     if (!this.prev) return true
-    if (this.prev.ringIn === this.ringIn) return false
-    return !this.prev.otherRingsInsideOf.includes(this.ringIn)
+    return !this.prev.ringsInsideOf.includes(this.ringIn)
   }
 
   _sweepLineEntersPoly () {
@@ -358,28 +358,34 @@ class Segment {
     return this.ringIn.isInterior ? !sleRing : sleRing
   }
 
-  _otherRingsInsideOf () {
-    if (!this.prev) return []
-    if (this.prev.ringIn === this.ringIn) return this.prev.otherRingsInsideOf
+  _ringsInsideOf () {
+    if (!this.prev) return [this.ringIn]
 
-    const rings = this.prev.otherRingsInsideOf.filter(r => r !== this.ringIn)
-    if (this.prev.sweepLineEntersRing) return [this.prev.ringIn, ...rings]
-    else return rings.filter(r => r !== this.prev.ringIn)
+    let rings = [...this.prev.ringsInsideOf]
+    if (!this.prev.sweepLineEntersRing) {
+      // TODO: filter out all coincidents of prev that sweep line exits
+      rings = rings.filter(r => r !== this.prev.ringIn)
+    }
+    if (!rings.includes(this.ringIn)) rings.push(this.ringIn)
+    // TODO: push in coincidents as well that sweep line enters
+    return rings
   }
 
-  _otherPolysInsideOf () {
-    const polys = Array.from(new Set(this.otherRingsInsideOf.map(r => r.poly)))
-    return polys.filter(
-      p => p !== this.ringIn.poly && p.isInside(this.otherRingsInsideOf)
-    )
+  _polysInsideOf () {
+    let polys = Array.from(new Set(this.ringsInsideOf.map(r => r.poly)))
+    polys = polys.filter(p => p.isInside(this.ringsInsideOf))
+    if (this.isValid && !polys.includes(this.ringIn.poly)) {
+      polys.push(this.ringIn.poly)
+    }
+    return polys
   }
 
-  _otherMultiPolysInsideOf () {
-    return Array.from(new Set(this.otherPolysInsideOf.map(p => p.multipoly)))
+  _multiPolysInsideOf () {
+    return Array.from(new Set(this.polysInsideOf.map(p => p.multipoly)))
   }
 
   _isValid () {
-    const insideOfs = this.otherRingsInsideOf
+    const insideOfs = this.ringsInsideOf.filter(r => r !== this.ringIn)
     const exterior = this.ringIn.poly.exteriorRing
     const interiors = this.ringIn.poly.interiorRings
 
@@ -394,14 +400,14 @@ class Segment {
     if (!this.isCoincident) {
       switch (operation.type) {
         case operation.types.INTERSECTION:
-          return this.isInsideAllOthers
+          return this.isInsideAllInputGeoms
 
         case operation.types.UNION:
-          return this.isOutsideAllOthers
+          return this.isInsideJustOwnPoly
 
         case operation.types.XOR:
           // all sides from both INTERSECTION and UNION
-          return this.isInsideAllOthers || this.isOutsideAllOthers
+          return this.isInsideAllInputGeoms || this.isInsideJustOwnPoly
 
         default:
           throw new Error(`Unrecognized operation type found ${operation.type}`)
