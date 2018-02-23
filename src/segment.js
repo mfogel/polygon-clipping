@@ -67,25 +67,12 @@ class Segment {
     return new Segment(this.leftSE.point, this.rightSE.point, this.ringIn)
   }
 
-  registerRingOut (ring) {
-    this.ringOut = ring
-  }
-
-  get xmin () {
-    return this.leftSE.point[0]
-  }
-  get xmax () {
-    return this.rightSE.point[0]
-  }
-  get ymin () {
-    return Math.min(this.leftSE.point[1], this.rightSE.point[1])
-  }
-  get ymax () {
-    return Math.max(this.leftSE.point[1], this.rightSE.point[1])
-  }
-
   get bbox () {
-    return [[this.xmin, this.ymin], [this.xmax, this.ymax]]
+    const ys = this.points.map(p => p[1])
+    return [
+      [this.points[0][0], Math.min(...ys)],
+      [this.points[1][0], Math.max(...ys)]
+    ]
   }
 
   /* A vector from the left point to the right */
@@ -97,11 +84,7 @@ class Segment {
   }
 
   get isVertical () {
-    return this.leftSE.point[0] === this.rightSE.point[0]
-  }
-
-  get isHorizontal () {
-    return this.leftSE.point[1] === this.rightSE.point[1]
+    return this.points[0][0] === this.points[1][0]
   }
 
   /* an array of left point, right point */
@@ -113,12 +96,6 @@ class Segment {
     if (se === this.leftSE) return this.rightSE
     if (se === this.rightSE) return this.leftSE
     throw new Error('may only be called by own sweep events')
-  }
-
-  getOtherPoint (point) {
-    if (arePointsEqual(point, this.leftSE.point)) return this.rightSE.point
-    if (arePointsEqual(point, this.rightSE.point)) return this.leftSE.point
-    throw new Error('may only be called with own point')
   }
 
   isAnEndpoint (point) {
@@ -141,19 +118,15 @@ class Segment {
   }
 
   isPointBelow (point) {
-    return this._compareWithPoint(point) > 0
+    return compareVectorAngles(point, this.points[0], this.points[1]) > 0
   }
 
   isPointColinear (point) {
-    return this._compareWithPoint(point) === 0
+    return compareVectorAngles(point, this.points[0], this.points[1]) === 0
   }
 
   isPointAbove (point) {
-    return this._compareWithPoint(point) < 0
-  }
-
-  _compareWithPoint (point) {
-    return compareVectorAngles(point, this.points[0], this.points[1])
+    return compareVectorAngles(point, this.points[0], this.points[1]) < 0
   }
 
   /**
@@ -238,12 +211,15 @@ class Segment {
     this.coincidents.push(...other.coincidents)
     this.coincidents = Array.from(new Set(this.coincidents))
     other.coincidents = this.coincidents
+    this._clearCache()
+  }
+
+  registerRingOut (ring) {
+    this.ringOut = ring
   }
 
   get isCoincidenceWinner () {
-    // arbitary - winner is the one with lowest ringId
-    const ringIds = this.coincidents.map(seg => seg.ringIn.id)
-    return this.ringIn.id === Math.min(...ringIds)
+    return this._getCached('isCoincidenceWinner')
   }
 
   /* Does the sweep line, when it intersects this segment, enter the ring? */
@@ -302,29 +278,17 @@ class Segment {
 
   /* The first segment previous segment chain that is in the result */
   get prevInResult () {
-    let prev = this.prev
-    while (prev && !prev.isInResult) prev = prev.prev
-    return prev
-  }
-
-  get coincidentsSLPEnters () {
-    return this.coincidents.filter(c => c.sweepLineEntersPoly)
-  }
-
-  get coincidentsSLPExits () {
-    return this.coincidents.filter(c => c.sweepLineExitsPoly)
+    return this._getCached('prevInResult')
   }
 
   get multiPolysSLPEnters () {
-    return Array.from(
-      new Set(this.coincidentsSLPEnters.map(c => c.ringIn.poly.multipoly))
-    )
+    const SLPEnters = this.coincidents.filter(c => c.sweepLineEntersPoly)
+    return Array.from(new Set(SLPEnters.map(c => c.ringIn.poly.multipoly)))
   }
 
   get multiPolysSLPExits () {
-    return Array.from(
-      new Set(this.coincidentsSLPExits.map(c => c.ringIn.poly.multipoly))
-    )
+    const SLPExits = this.coincidents.filter(c => c.sweepLineExitsPoly)
+    return Array.from(new Set(SLPExits.map(c => c.ringIn.poly.multipoly)))
   }
 
   // TODO:  - figure out a way to make this unit-testable
@@ -361,25 +325,27 @@ class Segment {
   }
 
   _clearCache () {
-    this._cache = {
-      isInResult: null,
-      sweepLineEntersRing: null,
-      ringsInsideOf: null,
-      ringsOnEdgeOf: null,
-      ringsEntering: null,
-      ringsExiting: null,
-      polysInsideOf: null,
-      multiPolysInsideOf: null
-    }
+    this._cache = {}
   }
 
   _getCached (propName, calcMethod) {
     // if this._cache[something] isn't set, fill it with this._something()
-    if (this._cache[propName] === null) {
-      const calcMethod = this[`_${propName}`].bind(this)
-      this._cache[propName] = calcMethod()
+    if (this._cache[propName] === undefined) {
+      this._cache[propName] = this[`_${propName}`].bind(this)()
     }
     return this._cache[propName]
+  }
+
+  _prevInResult () {
+    let prev = this.prev
+    while (prev && !prev.isInResult) prev = prev.prev
+    return prev
+  }
+
+  _isCoincidenceWinner () {
+    // arbitary - winner is the one with lowest ringId
+    const ringIds = this.coincidents.map(seg => seg.ringIn.id)
+    return this.ringIn.id === Math.min(...ringIds)
   }
 
   _sweepLineEntersRing () {

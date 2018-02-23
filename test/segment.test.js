@@ -80,43 +80,28 @@ describe('attempt split', () => {
   })
 })
 
-describe('simple properties - mins, maxes, bbox, vector, points, horizontal/vertical', () => {
+describe('simple properties - bbox, vector, points, isVertical', () => {
   test('general', () => {
     const seg = new Segment([1, 2], [3, 4])
-    expect(seg.xmin).toBe(1)
-    expect(seg.xmax).toBe(3)
-    expect(seg.ymin).toBe(2)
-    expect(seg.ymax).toBe(4)
     expect(seg.bbox).toEqual([[1, 2], [3, 4]])
     expect(seg.vector).toEqual([2, 2])
     expect(seg.points).toEqual([[1, 2], [3, 4]])
-    expect(seg.isHorizontal).toBeFalsy()
     expect(seg.isVertical).toBeFalsy()
   })
 
   test('horizontal', () => {
     const seg = new Segment([1, 4], [3, 4])
-    expect(seg.xmin).toBe(1)
-    expect(seg.xmax).toBe(3)
-    expect(seg.ymin).toBe(4)
-    expect(seg.ymax).toBe(4)
     expect(seg.bbox).toEqual([[1, 4], [3, 4]])
     expect(seg.vector).toEqual([2, 0])
     expect(seg.points).toEqual([[1, 4], [3, 4]])
-    expect(seg.isHorizontal).toBeTruthy()
     expect(seg.isVertical).toBeFalsy()
   })
 
   test('vertical', () => {
     const seg = new Segment([3, 2], [3, 4])
-    expect(seg.xmin).toBe(3)
-    expect(seg.xmax).toBe(3)
-    expect(seg.ymin).toBe(2)
-    expect(seg.ymax).toBe(4)
     expect(seg.bbox).toEqual([[3, 2], [3, 4]])
     expect(seg.vector).toEqual([0, 2])
     expect(seg.points).toEqual([[3, 2], [3, 4]])
-    expect(seg.isHorizontal).toBeFalsy()
     expect(seg.isVertical).toBeTruthy()
   })
 })
@@ -138,23 +123,6 @@ describe('segment getOtherSE', () => {
     const seg1 = new Segment([0, 0], [1, 0], true)
     const seg2 = new Segment([0, 0], [1, 0], true)
     expect(() => seg1.getOtherSE(seg2.leftSE)).toThrow()
-  })
-})
-
-describe('segment getOtherPoint', () => {
-  test('left to right', () => {
-    const seg = new Segment([0, 0], [1, 0])
-    expect(seg.getOtherPoint([0, 0])).toEqual([1, 0])
-  })
-
-  test('right to left', () => {
-    const seg = new Segment([0, 0], [1, 0])
-    expect(seg.getOtherPoint([1, 0])).toEqual([0, 0])
-  })
-
-  test('doesnt work for points that are not one of the endpoints', () => {
-    const seg = new Segment([0, 0], [1, 0])
-    expect(() => seg.getOtherPoint([5, 5])).toThrow()
   })
 })
 
