@@ -32,6 +32,121 @@ describe('Ring', () => {
 
     expect(ring2.id - ring1.id).toBe(1)
   })
+
+  describe('is valid? ', () => {
+    const poly = new Poly({ addPoly: jest.fn() })
+    const exteriorRing = new Ring(poly, true)
+    const interiorRing1 = new Ring(poly, false)
+    const interiorRing2 = new Ring(poly, false)
+
+    describe('yup', () => {
+      test('exterior, no funny stuff', () => {
+        const ring = exteriorRing
+        const sameSLER = [exteriorRing]
+        const diffSLER = []
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeTruthy()
+      })
+
+      test('exterior, coincident w/an interior with diff SWE', () => {
+        const ring = exteriorRing
+        const sameSLER = [exteriorRing]
+        const diffSLER = [interiorRing1]
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeTruthy()
+      })
+
+      test('interior, no funny stuff', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1]
+        const diffSLER = []
+        const insideOf = [exteriorRing]
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeTruthy()
+      })
+
+      test('interior, coincident w/exterior with diff SWE', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1]
+        const diffSLER = [exteriorRing]
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeTruthy()
+      })
+
+      test('interior, coincident w/another interior same SWE', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1, interiorRing2]
+        const diffSLER = []
+        const insideOf = [exteriorRing]
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeTruthy()
+      })
+    })
+
+    describe('nope', () => {
+      test('exterior, within an interior', () => {
+        const ring = exteriorRing
+        const sameSLER = [exteriorRing]
+        const diffSLER = []
+        const insideOf = [interiorRing1]
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+
+      test('exterior, coincident w/an interior with same SWE', () => {
+        const ring = exteriorRing
+        const sameSLER = [exteriorRing, interiorRing1]
+        const diffSLER = []
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+
+      test('interior, outside exterior', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1]
+        const diffSLER = []
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+
+      test('interior, coincident w/exterior with same SWE', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1, exteriorRing]
+        const diffSLER = []
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+
+      test('interior, inside another interior', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1]
+        const diffSLER = []
+        const insideOf = [exteriorRing, interiorRing2]
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+
+      test('interior, coincident w/another interior with diff SWE', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1]
+        const diffSLER = [interiorRing2]
+        const insideOf = [exteriorRing]
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+
+      test('interior, coincident w/another interior same SWE, outside exterior', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1, interiorRing2]
+        const diffSLER = []
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+
+      test('interior, coincident w/same SWE another interior and exterior', () => {
+        const ring = interiorRing1
+        const sameSLER = [interiorRing1, interiorRing2, exteriorRing]
+        const diffSLER = []
+        const insideOf = []
+        expect(ring.isValid(sameSLER, diffSLER, insideOf)).toBeFalsy()
+      })
+    })
+  })
 })
 
 describe('Poly', () => {

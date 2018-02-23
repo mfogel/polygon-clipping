@@ -219,7 +219,9 @@ class Segment {
   }
 
   get isCoincidenceWinner () {
-    return this._getCached('isCoincidenceWinner')
+    // arbitary - winner is the one with lowest ringId
+    const ringIds = this.coincidents.map(seg => seg.ringIn.id)
+    return this.ringIn.id === Math.min(...ringIds)
   }
 
   /* Does the sweep line, when it intersects this segment, enter the ring? */
@@ -261,14 +263,20 @@ class Segment {
     return this._getCached('ringsExiting')
   }
 
+  /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
+  get isValidEdgeForPoly () {
+    return this._getCached('isValidEdgeForPoly')
+  }
+
   /* Array of polys this segment is inside of */
   get polysInsideOf () {
-    return this._getCached('polysInsideOf')
+    const polys = Array.from(new Set(this.ringsInsideOf.map(r => r.poly)))
+    return polys.filter(p => p.isInside(this.ringsOnEdgeOf, this.ringsInsideOf))
   }
 
   /* Array of multipolys this segment is inside of */
   get multiPolysInsideOf () {
-    return this._getCached('multiPolysInsideOf')
+    return Array.from(new Set(this.polysInsideOf.map(p => p.multipoly)))
   }
 
   /* Is this segment part of the final result? */
@@ -291,39 +299,6 @@ class Segment {
     return Array.from(new Set(SLPExits.map(c => c.ringIn.poly.multipoly)))
   }
 
-  // TODO:  - figure out a way to make this unit-testable
-  //        - cache the result
-  get isValidEdgeForPoly () {
-    const exterior = this.ringIn.poly.exteriorRing
-    const interiors = this.ringIn.poly.interiorRings
-
-    if (this.ringIn === exterior) {
-      // exterior segments inside or interior, nope
-      if (this.ringsInsideOf.some(r => interiors.includes(r))) return false
-
-      const coincidentsWithSameSLER = this.coincidents
-        .filter(c => interiors.includes(c.ringIn))
-        .filter(c => c.sweepLineEntersRing === this.sweepLineEntersRing)
-      if (coincidentsWithSameSLER.length > 0) return false
-
-      return true
-    }
-
-    // interior rings that aren't inside the exterior, nope
-    if (!this.ringsInsideOf.includes(exterior)) return false
-
-    // interior rings inside another interior, nope
-    if (this.ringsInsideOf.some(r => interiors.includes(r))) return false
-
-    // overlapping interiors with different sweep line orientation, nope
-    const coincidentsWithDiffSLER = this.coincidents
-      .filter(c => interiors.includes(c.ringIn))
-      .filter(c => c.sweepLineEntersRing !== this.sweepLineEntersRing)
-    if (coincidentsWithDiffSLER.length > 0) return false
-
-    return true
-  }
-
   _clearCache () {
     this._cache = {}
   }
@@ -340,12 +315,6 @@ class Segment {
     let prev = this.prev
     while (prev && !prev.isInResult) prev = prev.prev
     return prev
-  }
-
-  _isCoincidenceWinner () {
-    // arbitary - winner is the one with lowest ringId
-    const ringIds = this.coincidents.map(seg => seg.ringIn.id)
-    return this.ringIn.id === Math.min(...ringIds)
   }
 
   _sweepLineEntersRing () {
@@ -389,13 +358,10 @@ class Segment {
       .map(seg => seg.ringIn)
   }
 
-  _polysInsideOf () {
-    const polys = Array.from(new Set(this.ringsInsideOf.map(r => r.poly)))
-    return polys.filter(p => p.isInside(this.ringsOnEdgeOf, this.ringsInsideOf))
-  }
-
-  _multiPolysInsideOf () {
-    return Array.from(new Set(this.polysInsideOf.map(p => p.multipoly)))
+  _isValidEdgeForPoly () {
+    const args = [this.ringsEntering, this.ringsExiting]
+    if (!this.sweepLineEntersRing) args.reverse()
+    return this.ringIn.isValid(...args, this.ringsInsideOf)
   }
 
   _isInResult () {
