@@ -369,19 +369,19 @@ class Segment {
 
     switch (operation.type) {
       case operation.types.UNION:
-        // UNION:
-        //  * We are not within any polys
-        //  * we have 0 coincidents on exactly one side - either one
+        // UNION - included iff:
+        //  * On one side of us there is 0 poly interiors, and
+        //  * On the other side there is 1 or more.
         if (this.multiPolysInsideOf.length > 0) return false
         const noEnters = this.multiPolysSLPEnters.length === 0
         const noExits = this.multiPolysSLPExits.length === 0
         return noEnters !== noExits
 
       case operation.types.INTERSECTION:
-        // INTERSECTION:
-        // For all input geoms, there is at least one poly ST either:
-        //  * we are inside it
-        //  * we bound it
+        // INTERSECTION - included iff:
+        //  * on one side of us all multipolys are rep. with poly interiors
+        //  * on the other side of us, not all multipolys are repsented
+        //    with poly interiors
         const numGeoms =
           this.multiPolysInsideOf.length +
           Math.max(
@@ -391,17 +391,13 @@ class Segment {
         return numGeoms === operation.numberOfGeoms
 
       case operation.types.XOR:
-        // XOR:
-        // For an odd number of geoms, there is at least one poly ST either:
-        //  * we are inside it
-        //  * we have a matching sweep line orientation with it
-        const numGeomsEnters =
-          this.multiPolysInsideOf.length + this.multiPolysSLPEnters.length
-
-        const numGeomsExits =
-          this.multiPolysInsideOf.length + this.multiPolysSLPExits.length
-
-        return numGeomsEnters % 2 === 1 || numGeomsExits % 2 === 1
+        // XOR - included iff:
+        //  * the difference between the number of multipolys represented
+        //    with poly interiors on our two sides is an odd number
+        const diff = Math.abs(
+          this.multiPolysSLPEnters.length - this.multiPolysSLPExits.length
+        )
+        return diff % 2 === 1
 
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)
