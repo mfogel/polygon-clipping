@@ -10,7 +10,7 @@ const targetOnly = ''
 const opOnly = ''
 
 /** USE ME TO SKIP TESTS **/
-const targetsSkip = ['triple-coincident-segments']
+const targetsSkip = []
 const opsSkip = []
 
 const endToEndDir = 'test/end-to-end'

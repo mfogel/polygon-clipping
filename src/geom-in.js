@@ -24,11 +24,17 @@ class Poly {
     this.interiorRings.push(ring)
   }
 
-  /* If a segment is within the given array of rings,
-   * is that segment within this polygon? */
-  isInside (rings) {
-    if (!rings.includes(this.exteriorRing)) return false
-    if (this.interiorRings.some(r => rings.includes(r))) return false
+  /* Given a segment with these rings, is that segment inside this polygon? */
+  isInside (ringsOnEdgeOf, ringsInsideOf) {
+    const onEdgeOf = ringsOnEdgeOf.filter(r => r.poly === this)
+    const insideOf = ringsInsideOf.filter(r => r.poly === this)
+
+    // anything on an edge can't be inside
+    if (onEdgeOf.length > 0) return false
+
+    // we need to be inside the exterior, and nothing else
+    if (insideOf.length !== 1 || !insideOf[0].isExterior) return false
+
     return true
   }
 }

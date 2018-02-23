@@ -60,22 +60,73 @@ describe('Poly', () => {
     const interiorRing1 = new Ring(poly, false)
     const interiorRing2 = new Ring(poly, false)
 
-    test('yup', () => {
-      expect(poly.isInside([exteriorRing])).toBeTruthy()
+    describe('yup', () => {
+      test('between exterior and interior', () => {
+        const insideOf = [exteriorRing]
+        const onEdgeOf = []
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeTruthy()
+      })
     })
 
     describe('nope', () => {
+      test('on interior boundary', () => {
+        const insideOf = [exteriorRing]
+        const onEdgeOf = [interiorRing1]
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
+      })
+
+      test('on interior boundary with overlapping interiors', () => {
+        const insideOf = [exteriorRing]
+        const onEdgeOf = [interiorRing1, interiorRing2]
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
+      })
+
+      test('on exterior boundary', () => {
+        const insideOf = []
+        const onEdgeOf = [exteriorRing]
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
+      })
+
       test('no rings at all', () => {
-        expect(poly.isInside([])).toBeFalsy()
+        const insideOf = []
+        const onEdgeOf = []
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
       })
-      test('inside exterior and interior', () => {
-        expect(poly.isInside([exteriorRing, interiorRing2])).toBeFalsy()
+
+      test('on an interior outside the exterior', () => {
+        const insideOf = []
+        const onEdgeOf = [interiorRing1]
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
       })
-      test('inside overlapping interiors', () => {
-        expect(poly.isInside([interiorRing1, interiorRing2])).toBeFalsy()
+
+      test('within an interior outside the exterior, still outside exterior', () => {
+        const insideOf = [interiorRing1]
+        const onEdgeOf = []
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
       })
-      test('inside an interior but not exterior', () => {
-        expect(poly.isInside([interiorRing1])).toBeFalsy()
+
+      test('on the exterior, within an interior that goes out of the exterior', () => {
+        const insideOf = [interiorRing1]
+        const onEdgeOf = [exteriorRing]
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
+      })
+
+      test('on an interior that overlaps with exterior', () => {
+        const insideOf = []
+        const onEdgeOf = [exteriorRing, interiorRing1]
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
+      })
+
+      test('on an interior that overlaps with exterior *and* and interior', () => {
+        const insideOf = []
+        const onEdgeOf = [exteriorRing, interiorRing1, interiorRing2]
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
+      })
+
+      test('inside both the exterior and an interior', () => {
+        const insideOf = [exteriorRing, interiorRing1]
+        const onEdgeOf = []
+        expect(poly.isInside(onEdgeOf, insideOf)).toBeFalsy()
       })
     })
   })

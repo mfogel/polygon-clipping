@@ -252,67 +252,59 @@ class Segment {
     other.coincidents = this.coincidents
   }
 
-  get validCoincidents () {
-    return this.coincidents.filter(seg => seg.isValid)
-  }
-
-  get isCoincident () {
-    return this.validCoincidents.length > 1
-  }
-
   get isCoincidenceWinner () {
     // arbitary - winner is the one with lowest creationId
-    const creationIds = this.validCoincidents.map(seg => seg.creationId)
+    const creationIds = this.coincidents.map(seg => seg.creationId)
     return this.creationId === Math.min(...creationIds)
   }
 
-  get coincidentsSweepLineEntersPolyAllMatch () {
-    const values = this.validCoincidents.map(c => c.sweepLineEntersPoly)
-    return values.every(v => v === this.sweepLineEntersPoly)
-  }
-
-  /* Is this segment inside all the input geoms? */
-  get isInsideAllInputGeoms () {
-    return this.multiPolysInsideOf.length === operation.numberOfGeoms
-  }
-
-  /* Is this segment inside only its own poly? */
-  get isInsideJustOwnPoly () {
-    const polys = this.polysInsideOf
-    return polys.length === 1 && polys[0] === this.ringIn.poly
-  }
-
-  /* Does the sweep line, when it intersects this segment, enter or exit the ring? */
+  /* Does the sweep line, when it intersects this segment, enter the ring? */
   get sweepLineEntersRing () {
     return this._getCached('sweepLineEntersRing')
   }
 
-  /* Does the sweep line, when it intersects this segment, enter or exit the poly? */
+  /* Does the sweep line, when it intersects this segment, enter the polygon? */
   get sweepLineEntersPoly () {
-    return this._getCached('sweepLineEntersPoly')
+    if (!this.isValidEdgeForPoly) return false
+    return this.ringIn.isExterior === this.sweepLineEntersRing
   }
 
-  /* Array of input rings this segments is inside of, including own ring. */
+  /* Does the sweep line, when it intersects this segment, exit the polygon? */
+  get sweepLineExitsPoly () {
+    if (!this.isValidEdgeForPoly) return false
+    return this.ringIn.isExterior !== this.sweepLineEntersRing
+  }
+
+  /* Array of input rings this segment is inside of (not on boundary) */
   get ringsInsideOf () {
     return this._getCached('ringsInsideOf')
   }
 
-  /* Array of polys this segments is inside of */
+  /* Array of input rings this segment is on boundary of */
+  get ringsOnEdgeOf () {
+    return this._getCached('ringsOnEdgeOf')
+  }
+
+  /* Array of input rings this segment is on boundary of,
+   * and for which the sweep line enters when intersecting there */
+  get ringsEntering () {
+    return this._getCached('ringsEntering')
+  }
+
+  /* Array of input rings this segment is on boundary of,
+   * and for which the sweep line exits when intersecting there */
+  get ringsExiting () {
+    return this._getCached('ringsExiting')
+  }
+
+  /* Array of polys this segment is inside of */
   get polysInsideOf () {
     return this._getCached('polysInsideOf')
   }
 
-  /* Array of multipolys this segments is inside of */
+  /* Array of multipolys this segment is inside of */
   get multiPolysInsideOf () {
     return this._getCached('multiPolysInsideOf')
-  }
-
-  /* Is this segment part a valid part of its own input Geom?
-   * Examples of invalid segments:
-   *  - interior seg outside of exterior ring
-   *  - interior seg inside other interior ring */
-  get isValid () {
-    return this._getCached('isValid')
   }
 
   /* Is this segment part of the final result? */
@@ -327,13 +319,67 @@ class Segment {
     return prev
   }
 
+  get coincidentsSLPEnters () {
+    return this.coincidents.filter(c => c.sweepLineEntersPoly)
+  }
+
+  get coincidentsSLPExits () {
+    return this.coincidents.filter(c => c.sweepLineExitsPoly)
+  }
+
+  get multiPolysSLPEnters () {
+    return Array.from(
+      new Set(this.coincidentsSLPEnters.map(c => c.ringIn.poly.multipoly))
+    )
+  }
+
+  get multiPolysSLPExits () {
+    return Array.from(
+      new Set(this.coincidentsSLPExits.map(c => c.ringIn.poly.multipoly))
+    )
+  }
+
+  // TODO:  - figure out a way to make this unit-testable
+  //        - cache the result
+  get isValidEdgeForPoly () {
+    const exterior = this.ringIn.poly.exteriorRing
+    const interiors = this.ringIn.poly.interiorRings
+
+    if (this.ringIn === exterior) {
+      // exterior segments inside or interior, nope
+      if (this.ringsInsideOf.some(r => interiors.includes(r))) return false
+
+      const coincidentsWithSameSLER = this.coincidents
+        .filter(c => interiors.includes(c.ringIn))
+        .filter(c => c.sweepLineEntersRing === this.sweepLineEntersRing)
+      if (coincidentsWithSameSLER.length > 0) return false
+
+      return true
+    }
+
+    // interior rings that aren't inside the exterior, nope
+    if (!this.ringsInsideOf.includes(exterior)) return false
+
+    // interior rings inside another interior, nope
+    if (this.ringsInsideOf.some(r => interiors.includes(r))) return false
+
+    // overlapping interiors with different sweep line orientation, nope
+    const coincidentsWithDiffSLER = this.coincidents
+      .filter(c => interiors.includes(c.ringIn))
+      .filter(c => c.sweepLineEntersRing !== this.sweepLineEntersRing)
+    if (coincidentsWithDiffSLER.length > 0) return false
+
+    return true
+  }
+
   _clearCache () {
     this._cache = {
-      isValid: null,
       isInResult: null,
       sweepLineEntersRing: null,
-      sweepLineEntersPoly: null,
       ringsInsideOf: null,
+      ringsOnEdgeOf: null,
+      ringsEntering: null,
+      ringsExiting: null,
       polysInsideOf: null,
       multiPolysInsideOf: null
     }
@@ -349,76 +395,97 @@ class Segment {
   }
 
   _sweepLineEntersRing () {
-    if (!this.prev) return true
-    return !this.prev.ringsInsideOf.includes(this.ringIn)
-  }
-
-  _sweepLineEntersPoly () {
-    const sleRing = this.sweepLineEntersRing
-    return this.ringIn.isInterior ? !sleRing : sleRing
+    // opposite of previous segment on the same ring
+    let prev = this.prev
+    while (prev && prev.ringIn !== this.ringIn) prev = prev.prev
+    return !prev || !prev.sweepLineEntersRing
   }
 
   _ringsInsideOf () {
-    if (!this.prev) return [this.ringIn]
+    // start with prev set of rings inside of, if any
+    let rings = this.prev ? [...this.prev.ringsInsideOf] : []
 
-    let rings = [...this.prev.ringsInsideOf]
-    if (!this.prev.sweepLineEntersRing) {
-      // TODO: filter out all coincidents of prev that sweep line exits
-      rings = rings.filter(r => r !== this.prev.ringIn)
+    // coincidents always share the same
+    if (this.coincidents.filter(c => c === this.prev).length > 0) return rings
+
+    // remove any we exited, add any we entered
+    if (this.prev) {
+      rings = rings.filter(r => !this.prev.ringsExiting.includes(r))
+      rings.push(...this.prev.ringsEntering)
     }
-    if (!rings.includes(this.ringIn)) rings.push(this.ringIn)
-    // TODO: push in coincidents as well that sweep line enters
-    return rings
+
+    // remove any that we're actually on the boundary of
+    // (necessary for vertical segments)
+    return rings.filter(r => !this.ringsOnEdgeOf.includes(r))
+  }
+
+  _ringsOnEdgeOf () {
+    return this.coincidents.map(seg => seg.ringIn)
+  }
+
+  _ringsEntering () {
+    return this.coincidents
+      .filter(seg => seg.sweepLineEntersRing)
+      .map(seg => seg.ringIn)
+  }
+
+  _ringsExiting () {
+    return this.coincidents
+      .filter(seg => !seg.sweepLineEntersRing)
+      .map(seg => seg.ringIn)
   }
 
   _polysInsideOf () {
-    let polys = Array.from(new Set(this.ringsInsideOf.map(r => r.poly)))
-    polys = polys.filter(p => p.isInside(this.ringsInsideOf))
-    if (this.isValid && !polys.includes(this.ringIn.poly)) {
-      polys.push(this.ringIn.poly)
-    }
-    return polys
+    const polys = Array.from(new Set(this.ringsInsideOf.map(r => r.poly)))
+    return polys.filter(p => p.isInside(this.ringsOnEdgeOf, this.ringsInsideOf))
   }
 
   _multiPolysInsideOf () {
     return Array.from(new Set(this.polysInsideOf.map(p => p.multipoly)))
   }
 
-  _isValid () {
-    const insideOfs = this.ringsInsideOf.filter(r => r !== this.ringIn)
-    const exterior = this.ringIn.poly.exteriorRing
-    const interiors = this.ringIn.poly.interiorRings
-
-    if (insideOfs.some(r => interiors.includes(r))) return false
-    if (this.ringIn.isInterior && !insideOfs.includes(exterior)) return false
-    return true
-  }
-
   _isInResult () {
-    if (!this.isValid) return false
-
-    if (!this.isCoincident) {
-      switch (operation.type) {
-        case operation.types.INTERSECTION:
-          return this.isInsideAllInputGeoms
-
-        case operation.types.UNION:
-          return this.isInsideJustOwnPoly
-
-        case operation.types.XOR:
-          // all sides from both INTERSECTION and UNION
-          return this.isInsideAllInputGeoms || this.isInsideJustOwnPoly
-
-        default:
-          throw new Error(`Unrecognized operation type found ${operation.type}`)
-      }
-    }
-
-    if (operation.type === operation.types.XOR) return false
     if (!this.isCoincidenceWinner) return false
-    if (!this.coincidentsSweepLineEntersPolyAllMatch) return false
 
-    return true
+    switch (operation.type) {
+      case operation.types.UNION:
+        // UNION:
+        //  * We are not within any polys
+        //  * we have 0 coincidents on exactly one side - either one
+        if (this.multiPolysInsideOf.length > 0) return false
+        const noEnters = this.multiPolysSLPEnters.length === 0
+        const noExits = this.multiPolysSLPExits.length === 0
+        return noEnters !== noExits
+
+      case operation.types.INTERSECTION:
+        // INTERSECTION:
+        // For all input geoms, there is at least one poly ST either:
+        //  * we are inside it
+        //  * we bound it
+        const numGeoms =
+          this.multiPolysInsideOf.length +
+          Math.max(
+            this.multiPolysSLPEnters.length,
+            this.multiPolysSLPExits.length
+          )
+        return numGeoms === operation.numberOfGeoms
+
+      case operation.types.XOR:
+        // XOR:
+        // For an odd number of geoms, there is at least one poly ST either:
+        //  * we are inside it
+        //  * we have a matching sweep line orientation with it
+        const numGeomsEnters =
+          this.multiPolysInsideOf.length + this.multiPolysSLPEnters.length
+
+        const numGeomsExits =
+          this.multiPolysInsideOf.length + this.multiPolysSLPExits.length
+
+        return numGeomsEnters % 2 === 1 || numGeomsExits % 2 === 1
+
+      default:
+        throw new Error(`Unrecognized operation type found ${operation.type}`)
+    }
   }
 }
 
