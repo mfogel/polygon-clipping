@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[-2, -2], [2, -2], [2, 2], [-2, 2], [-2, -2]],
+          [[-1, -1], [-1, 1], [1, 1], [1, -1], [-1, -1]]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[-4, -4], [4, -4], [4, 4], [-4, 4], [-4, -4]],
+          [[-3, -3], [-3, 3], [3, 3], [3, -3], [-3, -3]]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[-6, -6], [6, -6], [6, 6], [-6, 6], [-6, -6]],
+          [[-5, -5], [-5, 5], [5, 5], [5, -5], [-5, -5]]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[-8, -8], [8, -8], [8, 8], [-8, 8], [-8, -8]],
+          [[-7, -7], [-7, 7], [7, 7], [7, -7], [-7, -7]]
+        ]
+      }
+    }
+  ]
+}

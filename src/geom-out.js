@@ -36,7 +36,7 @@ class Ring {
     if (!this.enclosingRing) return true
     if (!this.enclosingRing.enclosingRing) return false
     // an island in hole is a whole new polygon
-    return true
+    return this.enclosingRing.enclosingRing.isExteriorRing
   }
 
   /* Walk down the segments via the linked events, and claim the
