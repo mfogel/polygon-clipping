@@ -35,7 +35,6 @@ describe('clone', () => {
     expect(clone.leftSE.point).toEqual(seg.leftSE.point)
     expect(clone.rightSE.point).toEqual(seg.rightSE.point)
     expect(clone.ringIn).toBe(seg.ringIn)
-    expect(clone.creationId).toBe(seg.creationId)
   })
 })
 
@@ -816,10 +815,10 @@ describe('compare segments', () => {
       expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
 
-    test('left endpoints match - should be sorted in creation order', () => {
-      const seg1 = new Segment([0, 0], [4, 4])
-      const seg2 = new Segment([0, 0], [3, 3])
-      const seg3 = new Segment([0, 0], [5, 5])
+    test('left endpoints match - should be sorted by ring id', () => {
+      const seg1 = new Segment([0, 0], [4, 4], { id: 1 })
+      const seg2 = new Segment([0, 0], [3, 3], { id: 2 })
+      const seg3 = new Segment([0, 0], [5, 5], { id: 3 })
       expect(Segment.compare(seg1, seg2)).toBe(-1)
       expect(Segment.compare(seg2, seg1)).toBe(1)
 
@@ -831,10 +830,16 @@ describe('compare segments', () => {
     })
   })
 
-  test('exactly equal segments should be sorted in creation order', () => {
-    const seg1 = new Segment([0, 0], [4, 4])
-    const seg2 = new Segment([0, 0], [4, 4])
+  test('exactly equal segments should be sorted by ring id', () => {
+    const seg1 = new Segment([0, 0], [4, 4], { id: 1 })
+    const seg2 = new Segment([0, 0], [4, 4], { id: 2 })
     expect(Segment.compare(seg1, seg2)).toBe(-1)
     expect(Segment.compare(seg2, seg1)).toBe(1)
+  })
+
+  test('exactly equal segments (but not identical) should throw error', () => {
+    const seg1 = new Segment([0, 0], [4, 4], { id: 1 })
+    const seg2 = new Segment([0, 0], [4, 4], { id: 1 })
+    expect(() => Segment.compare(seg1, seg2)).toThrow()
   })
 })

@@ -17,7 +17,7 @@ class SweepEvent {
     }
 
     // as a tie-breaker, favor lower segment creation id
-    const [aId, bId] = [a.segment.creationId, b.segment.creationId]
+    const [aId, bId] = [a.segment.ringIn.id, b.segment.ringIn.id]
     if (aId !== bId) return aId < bId ? -1 : 1
 
     // NOTE:  We don't sort on segment length because that changes

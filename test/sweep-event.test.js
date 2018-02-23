@@ -32,25 +32,28 @@ describe('sweep event compare', () => {
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
-  test('then favor earlier created first', () => {
-    const s1 = new Segment([0, 0], [5, 5], true).leftSE
-    const s2 = new Segment([0, 0], [4, 4], true).leftSE
+  test('then favor lower ring id', () => {
+    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
+    const s2 = new Segment([0, 0], [4, 4], { id: 2 }).leftSE
     expect(SweepEvent.compare(s1, s2)).toBe(-1)
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
-  test('totally equal', () => {
-    const s1 = new Segment([0, 0], [5, 5], true).leftSE
+  test('identical equal', () => {
+    const s1 = new Segment([0, 0], [5, 5]).leftSE
     expect(SweepEvent.compare(s1, s1)).toBe(0)
   })
 
+  test('totally equal but not identical', () => {
+    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
+    const s2 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
+    expect(() => SweepEvent.compare(s1, s2)).toThrow()
+  })
+
   test('length does not matter', () => {
-    const s1 = new Segment([0, 0], [5, 5], true).leftSE
-    const s2 = new Segment([0, 0], [4, 4], true).leftSE
-    const s3 = new Segment([0, 0], [5, 5], true).leftSE
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s3)).toBe(-1)
-    expect(SweepEvent.compare(s1, s3)).toBe(-1)
+    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
+    const s2 = new Segment([0, 0], [4, 4], { id: 1 }).leftSE
+    expect(() => SweepEvent.compare(s1, s2)).toThrow()
   })
 })
 

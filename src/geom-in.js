@@ -1,5 +1,10 @@
+// Give rings unique ID's to get consistent sorting of segments
+// and sweep events when all else is identical
+let ringId = 0
+
 class Ring {
   constructor (poly, isExterior) {
+    this.id = ringId++
     this.poly = poly
     this.isExterior = isExterior
     this.isInterior = !isExterior

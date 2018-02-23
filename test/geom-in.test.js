@@ -24,6 +24,14 @@ describe('Ring', () => {
     expect(polyMock.addInteriorRing).toHaveBeenCalledTimes(1)
     expect(polyMock.addInteriorRing).toHaveBeenCalledWith(ring)
   })
+
+  test('ring Id increments', () => {
+    const polyMock = { setExteriorRing: jest.fn(), addInteriorRing: jest.fn() }
+    const ring1 = new Ring(polyMock, false)
+    const ring2 = new Ring(polyMock, false)
+
+    expect(ring2.id - ring1.id).toBe(1)
+  })
 })
 
 describe('Poly', () => {

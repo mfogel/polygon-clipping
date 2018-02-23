@@ -3,10 +3,6 @@ const SweepEvent = require('./sweep-event')
 const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
 const { arePointsEqual, crossProduct, compareVectorAngles } = require('./point')
 
-// Give segments unique ID's to get consistent sorting when segments
-// are otherwise identical
-let creationCnt = 0
-
 class Segment {
   static compare (a, b) {
     if (a === b) return 0
@@ -27,8 +23,8 @@ class Segment {
       // on creation order of segments as a tie-breaker
       // NOTE: we do not use segment length to break a tie here, because
       //       when segments are split their length changes
-      if (a.creationId !== b.creationId) {
-        return a.creationId < b.creationId ? -1 : 1
+      if (a.ringIn.id !== b.ringIn.id) {
+        return a.ringIn.id < b.ringIn.id ? -1 : 1
       }
     } else {
       // for non-colinear segments with matching left endoints,
@@ -49,12 +45,11 @@ class Segment {
     throw new Error('Segment comparison failed... identical but not?')
   }
 
-  constructor (point1, point2, ring, creationId = null) {
+  constructor (point1, point2, ring) {
     if (arePointsEqual(point1, point2)) {
       throw new Error('Unable to build segment for identical points')
     }
 
-    this.creationId = creationId !== null ? creationId : creationCnt++
     this.ringIn = ring
     this.ringOut = null
 
@@ -69,14 +64,7 @@ class Segment {
   }
 
   clone () {
-    // A cloned segment gets the same creationId as the parent.
-    // This is to keep sorting consistent when segments are split
-    return new Segment(
-      this.leftSE.point,
-      this.rightSE.point,
-      this.ringIn,
-      this.creationId
-    )
+    return new Segment(this.leftSE.point, this.rightSE.point, this.ringIn)
   }
 
   registerRingOut (ring) {
@@ -253,9 +241,9 @@ class Segment {
   }
 
   get isCoincidenceWinner () {
-    // arbitary - winner is the one with lowest creationId
-    const creationIds = this.coincidents.map(seg => seg.creationId)
-    return this.creationId === Math.min(...creationIds)
+    // arbitary - winner is the one with lowest ringId
+    const ringIds = this.coincidents.map(seg => seg.ringIn.id)
+    return this.ringIn.id === Math.min(...ringIds)
   }
 
   /* Does the sweep line, when it intersects this segment, enter the ring? */
