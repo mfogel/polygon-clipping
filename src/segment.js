@@ -1,7 +1,8 @@
 const operation = require('./operation')
 const SweepEvent = require('./sweep-event')
 const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
-const { arePointsEqual, crossProduct, compareVectorAngles } = require('./point')
+const { flpEQ, flpLT, flpCompare, arePointsEqual } = require('./flp')
+const { crossProduct, compareVectorAngles } = require('./vector')
 
 class Segment {
   static compare (a, b) {
@@ -11,13 +12,15 @@ class Segment {
     const [arx, brx] = [a.rightSE.point[0], b.rightSE.point[0]]
 
     // check if they're even in the same vertical plane
-    if (alx > brx) return 1
-    if (blx > arx) return -1
+    if (flpLT(brx, alx)) return 1
+    if (flpLT(arx, blx)) return -1
+
+    const cmpLX = flpCompare(alx, blx)
 
     if (a.isColinearWith(b)) {
       // colinear segments with non-matching left-endpoints, consider
       // the more-left endpoint to be earlier
-      if (alx !== blx) return alx < blx ? -1 : 1
+      if (cmpLX !== 0) return cmpLX
 
       // colinear segments with matching left-endpoints, fall back
       // on creation order of segments as a tie-breaker
@@ -34,12 +37,12 @@ class Segment {
       }
 
       // their left endpoints are in the same vertical line, lower means ealier
-      if (alx === blx) return aly < bly ? -1 : 1
+      if (cmpLX === 0) return flpCompare(aly, bly)
 
       // along a vertical line at the rightmore of the two left endpoints,
       // consider the segment that intersects lower with that line to be earlier
-      if (alx < blx) return a.isPointBelow(b.leftSE.point) ? -1 : 1
-      if (alx > blx) return b.isPointBelow(a.leftSE.point) ? 1 : -1
+      if (flpLT(alx, blx)) return a.isPointBelow(b.leftSE.point) ? -1 : 1
+      if (flpLT(blx, alx)) return b.isPointBelow(a.leftSE.point) ? 1 : -1
     }
 
     throw new Error(
@@ -87,7 +90,7 @@ class Segment {
   }
 
   get isVertical () {
-    return this.points[0][0] === this.points[1][0]
+    return flpEQ(this.points[0][0], this.points[1][0])
   }
 
   /* an array of left point, right point */
@@ -169,11 +172,10 @@ class Segment {
 
     // not on line segment a
     const s = crossProduct(ve, vb) / kross
-    if (s < 0 || s > 1) return []
+    if (flpLT(s, 0) || flpLT(1, s)) return []
 
-    // not on line segment b
     const t = crossProduct(ve, va) / kross
-    if (t < 0 || t > 1) return []
+    if (flpLT(t, 0) || flpLT(1, t)) return []
 
     // intersection is in a midpoint of both lines, let's use a
     return [[al[0] + s * va[0], al[1] + s * va[1]]]

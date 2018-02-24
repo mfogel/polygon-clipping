@@ -1,5 +1,5 @@
 const Tree = require('avl')
-const { arePointsEqual } = require('./point')
+const { arePointsEqual } = require('./flp')
 const Segment = require('./segment')
 
 /**

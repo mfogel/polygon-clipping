@@ -2,6 +2,7 @@
 
 jest.mock('../src/clean-input')
 const cleanInput = require('../src/clean-input')
+const operation = require('../src/operation')
 const doIt = require('../src')
 
 afterEach(() => {
@@ -10,37 +11,37 @@ afterEach(() => {
   cleanInput.forceMultiPoly.mockClear()
 })
 
-describe('doOperation calls the right stuff', () => {
+describe('doIt calls the right stuff', () => {
   test('closeAllRings() called correctly', () => {
-    const poly1 = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
-    const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
-    const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
+    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-    doIt(null, poly1, poly2, poly3)
+    doIt(operation.types.UNION, mp1, mp2, mp3)
     expect(cleanInput.closeAllRings).toHaveBeenCalledTimes(3)
-    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly1)
-    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly2)
-    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(poly3)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(mp1)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(mp2)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(mp3)
   })
 
   test('forceMultiPoly() called correctly', () => {
-    const poly1 = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
-    const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
-    const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
+    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-    doIt(null, poly1, poly2, poly3)
+    doIt(operation.types.UNION, mp1, mp2, mp3)
     expect(cleanInput.forceMultiPoly).toHaveBeenCalledTimes(3)
-    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly1)
-    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly2)
-    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(poly3)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp1)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp2)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp3)
   })
 
   test('errorOnSelfIntersectingRings() called', () => {
-    const poly1 = [[[0, 0], [2, 0], [0, 2], [0, 0]]]
-    const poly2 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
-    const poly3 = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
+    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-    doIt(null, poly1, poly2, poly3)
+    doIt(operation.types.UNION, mp1, mp2, mp3)
     expect(cleanInput.errorOnSelfIntersectingRings).toHaveBeenCalledTimes(1)
   })
 })

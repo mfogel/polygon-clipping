@@ -38,6 +38,13 @@ describe('forceMultiPoly()', () => {
     forceMultiPoly(poly)
     expect(poly).toEqual(expected)
   })
+
+  test('multipoly input unchanged', () => {
+    const poly = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const expected = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    forceMultiPoly(poly)
+    expect(poly).toEqual(expected)
+  })
 })
 
 describe('closeAllRings()', () => {

@@ -1,18 +1,12 @@
 /* eslint-env jest */
 
 const {
-  arePointsEqual,
   crossProduct,
   dotProduct,
   compareVectorAngles,
   cosineOfAngle,
   sineOfAngle
-} = require('../src/point')
-
-describe('are points equal', () => {
-  test('yes', () => expect(arePointsEqual([0, 0], [0.0, 0, 0])).toBeTruthy())
-  test('no', () => expect(arePointsEqual([0, 0], [1, 0])).toBeFalsy())
-})
+} = require('../src/vector')
 
 describe('cross product', () => {
   test('general', () => expect(crossProduct([1, 2], [3, 4])).toEqual(-2))

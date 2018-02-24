@@ -2,7 +2,7 @@ const TinyQueue = require('tinyqueue')
 const geomIn = require('./geom-in')
 const Segment = require('./segment')
 const SweepEvent = require('./sweep-event')
-const { arePointsEqual } = require('./point')
+const { arePointsEqual } = require('./flp')
 
 class EventQueue {
   constructor (comparator = SweepEvent.compare) {

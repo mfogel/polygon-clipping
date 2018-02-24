@@ -1,15 +1,4 @@
-/**
- * This module expects to take as input the raw <geom> elements.
- * Acceptable forms of input are described in the README.
- *
- * If the input doesn't match an acceptable form, an exception will
- * be thrown.
- *
- * Input will be **modified in place** (for performance) to a
- * standardized multipolygon with self-closing rings.
- */
-
-const { arePointsEqual } = require('./point')
+const { arePointsEqual } = require('./flp')
 
 /* WARN: input modified directly */
 const forceMultiPoly = geom => {

@@ -1,4 +1,5 @@
-const { cosineOfAngle, sineOfAngle } = require('./point')
+const { flpCompare } = require('./flp')
+const { cosineOfAngle, sineOfAngle } = require('./vector')
 
 class SweepEvent {
   static compare (a, b) {
@@ -30,10 +31,12 @@ class SweepEvent {
 
   static comparePoints (a, b) {
     // favor lower X
-    if (a[0] !== b[0]) return a[0] < b[0] ? -1 : 1
+    const cmpX = flpCompare(a[0], b[0])
+    if (cmpX !== 0) return cmpX
 
     // favor lower Y
-    if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1
+    const cmpY = flpCompare(a[1], b[1])
+    if (cmpY !== 0) return cmpY
 
     // else they're the same
     return 0
@@ -87,15 +90,16 @@ class SweepEvent {
       const { sine: asine, cosine: acosine } = cache.get(a)
       const { sine: bsine, cosine: bcosine } = cache.get(b)
 
-      if (asine >= 0 && bsine >= 0) {
-        if (acosine === bcosine) return 0
-        return acosine > bcosine ? -1 : 1
+      const cmpZeroASine = flpCompare(asine, 0)
+      const cmpZeroBSine = flpCompare(bsine, 0)
+
+      if (cmpZeroASine >= 0 && cmpZeroBSine >= 0) {
+        return flpCompare(bcosine, acosine)
       }
-      if (asine < 0 && bsine < 0) {
-        if (acosine === bcosine) return 0
-        return acosine < bcosine ? -1 : 1
+      if (cmpZeroASine < 0 && cmpZeroBSine < 0) {
+        return flpCompare(acosine, bcosine)
       }
-      return asine > bsine ? -1 : 1
+      return flpCompare(bsine, asine)
     }
   }
 

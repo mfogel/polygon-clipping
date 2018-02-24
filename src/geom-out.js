@@ -1,4 +1,4 @@
-const { compareVectorAngles } = require('./point')
+const { compareVectorAngles } = require('./vector')
 
 class Ring {
   constructor (segment) {

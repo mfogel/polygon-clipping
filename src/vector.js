@@ -1,4 +1,4 @@
-const arePointsEqual = (a, b) => a[0] === b[0] && a[1] === b[1]
+const { flpCompare } = require('./flp')
 
 /* Cross Product of two vectors with first point at origin */
 const crossProduct = (a, b) => a[0] * b[1] - a[1] * b[0]
@@ -11,8 +11,7 @@ const compareVectorAngles = (basePoint, endPoint1, endPoint2) => {
   let v1 = [endPoint1[0] - basePoint[0], endPoint1[1] - basePoint[1]]
   let v2 = [endPoint2[0] - basePoint[0], endPoint2[1] - basePoint[1]]
   const kross = crossProduct(v1, v2)
-  if (kross * kross < Number.EPSILON * Number.EPSILON) return 0
-  return kross > 0 ? 1 : -1
+  return flpCompare(kross, 0)
 }
 
 const length = a => Math.sqrt(dotProduct(a, a))
@@ -32,7 +31,6 @@ const cosineOfAngle = (pShared, pBase, pAngle) => {
 }
 
 module.exports = {
-  arePointsEqual,
   crossProduct,
   dotProduct,
   compareVectorAngles,
