@@ -97,7 +97,11 @@ class SweepLine {
         ? inters[1]
         : inters[0]
     }
-    return [...seg1.attemptSplit(splitOn), ...seg2.attemptSplit(splitOn)]
+
+    const newEvents = []
+    if (!seg1.isAnEndpoint(splitOn)) newEvents.push(...seg1.split(splitOn))
+    if (!seg2.isAnEndpoint(splitOn)) newEvents.push(...seg2.split(splitOn))
+    return newEvents
   }
 }
 

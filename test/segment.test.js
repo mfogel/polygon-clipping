@@ -38,26 +38,11 @@ describe('clone', () => {
   })
 })
 
-describe('attempt split', () => {
-  test('nope: on point out far away', () => {
-    const seg = new Segment([0, 0], [10, 10])
-    const pt = [2342, -234.324]
-    expect(seg.attemptSplit(pt)).toEqual([])
-  })
-  test('nope: on point colinear but not on', () => {
-    const seg = new Segment([0, 0], [10, 10])
-    const pt = [20, 20]
-    expect(seg.attemptSplit(pt)).toEqual([])
-  })
-  test('nope: on point on endpoint', () => {
-    const seg = new Segment([0, 0], [10, 10])
-    const pt = [10, 10]
-    expect(seg.attemptSplit(pt)).toEqual([])
-  })
-  test('yep: on interior point 1', () => {
+describe('split', () => {
+  test('on interior point', () => {
     const seg = new Segment([0, 0], [10, 10], true)
     const pt = [5, 5]
-    const evts = seg.attemptSplit(pt)
+    const evts = seg.split(pt)
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isRight).toBeTruthy()
@@ -66,10 +51,10 @@ describe('attempt split', () => {
     expect(evts[1].isLeft).toBeTruthy()
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
   })
-  test('yep: on interior point 2', () => {
+  test('on close-to-but-not-exactly interior point', () => {
     const seg = new Segment([0, 10], [10, 0], false)
-    const pt = [5, 5]
-    const evts = seg.attemptSplit(pt)
+    const pt = [5 + Number.EPSILON, 5]
+    const evts = seg.split(pt)
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isRight).toBeTruthy()

@@ -177,33 +177,29 @@ class Segment {
     const t = crossProduct(ve, va) / kross
     if (flpLT(t, 0) || flpLT(1, t)) return []
 
-    // intersection is in a midpoint of both lines, let's use a
-    return [[al[0] + s * va[0], al[1] + s * va[1]]]
+    // intersection is in a midpoint of both lines, let's average them
+    const [aix, aiy] = [al[0] + s * va[0], al[1] + s * va[1]]
+    const [bix, biy] = [bl[0] + t * vb[0], bl[1] + t * vb[1]]
+    return [[(aix + bix) / 2, (aiy + biy) / 2]]
   }
 
   /**
-   * Attempt to split the given segment into two segments on the given point.
-   * If the given point is not along the interior of the segment, the split will
-   * not be possible and an empty array will be returned.
-   * If the point is not on an endpoint, the segment will be split.
+   * Split the given segment into two segments on the given point.
    *  * The existing segment will retain it's leftSE and a new rightSE will be
    *    generated for it.
    *  * A new segment will be generated which will adopt the original segment's
    *    rightSE, and a new leftSE will be generated for it.
    *  * An array of the two new generated SweepEvents, one from each segment,
    *    will be returned.
+   * Note that splitting a segment on an endpoint will result in a degenerate
+   * segment being generated. Don't do this.
    */
-  attemptSplit (point) {
-    if (this.isAnEndpoint(point) || !this.isPointOn(point)) return []
-
+  split (point) {
     const newSeg = this.clone()
-
     newSeg.leftSE = new SweepEvent(point, newSeg)
     newSeg.rightSE = this.rightSE
     this.rightSE.segment = newSeg
-
     this.rightSE = new SweepEvent(point, this)
-
     return [this.rightSE, newSeg.leftSE]
   }
 
