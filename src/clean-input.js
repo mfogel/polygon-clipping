@@ -52,7 +52,7 @@ const errorOnSelfIntersectingRings = segments => {
       if (evt.linkedEvents.length <= 2) return
       const fromSameRing = e => e.segment.ringIn === evt.segment.ringIn
       if (evt.linkedEvents.filter(fromSameRing).length > 2) {
-        throw new Error(`Self-intersecting input ring found at ${evt.point}`)
+        throw new Error(`Self-intersecting input ring found at [${evt.point}]`)
       }
     })
   })

@@ -42,12 +42,15 @@ class Segment {
       if (alx > blx) return b.isPointBelow(a.leftSE.point) ? 1 : -1
     }
 
-    throw new Error('Segment comparison failed... identical but not?')
+    throw new Error(
+      `Segment comparison (with left point [${a.leftSE
+        .point}]) failed... equal but not identical?`
+    )
   }
 
   constructor (point1, point2, ring) {
     if (arePointsEqual(point1, point2)) {
-      throw new Error('Unable to build segment for identical points')
+      throw new Error(`Unable to build segment for equal points at [${point1}]`)
     }
 
     this.ringIn = ring

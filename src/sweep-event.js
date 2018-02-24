@@ -23,7 +23,9 @@ class SweepEvent {
     // NOTE:  We don't sort on segment length because that changes
     //        as segments are divided.
 
-    throw new Error('SweepEvent comparison failed... identical but not?')
+    throw new Error(
+      `SweepEvent comparison failed at [${a.point}]... equal but not identical?`
+    )
   }
 
   static comparePoints (a, b) {
