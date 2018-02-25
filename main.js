@@ -14,11 +14,7 @@ const xor = (geom1, geom2, ...moreGeoms) => {
 }
 
 const difference = (subject, clipping) => {
-  // Doing this in two passes for simplicity, at the expense of performance.
-  // It is certainly possible to do this in one pass, PR's happily considered
-  const inter = doOperation(operation.types.INTERSECTION, subject, clipping)
-  if (inter.length === 0) return subject
-  return doOperation(operation.types.XOR, subject, inter)
+  return doOperation(operation.types.DIFFERENCE, subject, clipping)
 }
 
 const clean = geom => {

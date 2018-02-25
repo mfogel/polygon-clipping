@@ -12,5 +12,7 @@ describe('operation', () => {
     const multiPolys = [{}, {}]
     operation.setMultiPolys(multiPolys)
     expect(operation.multiPolys).toBe(multiPolys)
+    expect(operation.subject).toBe(multiPolys[0])
+    expect(operation.clipping).toBe(multiPolys[1])
   })
 })

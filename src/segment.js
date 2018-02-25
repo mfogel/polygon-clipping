@@ -400,6 +400,23 @@ class Segment {
         )
         return diff % 2 === 1
 
+      case operation.types.DIFFERENCE:
+        // DIFFERENCE included iff:
+        //  * if we're in the subject - yes
+        //  * if we're in the clipping - nope
+        //  * if we're not inside either subject or clipping,
+        //    then if one of our sides is just subject - yes
+        if (this.multiPolysInsideOf.includes(operation.subject)) return true
+        if (this.multiPolysInsideOf.includes(operation.clipping)) return false
+
+        const justSubject = multiPolys =>
+          multiPolys.includes(operation.subject) &&
+          !multiPolys.includes(operation.clipping)
+        if (justSubject(this.multiPolysSLPEnters)) return true
+        if (justSubject(this.multiPolysSLPExits)) return true
+
+        return false
+
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)
     }

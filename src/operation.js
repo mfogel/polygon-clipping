@@ -3,7 +3,8 @@ class Operation {
     this.types = {
       INTERSECTION: 0,
       UNION: 1,
-      XOR: 2
+      XOR: 2,
+      DIFFERENCE: 3
     }
   }
 
@@ -13,6 +14,16 @@ class Operation {
 
   setMultiPolys (mps) {
     this.multiPolys = mps
+  }
+
+  get subject () {
+    // meaingful only for DIFFERENCE
+    return this.multiPolys[0]
+  }
+
+  get clipping () {
+    // meaingful only for DIFFERENCE
+    return this.multiPolys[1]
   }
 }
 
