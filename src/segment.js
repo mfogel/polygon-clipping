@@ -277,7 +277,7 @@ class Segment {
 
   /* Array of multipolys this segment is inside of */
   get multiPolysInsideOf () {
-    return Array.from(new Set(this.polysInsideOf.map(p => p.multipoly)))
+    return Array.from(new Set(this.polysInsideOf.map(p => p.multiPoly)))
   }
 
   /* Is this segment part of the final result? */
@@ -292,12 +292,12 @@ class Segment {
 
   get multiPolysSLPEnters () {
     const SLPEnters = this.coincidents.filter(c => c.sweepLineEntersPoly)
-    return Array.from(new Set(SLPEnters.map(c => c.ringIn.poly.multipoly)))
+    return Array.from(new Set(SLPEnters.map(c => c.ringIn.poly.multiPoly)))
   }
 
   get multiPolysSLPExits () {
     const SLPExits = this.coincidents.filter(c => c.sweepLineExitsPoly)
-    return Array.from(new Set(SLPExits.map(c => c.ringIn.poly.multipoly)))
+    return Array.from(new Set(SLPExits.map(c => c.ringIn.poly.multiPoly)))
   }
 
   _clearCache () {
@@ -389,7 +389,7 @@ class Segment {
             this.multiPolysSLPEnters.length,
             this.multiPolysSLPExits.length
           )
-        return numGeoms === operation.numberOfGeoms
+        return numGeoms === operation.multiPolys.length
 
       case operation.types.XOR:
         // XOR - included iff:

@@ -1,15 +1,31 @@
+const Segment = require('./segment')
+const { arePointsEqual } = require('./flp')
+
 // Give rings unique ID's to get consistent sorting of segments
 // and sweep events when all else is identical
 let ringId = 0
 
 class Ring {
-  constructor (poly, isExterior) {
+  constructor (geomRing, isExterior, poly) {
     this.id = ringId++
     this.poly = poly
     this.isExterior = isExterior
     this.isInterior = !isExterior
-    if (isExterior) poly.setExteriorRing(this)
-    else poly.addInteriorRing(this)
+    this.segments = []
+
+    geomRing.forEach((point, i, ring) => {
+      if (i === 0) return
+      const prevPoint = ring[i - 1]
+
+      // repeated point in a ring? Skip over it
+      if (arePointsEqual(prevPoint, point)) return
+
+      this.segments.push(new Segment(prevPoint, point, this))
+    })
+  }
+
+  get sweepEvents () {
+    return [].concat(...this.segments.map(seg => [seg.leftSE, seg.rightSE]))
   }
 
   /* Given a segment on this rings with these relationships to other rings,
@@ -47,19 +63,17 @@ class Ring {
 }
 
 class Poly {
-  constructor (multipoly) {
-    this.multipoly = multipoly
-    this.exteriorRing = null
-    this.interiorRings = []
-    multipoly.addPoly(this)
+  constructor (geomPoly, multiPoly) {
+    this.exteriorRing = new Ring(geomPoly[0], true, this)
+    this.interiorRings = geomPoly.slice(1).map(rg => new Ring(rg, false, this))
+    this.multiPoly = multiPoly
   }
 
-  setExteriorRing (ring) {
-    this.exteriorRing = ring
-  }
-
-  addInteriorRing (ring) {
-    this.interiorRings.push(ring)
+  get sweepEvents () {
+    return [].concat(
+      this.exteriorRing.sweepEvents,
+      ...this.interiorRings.map(r => r.sweepEvents)
+    )
   }
 
   /* Given a segment with these rings, is that segment inside this polygon? */
@@ -78,12 +92,12 @@ class Poly {
 }
 
 class MultiPoly {
-  constructor () {
-    this.polys = []
+  constructor (geomMultiPoly) {
+    this.polys = geomMultiPoly.map(gmp => new Poly(gmp, this))
   }
 
-  addPoly (poly) {
-    this.polys.push(poly)
+  get sweepEvents () {
+    return [].concat(...this.polys.map(p => p.sweepEvents))
   }
 }
 

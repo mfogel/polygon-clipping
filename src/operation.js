@@ -11,8 +11,8 @@ class Operation {
     this.type = type
   }
 
-  setNumberOfGeoms (num) {
-    this.numberOfGeoms = num
+  setMultiPolys (mps) {
+    this.multiPolys = mps
   }
 }
 

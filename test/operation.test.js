@@ -8,8 +8,9 @@ describe('operation', () => {
     expect(operation.type).toBe(operation.types.UNION)
   })
 
-  test('set number of geoms', () => {
-    operation.setNumberOfGeoms(4)
-    expect(operation.numberOfGeoms).toBe(4)
+  test('set multipolys', () => {
+    const multiPolys = [{}, {}]
+    operation.setMultiPolys(multiPolys)
+    expect(operation.multiPolys).toBe(multiPolys)
   })
 })

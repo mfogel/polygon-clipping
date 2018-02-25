@@ -3,41 +3,39 @@
 const { Ring, Poly, MultiPoly } = require('../src/geom-in')
 
 describe('Ring', () => {
-  test('create exterior', () => {
-    const polyMock = { setExteriorRing: jest.fn(), addInteriorRing: jest.fn() }
-    const ring = new Ring(polyMock, true)
+  test('create exterior ring', () => {
+    const [pt1, pt2, pt3, pt4] = [[0, 0], [1, 0], [1, 1], [0, 0]]
+    const poly = {}
+    const ring = new Ring([pt1, pt2, pt3, pt4], true, poly)
 
+    expect(ring.poly).toBe(poly)
     expect(ring.isExterior).toBeTruthy()
     expect(ring.isInterior).toBeFalsy()
-    expect(polyMock.setExteriorRing).toHaveBeenCalledTimes(1)
-    expect(polyMock.setExteriorRing).toHaveBeenCalledWith(ring)
-    expect(polyMock.addInteriorRing).not.toHaveBeenCalled()
+    expect(ring.segments.length).toBe(3)
+    expect(ring.sweepEvents.length).toBe(6)
+
+    expect(ring.segments[0].points).toEqual([pt1, pt2])
+    expect(ring.segments[1].points).toEqual([pt2, pt3])
+    expect(ring.segments[2].points).toEqual([pt4, pt3])
   })
 
-  test('create interior', () => {
-    const polyMock = { setExteriorRing: jest.fn(), addInteriorRing: jest.fn() }
-    const ring = new Ring(polyMock, false)
-
+  test('create an interior ring', () => {
+    const ring = new Ring([], false, {})
     expect(ring.isExterior).toBeFalsy()
     expect(ring.isInterior).toBeTruthy()
-    expect(polyMock.setExteriorRing).not.toHaveBeenCalled()
-    expect(polyMock.addInteriorRing).toHaveBeenCalledTimes(1)
-    expect(polyMock.addInteriorRing).toHaveBeenCalledWith(ring)
   })
 
   test('ring Id increments', () => {
-    const polyMock = { setExteriorRing: jest.fn(), addInteriorRing: jest.fn() }
-    const ring1 = new Ring(polyMock, false)
-    const ring2 = new Ring(polyMock, false)
-
+    const ring1 = new Ring([])
+    const ring2 = new Ring([])
     expect(ring2.id - ring1.id).toBe(1)
   })
 
   describe('is valid? ', () => {
-    const poly = new Poly({ addPoly: jest.fn() })
-    const exteriorRing = new Ring(poly, true)
-    const interiorRing1 = new Ring(poly, false)
-    const interiorRing2 = new Ring(poly, false)
+    const poly = new Poly([[], [], []])
+    const exteriorRing = poly.exteriorRing
+    const interiorRing1 = poly.interiorRings[0]
+    const interiorRing2 = poly.interiorRings[1]
 
     describe('yup', () => {
       test('exterior, no funny stuff', () => {
@@ -151,37 +149,29 @@ describe('Ring', () => {
 
 describe('Poly', () => {
   test('creation', () => {
-    const multiPolyMock = { addPoly: jest.fn() }
-    const poly = new Poly(multiPolyMock)
+    const multiPoly = {}
+    const poly = new Poly(
+      [
+        [[0, 0], [1, 1]],
+        [[2, 2], [3, 3], [4, 4]],
+        [[4, 4], [5, 5], [6, 6], [7, 7]]
+      ],
+      multiPoly
+    )
 
-    expect(poly.exteriorRing).toBeNull()
-    expect(poly.interiorRings).toEqual([])
-    expect(multiPolyMock.addPoly).toHaveBeenCalledTimes(1)
-    expect(multiPolyMock.addPoly).toHaveBeenCalledWith(poly)
-  })
-
-  test('set exterior ring', () => {
-    const poly = new Poly({ addPoly: jest.fn() })
-    const ring = {}
-
-    poly.setExteriorRing(ring)
-    expect(poly.exteriorRing).toBe(ring)
-  })
-
-  test('add interior ring', () => {
-    const poly = new Poly({ addPoly: jest.fn() })
-    const ring = {}
-
-    poly.addInteriorRing(ring)
-    expect(poly.interiorRings.length).toBe(1)
-    expect(poly.interiorRings[0]).toBe(ring)
+    expect(poly.multiPoly).toBe(multiPoly)
+    expect(poly.exteriorRing.segments.length).toBe(1)
+    expect(poly.interiorRings.length).toBe(2)
+    expect(poly.interiorRings[0].segments.length).toBe(2)
+    expect(poly.interiorRings[1].segments.length).toBe(3)
+    expect(poly.sweepEvents.length).toBe(12)
   })
 
   describe('is inside? ', () => {
-    const poly = new Poly({ addPoly: jest.fn() })
-    const exteriorRing = new Ring(poly, true)
-    const interiorRing1 = new Ring(poly, false)
-    const interiorRing2 = new Ring(poly, false)
+    const poly = new Poly([[], [], []])
+    const exteriorRing = poly.exteriorRing
+    const interiorRing1 = poly.interiorRings[0]
+    const interiorRing2 = poly.interiorRings[1]
 
     describe('yup', () => {
       test('between exterior and interior', () => {
@@ -257,17 +247,12 @@ describe('Poly', () => {
 
 describe('MultiPoly', () => {
   test('creation', () => {
-    const multipoly = new MultiPoly()
+    const multipoly = new MultiPoly([
+      [[[0, 0], [1, 1]]],
+      [[[0, 0], [1, 1]], [[2, 2], [3, 3], [4, 4]]]
+    ])
 
-    expect(multipoly.polys).toEqual([])
-  })
-
-  test('add poly', () => {
-    const multipoly = new MultiPoly()
-    const poly = {}
-
-    multipoly.addPoly(poly)
-    expect(multipoly.polys.length).toBe(1)
-    expect(multipoly.polys[0]).toBe(poly)
+    expect(multipoly.polys.length).toBe(2)
+    expect(multipoly.sweepEvents.length).toBe(8)
   })
 })

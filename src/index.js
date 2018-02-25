@@ -1,19 +1,22 @@
 const cleanInput = require('./clean-input.js')
 const EventQueue = require('./event-queue')
+const geomIn = require('./geom-in')
 const geomOut = require('./geom-out')
 const operation = require('./operation')
 const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, ...geoms) => {
-  operation.setType(operationType)
-  operation.setNumberOfGeoms(geoms.length)
-
   geoms.forEach(g => cleanInput.forceMultiPoly(g))
   geoms.forEach(g => cleanInput.closeAllRings(g))
 
+  const multipolys = geoms.map(geom => new geomIn.MultiPoly(geom))
+
+  operation.setType(operationType)
+  operation.setMultiPolys(multipolys)
+
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()
-  eventQueue.consume(geoms)
+  multipolys.forEach(mp => eventQueue.push(...mp.sweepEvents))
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()

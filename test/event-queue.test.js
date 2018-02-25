@@ -1,106 +1,36 @@
 /* eslint-env jest */
 
 const EventQueue = require('../src/event-queue')
-
-const s = [[[[20, -23.5], [170, 74], [226.5, -113.5], [20, -23.5]]]]
-const c = [[[[54.5, -170.5], [140.5, 33.5], [239.5, -198], [54.5, -170.5]]]]
-const q = new EventQueue()
-q.consume([s, c])
+const SweepEvent = require('../src/sweep-event')
 
 describe('event queue', () => {
-  test('point 0', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([20, -23.5]) /* s[0][0] */
-    expect(currentPoint.isLeft).toBeTruthy()
-    expect(currentPoint.otherSE.point).toEqual([226.5, -113.5]) /* s[0][2] */
-    expect(currentPoint.otherSE.isLeft).toBeFalsy()
+  test('insert one get it back', () => {
+    const queue = new EventQueue()
+    const swe1 = new SweepEvent([5, 5])
+
+    queue.push(swe1)
+    expect(queue.pop()).toBe(swe1)
   })
 
-  test('point 1', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([20, -23.5]) /* s[0][0] */
-    expect(currentPoint.isLeft).toBeTruthy()
-    expect(currentPoint.otherSE.point).toEqual([170, 74]) /* s[0][1] */
-    expect(currentPoint.otherSE.isLeft).toBeFalsy()
+  test('insert two get them back sorted', () => {
+    const queue = new EventQueue()
+    const swe1 = new SweepEvent([1, 5])
+    const swe2 = new SweepEvent([5, 5])
+
+    queue.push(swe1, swe2)
+    expect(queue.pop()).toBe(swe1)
+    expect(queue.pop()).toBe(swe2)
+    expect(queue.isEmpty).toBeTruthy()
+
+    queue.push(swe2, swe1)
+    expect(queue.pop()).toBe(swe1)
+    expect(queue.pop()).toBe(swe2)
+    expect(queue.isEmpty).toBeTruthy()
   })
 
-  test('point 2', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([54.5, -170.5]) /* c[0][0] */
-    expect(currentPoint.isLeft).toBeTruthy()
-    expect(currentPoint.otherSE.point).toEqual([239.5, -198]) /* c[0][2] */
-    expect(currentPoint.otherSE.isLeft).toBeFalsy()
-  })
-
-  test('point 3', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([54.5, -170.5]) /* c[0][0] */
-    expect(currentPoint.isLeft).toBeTruthy()
-    expect(currentPoint.otherSE.point).toEqual([140.5, 33.5]) /* c[0][1] */
-    expect(currentPoint.otherSE.isLeft).toBeFalsy()
-  })
-
-  test('point 4', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([140.5, 33.5]) /* c[0][0] */
-    expect(currentPoint.isLeft).toBeFalsy()
-    expect(currentPoint.otherSE.point).toEqual([54.5, -170.5]) /* c[0][1] */
-    expect(currentPoint.otherSE.isLeft).toBeTruthy()
-  })
-
-  test('point 5', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([140.5, 33.5]) /* c[0][0] */
-    expect(currentPoint.isLeft).toBeTruthy()
-    expect(currentPoint.otherSE.point).toEqual([239.5, -198]) /* c[0][1] */
-    expect(currentPoint.otherSE.isLeft).toBeFalsy()
-  })
-
-  test('point 6', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([170, 74]) /* s[0][1] */
-    expect(currentPoint.isLeft).toBeFalsy()
-    expect(currentPoint.otherSE.point).toEqual([20, -23.5]) /* s[0][0] */
-    expect(currentPoint.otherSE.isLeft).toBeTruthy()
-  })
-
-  test('point 7', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([170, 74]) /* s[0][1] */
-    expect(currentPoint.isLeft).toBeTruthy()
-    expect(currentPoint.otherSE.point).toEqual([226.5, -113.5]) /* s[0][3] */
-    expect(currentPoint.otherSE.isLeft).toBeFalsy()
-  })
-
-  test('point 8', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([226.5, -113.5]) /* s[0][1] */
-    expect(currentPoint.isLeft).toBeFalsy()
-    expect(currentPoint.otherSE.point).toEqual([20, -23.5]) /* s[0][0] */
-    expect(currentPoint.otherSE.isLeft).toBeTruthy()
-  })
-
-  test('point 9', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([226.5, -113.5]) /* s[0][1] */
-    expect(currentPoint.isLeft).toBeFalsy()
-    expect(currentPoint.otherSE.point).toEqual([170, 74]) /* s[0][0] */
-    expect(currentPoint.otherSE.isLeft).toBeTruthy()
-  })
-
-  test('point 10', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([239.5, -198]) /* c[0][2] */
-    expect(currentPoint.isLeft).toBeFalsy()
-    expect(currentPoint.otherSE.point).toEqual([54.5, -170.5]) /* c[0][0] */
-    expect(currentPoint.otherSE.isLeft).toBeTruthy()
-  })
-
-  test('point 11', () => {
-    const currentPoint = q.pop()
-    expect(currentPoint.point).toEqual([239.5, -198]) /* c[0][2] */
-    expect(currentPoint.isLeft).toBeFalsy()
-    expect(currentPoint.otherSE.point).toEqual([140.5, 33.5]) /* s[0][1] */
-    expect(currentPoint.otherSE.isLeft).toBeTruthy()
+  test('poping an empty queue throws', () => {
+    const queue = new EventQueue()
+    expect(queue.isEmpty).toBeTruthy()
+    expect(() => queue.pop()).toThrow()
   })
 })
