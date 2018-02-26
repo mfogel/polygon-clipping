@@ -6,6 +6,7 @@ class Ring {
     this.poly = null
     this._points = null
     this._claimSegments()
+    this._clearCache()
   }
 
   registerPoly (poly) {
@@ -13,30 +14,35 @@ class Ring {
   }
 
   get geom () {
-    // remove superfluous points (ie extra points along a straight line)
-    const points = [this._points[0]]
-    for (let i = 1; i < this._points.length - 1; i++) {
-      const [prevPoint, point, nextPoint] = this._points.slice(i - 1, i + 2)
-      if (compareVectorAngles(point, prevPoint, nextPoint) !== 0) {
-        points.push(point)
-      }
-    }
-    points.push(this._points[this._points.length - 1])
+    // Remove superfluous points (ie extra points along a straight line),
+    // Note that the starting/ending point doesn't need to be considered,
+    // as the sweep line trace gaurantees it to be not in the middle
+    // of a straight segment.
+    const points = this._points.filter((pt, i, pts) => {
+      if (i === 0 || i === pts.length - 1) return true
+      return compareVectorAngles(pt, pts[i - 1], pts[i + 1]) !== 0
+    })
     return this.isExteriorRing ? points : points.reverse()
   }
 
   get enclosingRing () {
-    if (this._enclosingRing === undefined) {
-      this._enclosingRing = this._calcEnclosingRing()
-    }
-    return this._enclosingRing
+    return this._getCached('enclosingRing')
   }
 
   get isExteriorRing () {
-    if (!this.enclosingRing) return true
-    if (!this.enclosingRing.enclosingRing) return false
-    // an island in hole is a whole new polygon
-    return this.enclosingRing.enclosingRing.isExteriorRing
+    return this._getCached('isExteriorRing')
+  }
+
+  _clearCache () {
+    this._cache = {}
+  }
+
+  _getCached (propName, calcMethod) {
+    // if this._cache[something] isn't set, fill it with this._something()
+    if (this._cache[propName] === undefined) {
+      this._cache[propName] = this[`_${propName}`].bind(this)()
+    }
+    return this._cache[propName]
   }
 
   /* Walk down the segments via the linked events, and claim the
@@ -62,8 +68,15 @@ class Ring {
     }
   }
 
+  _isExteriorRing () {
+    if (!this.enclosingRing) return true
+    if (!this.enclosingRing.enclosingRing) return false
+    // an island in hole is a whole new polygon
+    return this.enclosingRing.enclosingRing.isExteriorRing
+  }
+
   /* Returns the ring that encloses this one, if any */
-  _calcEnclosingRing () {
+  _enclosingRing () {
     let prevSeg = this.firstSegment.prevInResult
     let prevPrevSeg = prevSeg ? prevSeg.prevInResult : null
 
@@ -112,11 +125,16 @@ class Poly {
 class MultiPoly {
   constructor (rings) {
     this.rings = rings
+    this.polys = this._composePolys(rings)
   }
 
   get geom () {
+    return [...this.polys.map(p => p.geom)]
+  }
+
+  _composePolys (rings) {
     const polys = []
-    this.rings.forEach(ring => {
+    rings.forEach(ring => {
       if (ring.poly) return
       if (ring.isExteriorRing) polys.push(new Poly(ring))
       else {
@@ -124,7 +142,7 @@ class MultiPoly {
         ring.enclosingRing.poly.addInterior(ring)
       }
     })
-    return [...polys.map(p => p.geom)]
+    return polys
   }
 }
 
