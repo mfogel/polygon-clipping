@@ -124,15 +124,24 @@ class Segment {
   }
 
   isPointBelow (point) {
-    return compareVectorAngles(point, this.points[0], this.points[1]) > 0
+    return (
+      !this.isAnEndpoint(point) &&
+      compareVectorAngles(point, this.points[0], this.points[1]) > 0
+    )
   }
 
   isPointColinear (point) {
-    return compareVectorAngles(point, this.points[0], this.points[1]) === 0
+    return (
+      this.isAnEndpoint(point) ||
+      compareVectorAngles(point, this.points[0], this.points[1]) === 0
+    )
   }
 
   isPointAbove (point) {
-    return compareVectorAngles(point, this.points[0], this.points[1]) < 0
+    return (
+      !this.isAnEndpoint(point) &&
+      compareVectorAngles(point, this.points[0], this.points[1]) < 0
+    )
   }
 
   /**

@@ -290,6 +290,12 @@ describe('is colinear with', () => {
       const s2 = new Segment([0, 1], [0, 2])
       expect(s1.isColinearWith(s2)).toBeTruthy()
     })
+
+    test('within rounding error', () => {
+      const s1 = new Segment([0, 0], [1, 1])
+      const s2 = new Segment([0, 0], [1, 1 + Number.EPSILON])
+      expect(s1.isColinearWith(s2)).toBeTruthy()
+    })
   })
 
   describe('no', () => {
@@ -313,7 +319,7 @@ describe('is colinear with', () => {
 
     test('almost colinear', () => {
       const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([0, 0], [1, 1 + Number.EPSILON])
+      const s2 = new Segment([0, 0], [1, 1 + 2 * Number.EPSILON])
       expect(s1.isColinearWith(s2)).toBeFalsy()
     })
   })
