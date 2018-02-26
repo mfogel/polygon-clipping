@@ -1,0 +1,9 @@
+{
+  "type": "Feature",
+  "id": "relation/2535187",
+  "properties": null,
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [[[[4, 4], [5, 4], [5, 5], [4, 4]]]]
+  }
+}

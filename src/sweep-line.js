@@ -20,13 +20,13 @@ class SweepLine {
 
   process (event) {
     const segment = event.segment
+    const newEvents = []
 
     if (event.isLeft) {
       const node = this._insert(segment)
       const prevSeg = this._prevKey(node)
       const nextSeg = this._nextKey(node)
 
-      const newEvents = []
       if (nextSeg) newEvents.push(...this._checkIntersection(segment, nextSeg))
       if (prevSeg) newEvents.push(...this._checkIntersection(prevSeg, segment))
 
@@ -45,6 +45,7 @@ class SweepLine {
     } else {
       // event.isRight
       const node = this._find(segment)
+      const prevSeg = this._prevKey(node)
       const nextSeg = this._nextKey(node)
 
       if (nextSeg && segment.isCoincidentWith(nextSeg)) {
@@ -52,6 +53,10 @@ class SweepLine {
       }
 
       this._remove(segment)
+
+      if (prevSeg && nextSeg) {
+        newEvents.push(...this._checkIntersection(prevSeg, nextSeg))
+      }
     }
 
     if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
@@ -59,7 +64,7 @@ class SweepLine {
     }
     this.prevEvent = event
 
-    return []
+    return newEvents
   }
 
   _insert (key) {
