@@ -71,8 +71,3 @@ describe('closeAllRings()', () => {
     expect(allGood).toEqual(stillAllGood)
   })
 })
-
-describe('errorOnSelfIntersectingRings()', () => {
-  // TODO
-  // throw new Error(`Self-intersecting ring found at ${event.point}`)
-})

@@ -48,13 +48,11 @@ class SweepLine {
 
       if (newEvents.length > 0 || mySplitters.length > 0) {
         this._remove(segment)
-      }
 
-      if (mySplitters.length > 0) {
-        newEvents.push(...segment.split(mySplitters))
-      }
+        if (mySplitters.length > 0) {
+          newEvents.push(...segment.split(mySplitters))
+        }
 
-      if (newEvents.length > 0) {
         // Make sure sweep line ordering is totally consistent for later
         // use with the segment 'prev' pointers - re-do the current event.
         newEvents.push(event)
@@ -117,13 +115,7 @@ class SweepLine {
   }
 
   _remove (key) {
-    const removed = this.tree.remove(key)
-    if (!removed) {
-      throw new Error(
-        `Remove failed: did not find segment [${key.points[0]}] -> [${key
-          .points[1]}] from ring ${key.ringIn.id} in sweep line tree`
-      )
-    }
+    this.tree.remove(key)
   }
 }
 

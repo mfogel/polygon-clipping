@@ -73,17 +73,21 @@ Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing P
 
 In the event that the result of the operation is the empty set, the output will be an empty array: `[]`.
 
-## Correctness / Tests
+## Correctness
 
 Run: `npm test`
 
 The tests are broken up into unit tests and end-to-end tests. The end-to-end tests are organized as GeoJSON files, to make them easy to visualize thanks to [GitHub's helpful rendering of GeoJSON files](https://help.github.com/articles/mapping-geojson-files-on-github/). Browse those tests [here](test/end-to-end).
 
-## Performance / Benchmark
-
-Run: `npm run bench`
+## Performance
 
 The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the result in `O((n+k)*log(n))` time, where `n` is the total number of edges in all polygons involved and `k` is the number of intersections between edges.
+
+## Changelog
+
+### Master
+
+ * First release as new package after fork from [martinez](https://github.com/w8r/martinez)
 
 ## Authors
 
