@@ -1,5 +1,3 @@
-**NOTE: This project is under active dev. The features described below may or may not exist yet.**
-
 # polygon-clipping
 
 Apply boolean Polygon clipping operations (`intersection`, `union`, `difference`, `xor`) to your Polygons & MultiPolygons.
@@ -85,7 +83,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
-### Master
+### v0.4
 
  * First release as new package after fork from [martinez](https://github.com/w8r/martinez)
 
