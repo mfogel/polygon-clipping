@@ -9,6 +9,12 @@ const Segment = require('./segment')
  *
  *        As such, the methods here are careful not to re-use
  *        any nodes they're holding on to after calling remove().
+ *
+ *        Also, we must be careful not to change any segments while
+ *        they are in the AVL tree. AFAIK, there's no way to tell
+ *        the AVL tree to rebalance itself - thus before splitting
+ *        a segment that's in the tree, we remove it from the tree,
+ *        do the split, then re-insert it.
  */
 
 class SweepLine {
@@ -26,16 +32,32 @@ class SweepLine {
     const nextSeg = this._nextKey(node)
 
     if (event.isLeft) {
-      if (nextSeg) newEvents.push(...this._checkIntersection(segment, nextSeg))
-      if (prevSeg) newEvents.push(...this._checkIntersection(prevSeg, segment))
+      const mySplitters = []
 
-      if (newEvents.length) {
-        // Some segments have been split. To make our sweep line sorting
-        // perfectly correct (used later via the segment 'previous' pointers to
-        // determine which ring encloses which) we abort the processing of this
-        // event, put all the events back in the queue and restart
-        newEvents.push(event)
+      if (prevSeg) {
+        const prevInters = segment.getIntersections(prevSeg)
+        newEvents.push(...this._possibleSplit(prevSeg, prevInters))
+        mySplitters.push(...prevInters.filter(pt => !segment.isAnEndpoint(pt)))
+      }
+
+      if (nextSeg) {
+        const nextInters = segment.getIntersections(nextSeg)
+        newEvents.push(...this._possibleSplit(nextSeg, nextInters))
+        mySplitters.push(...nextInters.filter(pt => !segment.isAnEndpoint(pt)))
+      }
+
+      if (newEvents.length > 0 || mySplitters.length > 0) {
         this._remove(segment)
+      }
+
+      if (mySplitters.length > 0) {
+        newEvents.push(...segment.split(mySplitters))
+      }
+
+      if (newEvents.length > 0) {
+        // Make sure sweep line ordering is totally consistent for later
+        // use with the segment 'prev' pointers - re-do the current event.
+        newEvents.push(event)
         return newEvents
       }
 
@@ -43,15 +65,18 @@ class SweepLine {
       segment.registerPrev(prevSeg)
     } else {
       // event.isRight
+
+      if (prevSeg && nextSeg) {
+        const inters = prevSeg.getIntersections(nextSeg)
+        newEvents.push(...this._possibleSplit(prevSeg, inters))
+        newEvents.push(...this._possibleSplit(nextSeg, inters))
+      }
+
       if (nextSeg && segment.isCoincidentWith(nextSeg)) {
         segment.registerCoincidence(nextSeg)
       }
 
       this._remove(segment)
-
-      if (prevSeg && nextSeg) {
-        newEvents.push(...this._checkIntersection(prevSeg, nextSeg))
-      }
     }
 
     if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
@@ -59,6 +84,17 @@ class SweepLine {
     }
     this.prevEvent = event
 
+    return newEvents
+  }
+
+  _possibleSplit (segment, intersections) {
+    const splitters = intersections.filter(pt => !segment.isAnEndpoint(pt))
+    const newEvents = []
+    if (splitters.length > 0) {
+      this._remove(segment)
+      newEvents.push(...segment.split(splitters))
+      this._insert(segment)
+    }
     return newEvents
   }
 
@@ -81,26 +117,22 @@ class SweepLine {
   }
 
   _remove (key) {
-    this.tree.remove(key)
+    const removed = this.tree.remove(key)
+    if (!removed) {
+      throw new Error(
+        `Remove failed: did not find segment [${key.points[0]}] -> [${key
+          .points[1]}] from ring ${key.ringIn.id} in sweep line tree`
+      )
+    }
   }
 
   _checkIntersection (seg1, seg2) {
     const inters = seg1.getIntersections(seg2)
-    let splitOn
-    if (inters.length === 0) return []
-    if (inters.length === 1) splitOn = inters[0]
-    if (inters.length === 2) {
-      // we only need to split on first intersection that's not coincident
-      // with the left event. The next intersection one will be handled
-      // in another pass of the event loop.
-      splitOn = arePointsEqual(seg1.leftSE.point, inters[0])
-        ? inters[1]
-        : inters[0]
-    }
-
     const newEvents = []
-    if (!seg1.isAnEndpoint(splitOn)) newEvents.push(...seg1.split(splitOn))
-    if (!seg2.isAnEndpoint(splitOn)) newEvents.push(...seg2.split(splitOn))
+    inters.forEach(inter => {
+      if (!seg1.isAnEndpoint(inter)) newEvents.push(...seg1.split(inter))
+      if (!seg2.isAnEndpoint(inter)) newEvents.push(...seg2.split(inter))
+    })
     return newEvents
   }
 }

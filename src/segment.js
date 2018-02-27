@@ -193,23 +193,38 @@ class Segment {
   }
 
   /**
-   * Split the given segment into two segments on the given point.
+   * Split the given segment into multiple segments on the given points.
    *  * The existing segment will retain it's leftSE and a new rightSE will be
    *    generated for it.
    *  * A new segment will be generated which will adopt the original segment's
    *    rightSE, and a new leftSE will be generated for it.
-   *  * An array of the two new generated SweepEvents, one from each segment,
-   *    will be returned.
-   * Note that splitting a segment on an endpoint will result in a degenerate
-   * segment being generated. Don't do this.
+   *  * If there are more than two points given to split on, new segments
+   *    in the middle will be generated with new leftSE and rightSE's.
+   *  * An array of the newly generated SweepEvents will be returned.
    */
-  split (point) {
+  split (points) {
+    // sort them and unique-ify them
+    points.sort(SweepEvent.comparePoints)
+    points = points.filter(
+      (pt, i, pts) => i === 0 || SweepEvent.comparePoints(pts[i - 1], pt) !== 0
+    )
+
+    points.forEach(pt => {
+      if (this.isAnEndpoint(pt)) {
+        throw new Error(`Cannot split segment upon endpoint at [${pt}]`)
+      }
+    })
+
+    const point = points.shift()
     const newSeg = this.clone()
     newSeg.leftSE = new SweepEvent(point, newSeg)
     newSeg.rightSE = this.rightSE
     this.rightSE.segment = newSeg
     this.rightSE = new SweepEvent(point, this)
-    return [this.rightSE, newSeg.leftSE]
+    const newEvents = [this.rightSE, newSeg.leftSE]
+
+    if (points.length > 0) newEvents.push(...newSeg.split(points))
+    return newEvents
   }
 
   registerPrev (other) {

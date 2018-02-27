@@ -42,7 +42,7 @@ describe('split', () => {
   test('on interior point', () => {
     const seg = new Segment([0, 0], [10, 10], true)
     const pt = [5, 5]
-    const evts = seg.split(pt)
+    const evts = seg.split([pt])
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isRight).toBeTruthy()
@@ -51,10 +51,11 @@ describe('split', () => {
     expect(evts[1].isLeft).toBeTruthy()
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
   })
+
   test('on close-to-but-not-exactly interior point', () => {
     const seg = new Segment([0, 10], [10, 0], false)
     const pt = [5 + Number.EPSILON, 5]
-    const evts = seg.split(pt)
+    const evts = seg.split([pt])
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isRight).toBeTruthy()
@@ -62,6 +63,38 @@ describe('split', () => {
     expect(evts[1].point).toEqual(pt)
     expect(evts[1].isLeft).toBeTruthy()
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
+  })
+
+  test('on endpoint - should throw error', () => {
+    const seg = new Segment([0, 0], [10, 10], true)
+    expect(() => seg.split([[0, 0]])).toThrow()
+    expect(() => seg.split([[10, 10]])).toThrow()
+  })
+
+  test('on three interior points', () => {
+    const [endPt1, endPt2] = [[0, 0], [10, 10]]
+    const seg = new Segment(endPt1, endPt2, true)
+    const [sPt1, sPt2, sPt3] = [[2, 2], [4, 4], [6, 6]]
+
+    const [orgLeftEvt, orgRightEvt] = [seg.leftSE, seg.rightSE]
+    const newEvts = seg.split([sPt3, sPt1, sPt2])
+
+    expect(newEvts.length).toBe(6)
+
+    expect(seg.leftSE).toBe(orgLeftEvt)
+    let evt = newEvts.find(e => e.point === sPt1 && e.isRight)
+    expect(seg.rightSE).toBe(evt)
+
+    evt = newEvts.find(e => e.point === sPt1 && e.isLeft)
+    let otherEvt = newEvts.find(e => e.point === sPt2 && e.isRight)
+    expect(evt.segment).toBe(otherEvt.segment)
+
+    evt = newEvts.find(e => e.point === sPt2 && e.isLeft)
+    otherEvt = newEvts.find(e => e.point === sPt3 && e.isRight)
+    expect(evt.segment).toBe(otherEvt.segment)
+
+    evt = newEvts.find(e => e.point === sPt3 && e.isLeft)
+    expect(evt.segment).toBe(orgRightEvt.segment)
   })
 })
 
