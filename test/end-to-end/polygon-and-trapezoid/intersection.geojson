@@ -1,0 +1,8 @@
+{
+  "type": "Feature",
+  "properties": {},
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [[[[3.5, 3.5], [7, 0], [14, 0], [17.5, 3.5], [3.5, 3.5]]]]
+  }
+}

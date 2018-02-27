@@ -1,163 +1,47 @@
-'use strict';
+/* eslint-env jest */
 
-var tap       = require('tap');
-var path      = require('path');
-var load      = require('load-json-file');
-var martinez  = require('../src/');
-var fillQueue = require('../src/fill_queue');
+jest.mock('../src/clean-input')
+const cleanInput = require('../src/clean-input')
+const operation = require('../src/operation')
+const doIt = require('../src')
 
-// GeoJSON Data
-var data = load.sync(path.join(__dirname, 'fixtures', 'two_triangles.geojson'));
+afterEach(() => {
+  cleanInput.closeAllRings.mockClear()
+  cleanInput.errorOnSelfIntersectingRings.mockClear()
+  cleanInput.forceMultiPoly.mockClear()
+})
 
-var subject  = data.features[0];
-var clipping = data.features[1];
+describe('doIt calls the right stuff', () => {
+  test('closeAllRings() called correctly', () => {
+    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
+    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-tap.test('fill event queue', function(main) {
-  var s = [subject.geometry.coordinates];
-  var c = [clipping.geometry.coordinates];
+    doIt(operation.types.UNION, mp1, mp2, mp3)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledTimes(3)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(mp1)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(mp2)
+    expect(cleanInput.closeAllRings).toHaveBeenCalledWith(mp3)
+  })
 
-  var sbbox = [Infinity, Infinity, -Infinity, -Infinity];
-  var cbbox = [Infinity, Infinity, -Infinity, -Infinity];
-  var q = fillQueue(s, c, sbbox, cbbox);
-  var currentPoint;
+  test('forceMultiPoly() called correctly', () => {
+    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
+    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-  main.test('bboxes', function (t) {
-    t.strictSame(sbbox, [20, -113.5, 226.5, 74], 'subject bbox');
-    t.strictSame(cbbox, [54.5, -198, 239.5, 33.5], 'clipping bbox');
-    t.end();
-  });
+    doIt(operation.types.UNION, mp1, mp2, mp3)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledTimes(3)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp1)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp2)
+    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp3)
+  })
 
-  main.test('point 0', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [20, -23.5]); /* s[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [226.5, -113.5], 'other event'); /* s[0][2] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
+  test('errorOnSelfIntersectingRings() called', () => {
+    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
+    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-    t.end();
-  });
-
-
-  main.test('point 1', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [20, -23.5]); /* s[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [170, 74], 'other event'); /* s[0][1] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 2', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [54.5, -170.5]); /* c[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [239.5, -198], 'other event'); /* c[0][2] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 3', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [54.5, -170.5]); /* c[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [140.5, 33.5], 'other event'); /* c[0][1] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 4', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [140.5, 33.5]); /* c[0][0] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [54.5, -170.5], 'other event'); /* c[0][1] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 5', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [140.5, 33.5]); /* c[0][0] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [239.5, -198], 'other event'); /* c[0][1] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 6', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [170, 74]); /* s[0][1] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [20, -23.5], 'other event'); /* s[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 7', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [170, 74]); /* s[0][1] */
-    t.ok(currentPoint.left, 'is left');
-    t.strictSame(currentPoint.otherEvent.point, [226.5, -113.5], 'other event'); /* s[0][3] */
-    t.notOk(currentPoint.otherEvent.left, 'other event is right');
-
-    t.end();
-  });
-
-
-  main.test('point 8', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [226.5, -113.5]); /* s[0][1] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [20, -23.5], 'other event'); /* s[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 9', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [226.5, -113.5]); /* s[0][1] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [170, 74], 'other event'); /* s[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 10', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [239.5, -198]); /* c[0][2] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [54.5, -170.5], 'other event'); /* c[0][0] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-
-  main.test('point 11', function (t) {
-    currentPoint = q.pop();
-    t.strictSame(currentPoint.point, [239.5, -198]); /* c[0][2] */
-    t.notOk(currentPoint.left, 'is right');
-    t.strictSame(currentPoint.otherEvent.point, [140.5, 33.5], 'other event'); /* s[0][1] */
-    t.ok(currentPoint.otherEvent.left, 'other event is left');
-
-    t.end();
-  });
-
-  main.end();
-});
-
+    doIt(operation.types.UNION, mp1, mp2, mp3)
+    expect(cleanInput.errorOnSelfIntersectingRings).toHaveBeenCalledTimes(1)
+  })
+})

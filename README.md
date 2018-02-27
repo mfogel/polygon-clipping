@@ -1,64 +1,100 @@
-# Martinez-Rueda polygon clipping algorithm [![npm version](https://badge.fury.io/js/martinez-polygon-clipping.svg)](https://badge.fury.io/js/martinez-polygon-clipping) [![CircleCI](https://circleci.com/gh/w8r/martinez.svg?style=svg)](https://circleci.com/gh/w8r/martinez)
+**NOTE: This project is under active dev. The features described below may or may not exist yet.**
 
-![screenshot 2016-07-26 10 54 01](https://cloud.githubusercontent.com/assets/26884/17131796/611b3b20-531f-11e6-941c-b0f8fd385016.png)
-![screenshot 2016-07-25 18 53 44](https://cloud.githubusercontent.com/assets/26884/17131805/64b74134-531f-11e6-913b-81c0cbd1a618.png)
+# polygon-clipping
 
-## Details
+Apply boolean Polygon clipping operations (`intersection`, `union`, `difference`, `xor`) to your Polygons & MultiPolygons.
 
-The algorithm is specifically *fast* and *capable* of working with polygons of all types: multipolygons (without cascading),
-polygons with holes, self-intersecting polygons and degenerate polygons with overlapping edges.
+[![npm version](https://img.shields.io/npm/v/polygon-clipping.svg)](https://www.npmjs.com/package/polygon-clipping)
+[![build status](https://img.shields.io/travis/mfogel/polygon-clipping.svg)](https://travis-ci.org/mfogel/polygon-clipping)
+[![test coverage](https://img.shields.io/coveralls/mfogel/polygon-clipping/master.svg)](https://coveralls.io/r/mfogel/polygon-clipping)
 
-### Example
 
-Play with it by [forking this Codepen](http://codepen.io/w8r/pen/rrBkER)
+## Quickstart
 
-```js
-var martinez = require('martinez-polygon-clipping');
-var gj1 = { "type": "Feature", ..., "geometry": { "type": "Polygon", "coordinates": [ [ [x, y], ... ] ]};
-var gj2 = { "type": "Feature", ..., "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [x, y], ...] ] ]};
+```javascript
+const polygonClipping = require('polygon-clipping')
 
-var intersection = {
-  "type": "Feature",
-  "properties": { ... },
-  "geometry": {
-    "type": "Polygon",
-    "coordinates": martinez.intersection(gj1.geometry.coordinates, gj2.geometry.coordinates)
-  }
-};
+const poly1 = [[[0,0],[2,0],[0,2],[0,0]]]
+const poly2 = [[[-1,0],[1,0],[0,1],[-1,0]]]
+
+polygonClipping.union       (poly1, poly2 /* , poly3, ... */)
+polygonClipping.intersection(poly1, poly2 /* , poly3, ... */)
+polygonClipping.xor         (poly1, poly2 /* , poly3, ... */)
+
+polygonClipping.difference(poly1, poly2)
+
+polygonClipping.clean(poly1)
 ```
 
-### API
+## API
 
-* **`.intersection(<Geometry>, <Geometry>) => <Geometry>`**
-* **`.union(<Geometry>, <Geometry>)        => <Geometry>`**
-* **`.diff(<Geometry>, <Geometry>)         => <Geometry>`**
-* **`.xor(<Geometry>, <Geometry>)          => <Geometry>`**
+```javascript
+/* two or more [multi]polygon(s) as input */
+polygonClipping.union       (<geom>, <geom>, [ <geom>, ... ])
+polygonClipping.intersection(<geom>, <geom>, [ <geom>, ... ])
+polygonClipping.xor         (<geom>, <geom>, [ <geom>, ... ])
 
-`<Geometry>` is [GeoJSON](http://geojson.org/geojson-spec.html) [`'Polygon'`](http://geojson.org/geojson-spec.html#id4) or [`'MultiPolygon'`](http://geojson.org/geojson-spec.html#id7) <u>**coordinates**</u> structure.
-`<Operation>` is an enum of `{ INTERSECTION: 0, UNION: 1, DIFFERENCE: 2, XOR: 3 }` in case you have to decide programmatically
-which operation do you need
+/* exactly two [multi]polygons as input */
+polygonClipping.difference(<geom>, <geom>)
 
-### Features
+/* exactly one [multi]polygon as input */
+polygonClipping.clean(<geom>)
+```
 
-The algorithm of Matrinez et al. was extended to work with multipolygons without cascading.
+### Input
 
-### Authors
+Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon.
 
-* [Alexander Milevski](https://github.com/w8r/)
-* [Vladimir Ovsyannikov](https://github.com/sh1ng/)
+#### Polygon
 
-### Based on
+Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.6), with the following notes/modifications:
+* rings of the polygon are not required to be self-closing
+* rings may contain repeated points (which are ignored)
+* winding order of rings of Polygon does not matter
+* interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
+* interior rings may touch or overlap each other
+* rings may **not** be self-intersecting. If a self-intersecting ring is found, an exception will be thrown. To clean up self-intersecting rings, you may want to use the [Non-zero rule](https://en.wikipedia.org/wiki/Nonzero-rule) or the [Even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
 
-* [A new algorithm for computing Boolean operations on polygons](http://www.sciencedirect.com/science/article/pii/S0965997813000379) (2008, 2013) by Francisco Martinez, Antonio Jesus Rueda, Francisco Ramon Feito (and its C++ code)
+#### MultiPolygon
 
-### License
+Follows the [GeoJSON MultiPolygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.7), with the following notes/modifications:
+* may contain touching or overlapping Polygons
 
-The MIT License (MIT)
+### Output
 
-Copyright (c) 2016 Alexander Milevski
+Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing Polygons. The Polygons will follow the GeoJSON spec, meaning:
+* the outer ring will be wound counter-clockwise, and inner rings clockwise.
+* inner rings will not extend outside the outer ring, nor share an edge with the outer ring
+* inner rings will not overlap, nor share an edge with each other
+* rings will be self-closing
+* rings will not contain repeated points
+* rings will not contain superfluous points (intermediate points along a straight line)
+* rings will not be self-intersecting
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+In the event that the result of the operation is the empty set, the output will be an empty array: `[]`.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+## Correctness
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Run: `npm test`
+
+The tests are broken up into unit tests and end-to-end tests. The end-to-end tests are organized as GeoJSON files, to make them easy to visualize thanks to [GitHub's helpful rendering of GeoJSON files](https://help.github.com/articles/mapping-geojson-files-on-github/). Browse those tests [here](test/end-to-end).
+
+## Performance
+
+The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the result in `O((n+k)*log(n))` time, where `n` is the total number of edges in all polygons involved and `k` is the number of intersections between edges.
+
+## Changelog
+
+### Master
+
+ * First release as new package after fork from [martinez](https://github.com/w8r/martinez)
+
+## Authors
+
+* [Mike Fogel](https://github.com/mfogel)
+* [Alexander Milevski](https://github.com/w8r)
+* [Vladimir Ovsyannikov](https://github.com/sh1ng)
+
+## Based on
+
+* [A new algorithm for computing Boolean operations on polygons](paper.pdf) by Francisco Martinez, Antonio Jesus Rueda, Francisco Ramon Feito (2009)
