@@ -125,16 +125,6 @@ class SweepLine {
       )
     }
   }
-
-  _checkIntersection (seg1, seg2) {
-    const inters = seg1.getIntersections(seg2)
-    const newEvents = []
-    inters.forEach(inter => {
-      if (!seg1.isAnEndpoint(inter)) newEvents.push(...seg1.split(inter))
-      if (!seg2.isAnEndpoint(inter)) newEvents.push(...seg2.split(inter))
-    })
-    return newEvents
-  }
 }
 
 module.exports = SweepLine

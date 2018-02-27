@@ -167,8 +167,10 @@ class Segment {
     //
     // In addition, in the case of a T-intersection, this ensures that the
     // interseciton returned matches exactly an endpoint - no rounding error.
-    const isOnBoth = pt => this.isPointOn(pt) && other.isPointOn(pt)
-    const intersections = getUniqueCorners(bboxOverlap).filter(isOnBoth)
+    const isAnIntersection = pt =>
+      (this.isAnEndpoint(pt) && other.isPointOn(pt)) ||
+      (other.isAnEndpoint(pt) && this.isPointOn(pt))
+    const intersections = getUniqueCorners(bboxOverlap).filter(isAnIntersection)
     if (intersections.length > 0) return intersections
 
     // General case for non-overlapping segments.
