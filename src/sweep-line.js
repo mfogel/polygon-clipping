@@ -1,25 +1,21 @@
-const Tree = require('avl')
+const SplayTree = require('splaytree')
 const { arePointsEqual } = require('./flp')
 const Segment = require('./segment')
 
 /**
- * NOTE:  It appears if you pull out a node from the AVL tree,
- *        then do a remove() on the tree, the nodes can get
- *        messed up: https://github.com/w8r/avl/issues/15
- *
- *        As such, the methods here are careful not to re-use
- *        any nodes they're holding on to after calling remove().
- *
- *        Also, we must be careful not to change any segments while
- *        they are in the AVL tree. AFAIK, there's no way to tell
- *        the AVL tree to rebalance itself - thus before splitting
+ * NOTE:  We must be careful not to change any segments while
+ *        they are in the SplayTree. AFAIK, there's no way to tell
+ *        the tree to rebalance itself - thus before splitting
  *        a segment that's in the tree, we remove it from the tree,
- *        do the split, then re-insert it.
+ *        do the split, then re-insert it. (Even though splitting a
+ *        segment *shouldn't* change its correct position in the
+ *        sweep line tree, the reality is because of rounding errors,
+ *        it sometimes does.)
  */
 
 class SweepLine {
   constructor (comparator = Segment.compare) {
-    this.tree = new Tree(comparator)
+    this.tree = new SplayTree(comparator)
     this.segments = []
     this.prevEvent = null
   }
@@ -27,9 +23,12 @@ class SweepLine {
   process (event) {
     const segment = event.segment
     const newEvents = []
-    const node = event.isLeft ? this._insert(segment) : this._find(segment)
-    const prevSeg = this._prevKey(node)
-    const nextSeg = this._nextKey(node)
+    const node = event.isLeft
+      ? this.tree.insert(segment)
+      : this.tree.find(segment)
+    const getKey = node => (node ? node.key : null)
+    const prevSeg = getKey(this.tree.prev(node))
+    const nextSeg = getKey(this.tree.next(node))
 
     if (event.isLeft) {
       const mySplitters = []
@@ -47,7 +46,7 @@ class SweepLine {
       }
 
       if (newEvents.length > 0 || mySplitters.length > 0) {
-        this._remove(segment)
+        this.tree.remove(segment)
 
         if (mySplitters.length > 0) {
           newEvents.push(...segment.split(mySplitters))
@@ -74,7 +73,7 @@ class SweepLine {
         segment.registerCoincidence(nextSeg)
       }
 
-      this._remove(segment)
+      this.tree.remove(segment)
     }
 
     if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
@@ -89,33 +88,11 @@ class SweepLine {
     const splitters = intersections.filter(pt => !segment.isAnEndpoint(pt))
     const newEvents = []
     if (splitters.length > 0) {
-      this._remove(segment)
+      this.tree.remove(segment)
       newEvents.push(...segment.split(splitters))
-      this._insert(segment)
+      this.tree.insert(segment)
     }
     return newEvents
-  }
-
-  _insert (key) {
-    return this.tree.insert(key)
-  }
-
-  _find (key) {
-    return this.tree.find(key)
-  }
-
-  _prevKey (node) {
-    const prevNode = this.tree.prev(node)
-    return prevNode ? prevNode.key : null
-  }
-
-  _nextKey (node) {
-    const nextNode = this.tree.next(node)
-    return nextNode ? nextNode.key : null
-  }
-
-  _remove (key) {
-    this.tree.remove(key)
   }
 }
 

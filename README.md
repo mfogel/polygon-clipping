@@ -83,6 +83,10 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
+### Next release
+
+ * Use [splay-tree](https://github.com/w8r/splay-tree) instead of [avl](https://github.com/w8r/avl) to power the sweep line status tree.
+
 ### v0.4
 
  * First release as new package after fork from [martinez](https://github.com/w8r/martinez)
