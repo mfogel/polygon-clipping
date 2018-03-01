@@ -414,11 +414,13 @@ class Segment {
         //  * on one side of us all multipolys are rep. with poly interiors AND
         //  * on the other side of us, not all multipolys are repsented
         //    with poly interiors
-        const numGeoms = Math.max(
+        const sideCounts = [
           this.multiPolysSLPEnters.length,
           this.multiPolysSLPExits.length
-        )
-        return numGeoms === operation.multiPolys.length
+        ]
+        const most = Math.max(...sideCounts)
+        const least = Math.min(...sideCounts)
+        return most === operation.multiPolys.length && least < most
 
       case operation.types.XOR:
         // XOR - included iff:
