@@ -316,14 +316,20 @@ class Segment {
     return this._getCached('prevInResult')
   }
 
+  /* The multipolys on one side of us */
   get multiPolysSLPEnters () {
-    const SLPEnters = this.coincidents.filter(c => c.sweepLineEntersPoly)
-    return Array.from(new Set(SLPEnters.map(c => c.ringIn.poly.multiPoly)))
+    const onlyEnters = this.coincidents
+      .filter(c => c.sweepLineEntersPoly)
+      .map(c => c.ringIn.poly.multiPoly)
+    return Array.from(new Set([...onlyEnters, ...this.multiPolysInsideOf]))
   }
 
+  /* The multipolys on the other side of us */
   get multiPolysSLPExits () {
-    const SLPExits = this.coincidents.filter(c => c.sweepLineExitsPoly)
-    return Array.from(new Set(SLPExits.map(c => c.ringIn.poly.multiPoly)))
+    const onlyExits = this.coincidents
+      .filter(c => c.sweepLineExitsPoly)
+      .map(c => c.ringIn.poly.multiPoly)
+    return Array.from(new Set([...onlyExits, ...this.multiPolysInsideOf]))
   }
 
   _clearCache () {
@@ -397,24 +403,21 @@ class Segment {
     switch (operation.type) {
       case operation.types.UNION:
         // UNION - included iff:
-        //  * On one side of us there is 0 poly interiors, and
+        //  * On one side of us there is 0 poly interiors AND
         //  * On the other side there is 1 or more.
-        if (this.multiPolysInsideOf.length > 0) return false
         const noEnters = this.multiPolysSLPEnters.length === 0
         const noExits = this.multiPolysSLPExits.length === 0
         return noEnters !== noExits
 
       case operation.types.INTERSECTION:
         // INTERSECTION - included iff:
-        //  * on one side of us all multipolys are rep. with poly interiors
+        //  * on one side of us all multipolys are rep. with poly interiors AND
         //  * on the other side of us, not all multipolys are repsented
         //    with poly interiors
-        const numGeoms =
-          this.multiPolysInsideOf.length +
-          Math.max(
-            this.multiPolysSLPEnters.length,
-            this.multiPolysSLPExits.length
-          )
+        const numGeoms = Math.max(
+          this.multiPolysSLPEnters.length,
+          this.multiPolysSLPExits.length
+        )
         return numGeoms === operation.multiPolys.length
 
       case operation.types.XOR:
@@ -428,20 +431,13 @@ class Segment {
 
       case operation.types.DIFFERENCE:
         // DIFFERENCE included iff:
-        //  * if we're in the subject - yes
-        //  * if we're in the clipping - nope
-        //  * if we're not inside either subject or clipping,
-        //    then if one of our sides is just subject - yes
-        if (this.multiPolysInsideOf.includes(operation.subject)) return true
-        if (this.multiPolysInsideOf.includes(operation.clipping)) return false
-
-        const justSubject = multiPolys =>
-          multiPolys.includes(operation.subject) &&
-          !multiPolys.includes(operation.clipping)
-        if (justSubject(this.multiPolysSLPEnters)) return true
-        if (justSubject(this.multiPolysSLPExits)) return true
-
-        return false
+        //  * on exactly one side, we have just the subject
+        const isJustSubject = mps =>
+          mps.length === 1 && mps[0] === operation.subject
+        return (
+          isJustSubject(this.multiPolysSLPEnters) !==
+          isJustSubject(this.multiPolysSLPExits)
+        )
 
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)

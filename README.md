@@ -18,22 +18,21 @@ const poly2 = [[[-1,0],[1,0],[0,1],[-1,0]]]
 polygonClipping.union       (poly1, poly2 /* , poly3, ... */)
 polygonClipping.intersection(poly1, poly2 /* , poly3, ... */)
 polygonClipping.xor         (poly1, poly2 /* , poly3, ... */)
-
-polygonClipping.difference(poly1, poly2)
-
-polygonClipping.clean(poly1)
+polygonClipping.difference  (poly1, poly2 /* , poly3, ... */)
+polygonClipping.clean       (poly1)
 ```
 
 ## API
 
 ```javascript
-/* two or more [multi]polygon(s) as input */
+/* Two or more [multi]polygon(s) as input */
 polygonClipping.union       (<geom>, <geom>, [ <geom>, ... ])
 polygonClipping.intersection(<geom>, <geom>, [ <geom>, ... ])
 polygonClipping.xor         (<geom>, <geom>, [ <geom>, ... ])
 
-/* exactly two [multi]polygons as input */
-polygonClipping.difference(<geom>, <geom>)
+/* One [multi]polygon as subjectGeom, one or more [multi]polygons as clipGeoms.
+ * The clipGeoms will be subtracted from the subjectGeom. */
+polygonClipping.difference(<subjectGeom>, <clipGeom>, [ <clipGeom>, ... ])
 
 /* exactly one [multi]polygon as input */
 polygonClipping.clean(<geom>)
@@ -83,9 +82,10 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
-### Next release
+### v0.5 (in development)
 
- * Use [splay-tree](https://github.com/w8r/splay-tree) instead of [avl](https://github.com/w8r/avl) to power the sweep line status tree.
+ * Expand `difference()` operation to optionally take multiple clippings ([#1](https://github.com/mfogel/polygon-clipping/issues/1))
+ * Use [splay-tree](https://github.com/w8r/splay-tree) instead of [avl](https://github.com/w8r/avl) to power the sweep line status tree ([#2](https://github.com/mfogel/polygon-clipping/issues/2))
 
 ### v0.4
 

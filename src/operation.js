@@ -20,11 +20,6 @@ class Operation {
     // meaingful only for DIFFERENCE
     return this.multiPolys[0]
   }
-
-  get clipping () {
-    // meaingful only for DIFFERENCE
-    return this.multiPolys[1]
-  }
 }
 
 // global to register details about the operation on
