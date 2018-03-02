@@ -78,7 +78,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
-### v0.5 (in development)
+### v0.5
 
  * Remove `clean()` from module.exports ([#3](https://github.com/mfogel/polygon-clipping/issues/3))
  * Expand `difference()` operation to optionally take multiple clippings ([#1](https://github.com/mfogel/polygon-clipping/issues/1))
