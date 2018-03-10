@@ -1,6 +1,10 @@
 /* eslint-env jest */
 
-const { closeAllRings, forceMultiPoly } = require('../src/clean-input')
+const {
+  cleanRing,
+  cleanMultiPoly,
+  forceMultiPoly
+} = require('../src/clean-input')
 
 const deepCopyArray = input => {
   if (Array.isArray(input)) return input.map(deepCopyArray)
@@ -47,7 +51,7 @@ describe('forceMultiPoly()', () => {
   })
 })
 
-describe('closeAllRings()', () => {
+describe('cleanMultiPoly()', () => {
   test('adds closing elements to rings', () => {
     const openRings = [
       [[[0, 0], [1, 0], [0, 1]]],
@@ -57,7 +61,7 @@ describe('closeAllRings()', () => {
       [[[0, 0], [1, 0], [0, 1], [0, 0]]],
       [[[0, 0], [2, 0], [0, 2], [0, 0]], [[0, 0], [1, 0], [0, 1], [0, 0]]]
     ]
-    closeAllRings(openRings)
+    cleanMultiPoly(openRings)
     expect(openRings).toEqual(closedRings)
   })
 
@@ -67,7 +71,79 @@ describe('closeAllRings()', () => {
       [[[0, 0], [2, 0], [0, 2], [0, 0]], [[0, 0], [1, 0], [0, 1], [0, 0]]]
     ]
     const stillAllGood = deepCopyArray(allGood)
-    closeAllRings(allGood)
+    cleanMultiPoly(allGood)
     expect(allGood).toEqual(stillAllGood)
+  })
+
+  test('interior degenerate rings removed', () => {
+    const mpIn = [
+      [[[0, 0], [4, 0], [0, 4], [0, 0]], [[0, 0], [1, 1], [1, 1], [0, 0]]]
+    ]
+    const mpExpected = [[[[0, 0], [4, 0], [0, 4], [0, 0]]]]
+    cleanMultiPoly(mpIn)
+    expect(mpIn).toEqual(mpExpected)
+  })
+
+  test('exterior degenerate ring removes polygon', () => {
+    const mpIn = [
+      [[[0, 0], [4, 0], [4, 0], [0, 0]], [[0, 0], [1, 0], [0, 1], [0, 0]]]
+    ]
+    cleanMultiPoly(mpIn)
+    expect(mpIn).toEqual([])
+  })
+
+  test('exterior empty ring removes polygon', () => {
+    const mpIn = [[[]]]
+    cleanMultiPoly(mpIn)
+    expect(mpIn).toEqual([])
+  })
+
+  test('polygon with no rings removed', () => {
+    const mpIn = [[]]
+    cleanMultiPoly(mpIn)
+    expect(mpIn).toEqual([])
+  })
+})
+
+describe('cleanRing()', () => {
+  test('already standardized input unchanged', () => {
+    const allGood = [[0, 0], [1, 0], [0, 1], [0, 0]]
+    const stillAllGood = deepCopyArray(allGood)
+    cleanRing(allGood)
+    expect(allGood).toEqual(stillAllGood)
+  })
+
+  test('adds closing elements to rings', () => {
+    const openRing = [[0, 0], [1, 0], [0, 1]]
+    const closedRing = [[0, 0], [1, 0], [0, 1], [0, 0]]
+    cleanRing(openRing)
+    expect(openRing).toEqual(closedRing)
+  })
+
+  test('removes duplicate points', () => {
+    const ringBad = [[0, 0], [1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 0]]
+    const ringGood = [[0, 0], [1, 0], [0, 1], [0, 0]]
+    cleanRing(ringBad)
+    expect(ringBad).toEqual(ringGood)
+  })
+
+  test('removes colinear points', () => {
+    const ringBad = [[0, 0], [1, 0], [2, 0], [1, 0], [0, 2], [0, 1], [0, 0]]
+    const ringGood = [[0, 0], [1, 0], [0, 2], [0, 0]]
+    cleanRing(ringBad)
+    expect(ringBad).toEqual(ringGood)
+  })
+
+  test('removes first/last when colinear', () => {
+    const ringBad = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, 0]]
+    const ringGood = [[1, 0], [0, 1], [-1, 0], [1, 0]]
+    cleanRing(ringBad)
+    expect(ringBad).toEqual(ringGood)
+  })
+
+  test('degenerate ring shrinks to empty array', () => {
+    const ringBad = [[0, 0], [1, 0], [1, 0], [0, 0], [0, 0]]
+    cleanRing(ringBad)
+    expect(ringBad).toEqual([])
   })
 })

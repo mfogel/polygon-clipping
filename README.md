@@ -78,13 +78,17 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
-### v0.5
+### v0.6 (in development)
+
+ * Handle very thin input polygons ([#6](https://github.com/mfogel/polygon-clipping/issues/6))
+
+### v0.5 (2018-03-01)
 
  * Remove `clean()` from module.exports ([#3](https://github.com/mfogel/polygon-clipping/issues/3))
  * Expand `difference()` operation to optionally take multiple clippings ([#1](https://github.com/mfogel/polygon-clipping/issues/1))
  * Use [splay-tree](https://github.com/w8r/splay-tree) instead of [avl](https://github.com/w8r/avl) to power the sweep line status tree ([#2](https://github.com/mfogel/polygon-clipping/issues/2))
 
-### v0.4
+### v0.4 (2018-02-27)
 
  * First release as new package after fork from [martinez](https://github.com/w8r/martinez)
 

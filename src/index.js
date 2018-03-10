@@ -7,7 +7,7 @@ const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, ...geoms) => {
   geoms.forEach(g => cleanInput.forceMultiPoly(g))
-  geoms.forEach(g => cleanInput.closeAllRings(g))
+  geoms.forEach(g => cleanInput.cleanMultiPoly(g))
 
   const multipolys = geoms.map(geom => new geomIn.MultiPoly(geom))
 

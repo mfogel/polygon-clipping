@@ -13,14 +13,12 @@ class Ring {
     this.isInterior = !isExterior
     this.segments = []
 
-    geomRing.forEach((point, i, ring) => {
-      if (i === 0) return
-      const prevPoint = ring[i - 1]
-
-      // repeated point in a ring? Skip over it
-      if (arePointsEqual(prevPoint, point)) return
-
-      this.segments.push(new Segment(prevPoint, point, this))
+    let prevPoint = null
+    geomRing.forEach(point => {
+      if (prevPoint !== null) {
+        this.segments.push(new Segment(prevPoint, point, this))
+      }
+      prevPoint = point
     })
   }
 
