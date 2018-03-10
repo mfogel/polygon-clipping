@@ -4,7 +4,7 @@ const { union, intersection, xor, difference } = require('../main')
 
 describe('end to end error situations', () => {
   describe('exterior self-intersecting rings', () => {
-    test.only('between lines', () => {
+    test('between lines', () => {
       const multipoly = [
         [[[0, 0], [4, 0], [1, 3], [1, 1], [4, 4], [0, 4], [0, 0]]]
       ]
