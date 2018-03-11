@@ -80,6 +80,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ### v0.6 (in development)
 
+ * Handle segments with many coincidents ([#7](https://github.com/mfogel/polygon-clipping/issues/7))
  * Handle very thin input polygons ([#6](https://github.com/mfogel/polygon-clipping/issues/6))
 
 ### v0.5 (2018-03-01)

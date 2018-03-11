@@ -235,8 +235,8 @@ class Segment {
   }
 
   registerCoincidence (other) {
+    if (this.coincidents === other.coincidents) return
     this.coincidents.push(...other.coincidents)
-    this.coincidents = Array.from(new Set(this.coincidents))
     other.coincidents = this.coincidents
     this._clearCache()
   }
@@ -371,7 +371,6 @@ class Segment {
     }
 
     // remove any that we're actually on the boundary of
-    // (necessary for vertical segments)
     return rings.filter(r => !this.ringsOnEdgeOf.includes(r))
   }
 
