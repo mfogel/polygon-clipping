@@ -1,5 +1,4 @@
 const Segment = require('./segment')
-const { arePointsEqual } = require('./flp')
 
 // Give rings unique ID's to get consistent sorting of segments
 // and sweep events when all else is identical
@@ -23,7 +22,9 @@ class Ring {
   }
 
   get sweepEvents () {
-    return [].concat(...this.segments.map(seg => [seg.leftSE, seg.rightSE]))
+    const ses = []
+    this.segments.forEach(seg => ses.push(seg.leftSE, seg.rightSE))
+    return ses
   }
 
   /* Given a segment on this rings with these relationships to other rings,
@@ -68,10 +69,9 @@ class Poly {
   }
 
   get sweepEvents () {
-    return [].concat(
-      this.exteriorRing.sweepEvents,
-      ...this.interiorRings.map(r => r.sweepEvents)
-    )
+    const ses = this.exteriorRing.sweepEvents
+    this.interiorRings.forEach(r => r.sweepEvents.forEach(se => ses.push(se)))
+    return ses
   }
 
   /* Given a segment with these rings, is that segment inside this polygon? */
@@ -95,7 +95,9 @@ class MultiPoly {
   }
 
   get sweepEvents () {
-    return [].concat(...this.polys.map(p => p.sweepEvents))
+    const ses = []
+    this.polys.forEach(p => p.sweepEvents.forEach(se => ses.push(se)))
+    return ses
   }
 }
 

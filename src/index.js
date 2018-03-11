@@ -16,7 +16,7 @@ const doIt = (operationType, ...geoms) => {
 
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()
-  multipolys.forEach(mp => eventQueue.push(...mp.sweepEvents))
+  multipolys.forEach(mp => mp.sweepEvents.forEach(se => eventQueue.push(se)))
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
