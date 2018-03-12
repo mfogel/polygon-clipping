@@ -3,15 +3,10 @@
 const operation = require('../src/operation')
 
 describe('operation', () => {
-  test('set type', () => {
-    operation.setType(operation.types.UNION)
+  test('retister', () => {
+    const numMps = 5
+    operation.register(operation.types.UNION, numMps)
     expect(operation.type).toBe(operation.types.UNION)
-  })
-
-  test('set multipolys', () => {
-    const multiPolys = [{}, {}, {}]
-    operation.setMultiPolys(multiPolys)
-    expect(operation.multiPolys).toBe(multiPolys)
-    expect(operation.subject).toBe(multiPolys[0])
+    expect(operation.numMultiPolys).toBe(numMps)
   })
 })

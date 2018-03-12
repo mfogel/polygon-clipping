@@ -10,9 +10,8 @@ const doIt = (operationType, ...geoms) => {
   geoms.forEach(g => cleanInput.cleanMultiPoly(g))
 
   const multipolys = geoms.map(geom => new geomIn.MultiPoly(geom))
-
-  operation.setType(operationType)
-  operation.setMultiPolys(multipolys)
+  multipolys[0].markAsSubject()
+  operation.register(operationType, multipolys.length)
 
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()

@@ -397,7 +397,7 @@ class Segment {
         ]
         const most = Math.max(...sideCounts)
         const least = Math.min(...sideCounts)
-        return most === operation.multiPolys.length && least < most
+        return most === operation.numMultiPolys && least < most
 
       case operation.types.XOR:
         // XOR - included iff:
@@ -411,8 +411,7 @@ class Segment {
       case operation.types.DIFFERENCE:
         // DIFFERENCE included iff:
         //  * on exactly one side, we have just the subject
-        const isJustSubject = mps =>
-          mps.length === 1 && mps[0] === operation.subject
+        const isJustSubject = mps => mps.length === 1 && mps[0].isSubject
         return (
           isJustSubject(this.multiPolysSLPEnters) !==
           isJustSubject(this.multiPolysSLPExits)

@@ -8,17 +8,9 @@ class Operation {
     }
   }
 
-  setType (type) {
+  register (type, numMultiPolys) {
     this.type = type
-  }
-
-  setMultiPolys (mps) {
-    this.multiPolys = mps
-  }
-
-  get subject () {
-    // meaingful only for DIFFERENCE
-    return this.multiPolys[0]
+    this.numMultiPolys = numMultiPolys
   }
 }
 

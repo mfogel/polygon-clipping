@@ -98,6 +98,11 @@ class Poly {
 class MultiPoly {
   constructor (geomMultiPoly) {
     this.polys = geomMultiPoly.map(gmp => new Poly(gmp, this))
+    this.isSubject = false
+  }
+
+  markAsSubject () {
+    this.isSubject = true
   }
 
   get sweepEvents () {
