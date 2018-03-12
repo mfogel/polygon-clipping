@@ -5,11 +5,9 @@ const Segment = require('./segment')
 let ringId = 0
 
 class Ring {
-  constructor (geomRing, isExterior, poly) {
+  constructor (geomRing, poly) {
     this.id = ringId++
     this.poly = poly
-    this.isExterior = isExterior
-    this.isInterior = !isExterior
     this.segments = []
 
     let prevPoint = null
@@ -25,6 +23,14 @@ class Ring {
     const ses = []
     this.segments.forEach(seg => ses.push(seg.leftSE, seg.rightSE))
     return ses
+  }
+
+  get isExterior () {
+    return this.poly.exteriorRing === this
+  }
+
+  get isInterior () {
+    return this.poly.exteriorRing !== this
   }
 
   /* Given a segment on this rings with these relationships to other rings,
@@ -63,8 +69,8 @@ class Ring {
 
 class Poly {
   constructor (geomPoly, multiPoly) {
-    this.exteriorRing = new Ring(geomPoly[0], true, this)
-    this.interiorRings = geomPoly.slice(1).map(rg => new Ring(rg, false, this))
+    this.exteriorRing = new Ring(geomPoly[0], this)
+    this.interiorRings = geomPoly.slice(1).map(rg => new Ring(rg, this))
     this.multiPoly = multiPoly
   }
 

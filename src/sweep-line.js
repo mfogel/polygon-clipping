@@ -69,10 +69,6 @@ class SweepLine {
         newEvents.push(...this._possibleSplit(nextSeg, inters))
       }
 
-      if (nextSeg && segment.isCoincidentWith(nextSeg)) {
-        segment.registerCoincidence(nextSeg)
-      }
-
       this.tree.remove(segment)
     }
 

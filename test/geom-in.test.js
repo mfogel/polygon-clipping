@@ -6,7 +6,8 @@ describe('Ring', () => {
   test('create exterior ring', () => {
     const [pt1, pt2, pt3, pt4] = [[0, 0], [1, 0], [1, 1], [0, 0]]
     const poly = {}
-    const ring = new Ring([pt1, pt2, pt3, pt4], true, poly)
+    const ring = new Ring([pt1, pt2, pt3, pt4], poly)
+    poly.exteriorRing = ring
 
     expect(ring.poly).toBe(poly)
     expect(ring.isExterior).toBeTruthy()
@@ -20,7 +21,7 @@ describe('Ring', () => {
   })
 
   test('create an interior ring', () => {
-    const ring = new Ring([], false, {})
+    const ring = new Ring([], {})
     expect(ring.isExterior).toBeFalsy()
     expect(ring.isInterior).toBeTruthy()
   })

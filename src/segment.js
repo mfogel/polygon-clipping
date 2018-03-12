@@ -63,8 +63,6 @@ class Segment {
     this.leftSE = new SweepEvent(lp, this)
     this.rightSE = new SweepEvent(rp, this)
 
-    this.coincidents = [this]
-
     // cache of dynamically computed properies
     this._clearCache()
   }
@@ -110,13 +108,6 @@ class Segment {
 
   isPointOn (point) {
     return isInBbox(this.bbox, point) && this.isPointColinear(point)
-  }
-
-  isCoincidentWith (other) {
-    return (
-      arePointsEqual(this.leftSE.point, other.leftSE.point) &&
-      arePointsEqual(this.rightSE.point, other.rightSE.point)
-    )
   }
 
   isColinearWith (other) {
@@ -234,15 +225,18 @@ class Segment {
     this._clearCache()
   }
 
-  registerCoincidence (other) {
-    if (this.coincidents === other.coincidents) return
-    this.coincidents.push(...other.coincidents)
-    other.coincidents = this.coincidents
-    this._clearCache()
-  }
-
   registerRingOut (ring) {
     this.ringOut = ring
+  }
+
+  get coincidents () {
+    const leftSegments = this.leftSE.linkedEvents
+      .filter(evt => evt.isLeft)
+      .map(evt => evt.segment)
+    const rightSegments = this.rightSE.linkedEvents
+      .filter(evt => evt.isRight)
+      .map(evt => evt.segment)
+    return leftSegments.filter(seg => rightSegments.includes(seg))
   }
 
   get isCoincidenceWinner () {
@@ -275,24 +269,30 @@ class Segment {
 
   /* Array of input rings this segment is on boundary of */
   get ringsOnEdgeOf () {
-    return this._getCached('ringsOnEdgeOf')
+    return this.coincidents.map(seg => seg.ringIn)
   }
 
   /* Array of input rings this segment is on boundary of,
    * and for which the sweep line enters when intersecting there */
   get ringsEntering () {
-    return this._getCached('ringsEntering')
+    return this.coincidents
+      .filter(seg => seg.sweepLineEntersRing)
+      .map(seg => seg.ringIn)
   }
 
   /* Array of input rings this segment is on boundary of,
    * and for which the sweep line exits when intersecting there */
   get ringsExiting () {
-    return this._getCached('ringsExiting')
+    return this.coincidents
+      .filter(seg => !seg.sweepLineEntersRing)
+      .map(seg => seg.ringIn)
   }
 
   /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
   get isValidEdgeForPoly () {
-    return this._getCached('isValidEdgeForPoly')
+    const args = [this.ringsEntering, this.ringsExiting]
+    if (!this.sweepLineEntersRing) args.reverse()
+    return this.ringIn.isValid(...args, this.ringsInsideOf)
   }
 
   /* Array of polys this segment is inside of */
@@ -372,28 +372,6 @@ class Segment {
 
     // remove any that we're actually on the boundary of
     return rings.filter(r => !this.ringsOnEdgeOf.includes(r))
-  }
-
-  _ringsOnEdgeOf () {
-    return this.coincidents.map(seg => seg.ringIn)
-  }
-
-  _ringsEntering () {
-    return this.coincidents
-      .filter(seg => seg.sweepLineEntersRing)
-      .map(seg => seg.ringIn)
-  }
-
-  _ringsExiting () {
-    return this.coincidents
-      .filter(seg => !seg.sweepLineEntersRing)
-      .map(seg => seg.ringIn)
-  }
-
-  _isValidEdgeForPoly () {
-    const args = [this.ringsEntering, this.ringsExiting]
-    if (!this.sweepLineEntersRing) args.reverse()
-    return this.ringIn.isValid(...args, this.ringsInsideOf)
   }
 
   _isInResult () {
