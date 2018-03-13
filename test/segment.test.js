@@ -103,7 +103,6 @@ describe('simple properties - bbox, vector, points, isVertical', () => {
     const seg = new Segment([1, 2], [3, 4])
     expect(seg.bbox).toEqual([[1, 2], [3, 4]])
     expect(seg.vector).toEqual([2, 2])
-    expect(seg.points).toEqual([[1, 2], [3, 4]])
     expect(seg.isVertical).toBeFalsy()
   })
 
@@ -111,7 +110,6 @@ describe('simple properties - bbox, vector, points, isVertical', () => {
     const seg = new Segment([1, 4], [3, 4])
     expect(seg.bbox).toEqual([[1, 4], [3, 4]])
     expect(seg.vector).toEqual([2, 0])
-    expect(seg.points).toEqual([[1, 4], [3, 4]])
     expect(seg.isVertical).toBeFalsy()
   })
 
@@ -119,7 +117,6 @@ describe('simple properties - bbox, vector, points, isVertical', () => {
     const seg = new Segment([3, 2], [3, 4])
     expect(seg.bbox).toEqual([[3, 2], [3, 4]])
     expect(seg.vector).toEqual([0, 2])
-    expect(seg.points).toEqual([[3, 2], [3, 4]])
     expect(seg.isVertical).toBeTruthy()
   })
 })
@@ -195,138 +192,56 @@ describe('is Point On', () => {
   })
 })
 
+describe('is coincident with', () => {
+  test('yup', () => {
+    const a = new Segment([0, -1], [1, 0])
+    const b = new Segment([0, -1], [1, 0])
+    a.leftSE.link(b.leftSE)
+    a.rightSE.link(b.rightSE)
+    expect(a.isCoincidentWith(b)).toBeTruthy()
+  })
+
+  test('no - only left event linked', () => {
+    const a = new Segment([0, -1], [1, 0])
+    const b = new Segment([0, -1], [1, 0])
+    a.leftSE.link(b.leftSE)
+    expect(a.isCoincidentWith(b)).toBeFalsy()
+  })
+
+  test('no - only right event linked', () => {
+    const a = new Segment([0, -1], [1, 0])
+    const b = new Segment([0, -1], [1, 0])
+    a.rightSE.link(b.rightSE)
+    expect(a.isCoincidentWith(b)).toBeFalsy()
+  })
+})
+
 describe('comparison with point', () => {
-  test('isPointBelow', () => {
+  test('general', () => {
     const s1 = new Segment([0, 0], [1, 1])
     const s2 = new Segment([0, 1], [0, 0])
 
-    expect(s1.isPointBelow([0, 1])).toBeTruthy()
-    expect(s1.isPointBelow([1, 2])).toBeTruthy()
-    expect(s1.isPointBelow([0, 0])).toBeFalsy()
-    expect(s1.isPointBelow([5, -1])).toBeFalsy()
+    expect(s1.comparePoint([0, 1])).toBe(1)
+    expect(s1.comparePoint([1, 2])).toBe(1)
+    expect(s1.comparePoint([0, 0])).toBe(0)
+    expect(s1.comparePoint([5, -1])).toBe(-1)
 
-    expect(s2.isPointBelow([0, 1])).toBeFalsy()
-    expect(s2.isPointBelow([1, 2])).toBeFalsy()
-    expect(s2.isPointBelow([0, 0])).toBeFalsy()
-    expect(s2.isPointBelow([5, -1])).toBeFalsy()
-  })
-
-  test('isPointColinear', () => {
-    const s1 = new Segment([0, 0], [1, 1])
-    const s2 = new Segment([0, 1], [0, 0])
-
-    expect(s1.isPointColinear([0, 1])).toBeFalsy()
-    expect(s1.isPointColinear([1, 2])).toBeFalsy()
-    expect(s1.isPointColinear([0, 0])).toBeTruthy()
-    expect(s1.isPointColinear([5, -1])).toBeFalsy()
-
-    expect(s2.isPointColinear([0, 1])).toBeTruthy()
-    expect(s2.isPointColinear([1, 2])).toBeFalsy()
-    expect(s2.isPointColinear([0, 0])).toBeTruthy()
-    expect(s2.isPointColinear([5, -1])).toBeFalsy()
-  })
-
-  test('isPointAbove', () => {
-    const s1 = new Segment([0, 0], [1, 1])
-    const s2 = new Segment([0, 1], [0, 0])
-
-    expect(s1.isPointAbove([0, 1])).toBeFalsy()
-    expect(s1.isPointAbove([1, 2])).toBeFalsy()
-    expect(s1.isPointAbove([0, 0])).toBeFalsy()
-    expect(s1.isPointAbove([5, -1])).toBeTruthy()
-
-    expect(s2.isPointAbove([0, 1])).toBeFalsy()
-    expect(s2.isPointAbove([1, 2])).toBeTruthy()
-    expect(s2.isPointAbove([0, 0])).toBeFalsy()
-    expect(s2.isPointAbove([5, -1])).toBeTruthy()
+    expect(s2.comparePoint([0, 1])).toBe(0)
+    expect(s2.comparePoint([1, 2])).toBe(-1)
+    expect(s2.comparePoint([0, 0])).toBe(0)
+    expect(s2.comparePoint([5, -1])).toBe(-1)
   })
 
   test('barely above', () => {
     const s1 = new Segment([0, 1], [3, 1])
     const pt = [2, 1 - Number.EPSILON]
-    expect(s1.isPointAbove(pt)).toBeTruthy()
-    expect(s1.isPointColinear(pt)).toBeFalsy()
-    expect(s1.isPointBelow(pt)).toBeFalsy()
+    expect(s1.comparePoint(pt)).toBe(-1)
   })
 
   test('barely below', () => {
     const s1 = new Segment([0, 1], [3, 1])
     const pt = [2, 1 + Number.EPSILON]
-    expect(s1.isPointAbove(pt)).toBeFalsy()
-    expect(s1.isPointColinear(pt)).toBeFalsy()
-    expect(s1.isPointBelow(pt)).toBeTruthy()
-  })
-})
-
-describe('is colinear with', () => {
-  describe('yes', () => {
-    test('without any overlap', () => {
-      const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([3, 3], [5, 5])
-      expect(s1.isColinearWith(s2)).toBeTruthy()
-    })
-
-    test('with partial overlap', () => {
-      const s1 = new Segment([0, 2], [2, 0])
-      const s2 = new Segment([-1, 3], [1, 1])
-      expect(s1.isColinearWith(s2)).toBeTruthy()
-    })
-
-    test('encapsulating the other', () => {
-      const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([-1, -1], [2, 2])
-      expect(s1.isColinearWith(s2)).toBeTruthy()
-    })
-
-    test('perfect match', () => {
-      const s1 = new Segment([0, 1], [1, 0])
-      const s2 = new Segment([0, 1], [1, 0])
-      expect(s1.isColinearWith(s2)).toBeTruthy()
-    })
-
-    test('horizontal', () => {
-      const s1 = new Segment([0, 1], [1, 1])
-      const s2 = new Segment([-10, 1], [-5, 1])
-      expect(s1.isColinearWith(s2)).toBeTruthy()
-    })
-
-    test('vertical', () => {
-      const s1 = new Segment([0, 0], [0, 1])
-      const s2 = new Segment([0, 1], [0, 2])
-      expect(s1.isColinearWith(s2)).toBeTruthy()
-    })
-
-    test('within rounding error', () => {
-      const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([0, 0], [1, 1 + Number.EPSILON])
-      expect(s1.isColinearWith(s2)).toBeTruthy()
-    })
-  })
-
-  describe('no', () => {
-    test('general', () => {
-      const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([0, 1], [5, 2])
-      expect(s1.isColinearWith(s2)).toBeFalsy()
-    })
-
-    test('parallel but not colinear', () => {
-      const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([0, 1], [1, 2])
-      expect(s1.isColinearWith(s2)).toBeFalsy()
-    })
-
-    test('perpendicular', () => {
-      const s1 = new Segment([0, 1], [1, 0])
-      const s2 = new Segment([0, 0], [1, 1])
-      expect(s1.isColinearWith(s2)).toBeFalsy()
-    })
-
-    test('almost colinear', () => {
-      const s1 = new Segment([0, 0], [1, 1])
-      const s2 = new Segment([0, 0], [1, 1 + 2 * Number.EPSILON])
-      expect(s1.isColinearWith(s2)).toBeFalsy()
-    })
+    expect(s1.comparePoint(pt)).toBe(1)
   })
 })
 

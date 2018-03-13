@@ -15,9 +15,12 @@ describe('Ring', () => {
     expect(ring.segments.length).toBe(3)
     expect(ring.sweepEvents.length).toBe(6)
 
-    expect(ring.segments[0].points).toEqual([pt1, pt2])
-    expect(ring.segments[1].points).toEqual([pt2, pt3])
-    expect(ring.segments[2].points).toEqual([pt4, pt3])
+    expect(ring.segments[0].leftSE.point).toEqual(pt1)
+    expect(ring.segments[0].rightSE.point).toEqual(pt2)
+    expect(ring.segments[1].leftSE.point).toEqual(pt2)
+    expect(ring.segments[1].rightSE.point).toEqual(pt3)
+    expect(ring.segments[2].leftSE.point).toEqual(pt4)
+    expect(ring.segments[2].rightSE.point).toEqual(pt3)
   })
 
   test('create an interior ring', () => {

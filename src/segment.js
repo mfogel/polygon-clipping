@@ -15,11 +15,14 @@ class Segment {
     if (flpLT(brx, alx)) return 1
     if (flpLT(arx, blx)) return -1
 
-    const cmpLX = flpCompare(alx, blx)
+    const cmpLeft = a.comparePoint(b.leftSE.point)
+    const cmpRight = a.comparePoint(b.rightSE.point)
 
-    if (a.isColinearWith(b)) {
+    // are a and b colinear?
+    if (cmpLeft === 0 && cmpRight === 0) {
       // colinear segments with non-matching left-endpoints, consider
       // the more-left endpoint to be earlier
+      const cmpLX = flpCompare(alx, blx)
       if (cmpLX !== 0) return cmpLX
 
       // colinear segments with matching left-endpoints, fall back
@@ -33,16 +36,16 @@ class Segment {
       // for non-colinear segments with matching left endoints,
       // consider the one that angles more downward to be earlier
       if (arePointsEqual(a.leftSE.point, b.leftSE.point)) {
-        return a.isPointBelow(b.rightSE.point) ? -1 : 1
+        return cmpRight === 1 ? -1 : 1
       }
 
       // their left endpoints are in the same vertical line, lower means ealier
-      if (cmpLX === 0) return flpCompare(aly, bly)
+      if (flpCompare(alx, blx) === 0) return flpCompare(aly, bly)
 
       // along a vertical line at the rightmore of the two left endpoints,
       // consider the segment that intersects lower with that line to be earlier
-      if (flpLT(alx, blx)) return a.isPointBelow(b.leftSE.point) ? -1 : 1
-      if (flpLT(blx, alx)) return b.isPointBelow(a.leftSE.point) ? 1 : -1
+      if (flpLT(alx, blx)) return cmpLeft === 1 ? -1 : 1
+      if (flpLT(blx, alx)) return b.comparePoint(a.leftSE.point) === 1 ? 1 : -1
     }
 
     throw new Error(
@@ -72,10 +75,10 @@ class Segment {
   }
 
   get bbox () {
-    const ys = this.points.map(p => p[1])
+    const ys = [this.leftSE.point[1], this.rightSE.point[1]]
     return [
-      [this.points[0][0], Math.min(...ys)],
-      [this.points[1][0], Math.max(...ys)]
+      [this.leftSE.point[0], Math.min(...ys)],
+      [this.rightSE.point[0], Math.max(...ys)]
     ]
   }
 
@@ -88,12 +91,7 @@ class Segment {
   }
 
   get isVertical () {
-    return flpEQ(this.points[0][0], this.points[1][0])
-  }
-
-  /* an array of left point, right point */
-  get points () {
-    return [this.leftSE.point, this.rightSE.point]
+    return flpEQ(this.leftSE.point[0], this.rightSE.point[0])
   }
 
   getOtherSE (se) {
@@ -103,36 +101,30 @@ class Segment {
   }
 
   isAnEndpoint (point) {
-    return this.points.some(pt => arePointsEqual(pt, point))
+    return (
+      arePointsEqual(point, this.leftSE.point) ||
+      arePointsEqual(point, this.rightSE.point)
+    )
   }
 
   isPointOn (point) {
-    return isInBbox(this.bbox, point) && this.isPointColinear(point)
+    return isInBbox(this.bbox, point) && this.comparePoint(point) === 0
   }
 
-  isColinearWith (other) {
-    return other.points.every(pt => this.isPointColinear(pt))
-  }
-
-  isPointBelow (point) {
+  isCoincidentWith (other) {
     return (
-      !this.isAnEndpoint(point) &&
-      compareVectorAngles(point, this.points[0], this.points[1]) > 0
+      this.leftSE.isLinkedTo(other.leftSE) &&
+      this.rightSE.isLinkedTo(other.rightSE)
     )
   }
 
-  isPointColinear (point) {
-    return (
-      this.isAnEndpoint(point) ||
-      compareVectorAngles(point, this.points[0], this.points[1]) === 0
-    )
-  }
-
-  isPointAbove (point) {
-    return (
-      !this.isAnEndpoint(point) &&
-      compareVectorAngles(point, this.points[0], this.points[1]) < 0
-    )
+  /* Compare this segment with a point. Return value indicates
+   *    1: point is below segment
+   *    0: point is colinear to segment
+   *   -1: point is above segment */
+  comparePoint (point) {
+    if (this.isAnEndpoint(point)) return 0
+    return compareVectorAngles(point, this.leftSE.point, this.rightSE.point)
   }
 
   /**
@@ -230,24 +222,41 @@ class Segment {
   }
 
   get coincidents () {
+    return this._getCached('coincidents')
+  }
+
+  _coincidents () {
     const leftSegments = this.leftSE.linkedEvents
       .filter(evt => evt.isLeft)
       .map(evt => evt.segment)
     const rightSegments = this.rightSE.linkedEvents
       .filter(evt => evt.isRight)
       .map(evt => evt.segment)
-    return leftSegments.filter(seg => rightSegments.includes(seg))
+    const coincidents = leftSegments.filter(seg => rightSegments.includes(seg))
+
+    // put the 'winner' at the front
+    // arbitary - winner is the one with lowest ringId
+    coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
+
+    // set this in all our coincident's caches so they don't have to calc it
+    coincidents.forEach(c => (c._cache['coincidents'] = coincidents))
+    return coincidents
   }
 
   get isCoincidenceWinner () {
-    // arbitary - winner is the one with lowest ringId
-    const ringIds = this.coincidents.map(seg => seg.ringIn.id)
-    return this.ringIn.id === Math.min(...ringIds)
+    return this === this.coincidents[0]
   }
 
   /* Does the sweep line, when it intersects this segment, enter the ring? */
   get sweepLineEntersRing () {
     return this._getCached('sweepLineEntersRing')
+  }
+
+  _sweepLineEntersRing () {
+    // opposite of previous segment on the same ring
+    let prev = this.prev
+    while (prev && prev.ringIn !== this.ringIn) prev = prev.prev
+    return !prev || !prev.sweepLineEntersRing
   }
 
   /* Does the sweep line, when it intersects this segment, enter the polygon? */
@@ -265,6 +274,24 @@ class Segment {
   /* Array of input rings this segment is inside of (not on boundary) */
   get ringsInsideOf () {
     return this._getCached('ringsInsideOf')
+  }
+
+  _ringsInsideOf () {
+    let rings = []
+    if (this.prev) {
+      // coincidents always share the same rings. Return same array to save mem
+      if (this.isCoincidentWith(this.prev)) return this.prev.ringsInsideOf
+      rings = [...this.prev.ringsInsideOf] // going to edit array, copy by value
+    }
+
+    // remove any we exited, add any we entered
+    if (this.prev) {
+      rings = rings.filter(r => !this.prev.ringsExiting.includes(r))
+      rings.push(...this.prev.ringsEntering)
+    }
+
+    // remove any that we're actually on the boundary of
+    return rings.filter(r => !this.ringsOnEdgeOf.includes(r))
   }
 
   /* Array of input rings this segment is on boundary of */
@@ -290,6 +317,10 @@ class Segment {
 
   /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
   get isValidEdgeForPoly () {
+    return this._getCached('isValidEdgeForPoly')
+  }
+
+  _isValidEdgeForPoly () {
     const args = [this.ringsEntering, this.ringsExiting]
     if (!this.sweepLineEntersRing) args.reverse()
     return this.ringIn.isValid(...args, this.ringsInsideOf)
@@ -306,14 +337,11 @@ class Segment {
     return Array.from(new Set(this.polysInsideOf.map(p => p.multiPoly)))
   }
 
-  /* Is this segment part of the final result? */
-  get isInResult () {
-    return this._getCached('isInResult')
-  }
-
   /* The first segment previous segment chain that is in the result */
   get prevInResult () {
-    return this._getCached('prevInResult')
+    let prev = this.prev
+    while (prev && !prev.isInResult) prev = prev.prev
+    return prev
   }
 
   /* The multipolys on one side of us */
@@ -332,46 +360,9 @@ class Segment {
     return Array.from(new Set([...onlyExits, ...this.multiPolysInsideOf]))
   }
 
-  _clearCache () {
-    this._cache = {}
-  }
-
-  _getCached (propName, calcMethod) {
-    // if this._cache[something] isn't set, fill it with this._something()
-    if (this._cache[propName] === undefined) {
-      this._cache[propName] = this[`_${propName}`].bind(this)()
-    }
-    return this._cache[propName]
-  }
-
-  _prevInResult () {
-    let prev = this.prev
-    while (prev && !prev.isInResult) prev = prev.prev
-    return prev
-  }
-
-  _sweepLineEntersRing () {
-    // opposite of previous segment on the same ring
-    let prev = this.prev
-    while (prev && prev.ringIn !== this.ringIn) prev = prev.prev
-    return !prev || !prev.sweepLineEntersRing
-  }
-
-  _ringsInsideOf () {
-    // start with prev set of rings inside of, if any
-    let rings = this.prev ? [...this.prev.ringsInsideOf] : []
-
-    // coincidents always share the same
-    if (this.coincidents.filter(c => c === this.prev).length > 0) return rings
-
-    // remove any we exited, add any we entered
-    if (this.prev) {
-      rings = rings.filter(r => !this.prev.ringsExiting.includes(r))
-      rings.push(...this.prev.ringsEntering)
-    }
-
-    // remove any that we're actually on the boundary of
-    return rings.filter(r => !this.ringsOnEdgeOf.includes(r))
+  /* Is this segment part of the final result? */
+  get isInResult () {
+    return this._getCached('isInResult')
   }
 
   _isInResult () {
@@ -420,6 +411,18 @@ class Segment {
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)
     }
+  }
+
+  _clearCache () {
+    this._cache = {}
+  }
+
+  _getCached (propName, calcMethod) {
+    // if this._cache[something] isn't set, fill it with this._something()
+    if (this._cache[propName] === undefined) {
+      this._cache[propName] = this[`_${propName}`].bind(this)()
+    }
+    return this._cache[propName]
   }
 }
 

@@ -8,9 +8,6 @@ const dotProduct = (a, b) => a[0] * b[0] + a[1] * b[1]
 
 /* Comparator for two vectors with same starting point */
 const compareVectorAngles = (basePt, endPt1, endPt2) => {
-  if (arePointsEqual(basePt, endPt1) || arePointsEqual(basePt, endPt2)) {
-    throw new Error(`Cannot calc vector angle of 0-length vector ${basePt}`)
-  }
   const v1 = [endPt1[0] - basePt[0], endPt1[1] - basePt[1]]
   const v2 = [endPt2[0] - basePt[0], endPt2[1] - basePt[1]]
   const kross = crossProduct(v1, v2)

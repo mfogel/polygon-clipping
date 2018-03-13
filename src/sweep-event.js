@@ -13,9 +13,8 @@ class SweepEvent {
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
 
     // favor events where the line segment is lower
-    if (!a.segment.isPointColinear(b.otherSE.point)) {
-      return !a.segment.isPointBelow(b.otherSE.point) ? 1 : -1
-    }
+    const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
+    if (pointSegCmp !== 0) return -1 * pointSegCmp
 
     // as a tie-breaker, favor lower segment creation id
     const [aId, bId] = [a.segment.ringIn.id, b.segment.ringIn.id]
@@ -54,6 +53,10 @@ class SweepEvent {
     }
     this.linkedEvents.push(...other.linkedEvents)
     other.linkedEvents = this.linkedEvents
+  }
+
+  isLinkedTo (other) {
+    return this.linkedEvents === other.linkedEvents
   }
 
   get availableLinkedEvents () {

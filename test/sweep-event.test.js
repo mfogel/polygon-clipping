@@ -72,8 +72,12 @@ describe('sweep event compare points', () => {
 
 describe('sweep event link', () => {
   test('no linked events', () => {
-    const se = new SweepEvent()
-    expect(se.availableLinkedEvents).toEqual([])
+    const se1 = new SweepEvent()
+    const se2 = new SweepEvent()
+    expect(se1.isLinkedTo(se2)).toBeFalsy()
+    expect(se2.isLinkedTo(se1)).toBeFalsy()
+    expect(se1.availableLinkedEvents).toEqual([])
+    expect(se2.availableLinkedEvents).toEqual([])
   })
 
   test('cannot link already linked event', () => {
@@ -116,6 +120,8 @@ describe('sweep event link', () => {
     seOkay2.segment = { isInResult: true, ringOut: null }
 
     seOkay1.link(seOkay2)
+    expect(seOkay1.isLinkedTo(seOkay2)).toBeTruthy()
+    expect(seOkay2.isLinkedTo(seOkay1)).toBeTruthy()
     expect(seOkay1.availableLinkedEvents).toEqual([seOkay2])
     expect(seOkay2.availableLinkedEvents).toEqual([seOkay1])
   })

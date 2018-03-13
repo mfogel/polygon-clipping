@@ -38,14 +38,6 @@ describe('compare vector angles', () => {
     expect(compareVectorAngles(pt2, pt3, pt1)).toBe(-1)
     expect(compareVectorAngles(pt3, pt2, pt1)).toBe(1)
   })
-
-  test('same point should throw error', () => {
-    const pt1 = [0, 0]
-    const pt2 = [0, 0]
-    const pt3 = [1, 0]
-
-    expect(() => compareVectorAngles(pt1, pt2, pt3)).toThrow()
-  })
 })
 
 describe('sine and cosine of angle', () => {
