@@ -1,8 +1,9 @@
+const TinyQueue = require('tinyqueue')
 const cleanInput = require('./clean-input.js')
-const EventQueue = require('./event-queue')
 const geomIn = require('./geom-in')
 const geomOut = require('./geom-out')
 const operation = require('./operation')
+const SweepEvent = require('./sweep-event')
 const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, geom, moreGeoms) => {
@@ -21,20 +22,20 @@ const doIt = (operationType, geom, moreGeoms) => {
   operation.register(operationType, multipolys.length)
 
   /* Put segment endpoints in a priority queue */
-  const eventQueue = new EventQueue()
+  const queue = new TinyQueue(null, SweepEvent.compare)
   for (let i = 0; i < multipolys.length; i++) {
     const sweepEvents = multipolys[i].getSweepEvents()
     for (let j = 0; j < sweepEvents.length; j++) {
-      eventQueue.push(sweepEvents[j])
+      queue.push(sweepEvents[j])
     }
   }
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
-  while (!eventQueue.isEmpty) {
-    const newEvents = sweepLine.process(eventQueue.pop())
+  while (queue.length) {
+    const newEvents = sweepLine.process(queue.pop())
     for (let i = 0; i < newEvents.length; i++) {
-      eventQueue.push(newEvents[i])
+      queue.push(newEvents[i])
     }
   }
 
