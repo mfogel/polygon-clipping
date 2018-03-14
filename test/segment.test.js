@@ -3,11 +3,6 @@
 const Segment = require('../src/segment')
 
 describe('constructor', () => {
-  test('cannot build segment with identical points', () => {
-    const pt = [0, 5]
-    expect(() => new Segment(pt, pt)).toThrow()
-  })
-
   test('correct point on left and right 1', () => {
     const p1 = [0, 0]
     const p2 = [0, 1]

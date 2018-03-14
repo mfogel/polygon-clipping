@@ -1,12 +1,10 @@
-const { flpCompare } = require('./flp')
+const { cmp, cmpPoints } = require('./flp')
 const { cosineOfAngle, sineOfAngle } = require('./vector')
 
 class SweepEvent {
   static compare (a, b) {
-    if (a === b) return 0
-
     // favor event with a point that the sweep line hits first
-    const pointCmp = SweepEvent.comparePoints(a.point, b.point)
+    const pointCmp = cmpPoints(a.point, b.point)
     if (pointCmp !== 0) return pointCmp
 
     // favor right events over left
@@ -24,22 +22,12 @@ class SweepEvent {
     // NOTE:  We don't sort on segment length because that changes
     //        as segments are divided.
 
+    // they appear to be the same point... are they?
+    if (a === b) return 0
+
     throw new Error(
       `SweepEvent comparison failed at [${a.point}]... equal but not identical?`
     )
-  }
-
-  static comparePoints (a, b) {
-    // favor lower X
-    const cmpX = flpCompare(a[0], b[0])
-    if (cmpX !== 0) return cmpX
-
-    // favor lower Y
-    const cmpY = flpCompare(a[1], b[1])
-    if (cmpY !== 0) return cmpY
-
-    // else they're the same
-    return 0
   }
 
   constructor (point, segment) {
@@ -97,16 +85,12 @@ class SweepEvent {
       const { sine: asine, cosine: acosine } = cache.get(a)
       const { sine: bsine, cosine: bcosine } = cache.get(b)
 
-      const cmpZeroASine = flpCompare(asine, 0)
-      const cmpZeroBSine = flpCompare(bsine, 0)
+      const cmpZeroASine = cmp(asine, 0)
+      const cmpZeroBSine = cmp(bsine, 0)
 
-      if (cmpZeroASine >= 0 && cmpZeroBSine >= 0) {
-        return flpCompare(bcosine, acosine)
-      }
-      if (cmpZeroASine < 0 && cmpZeroBSine < 0) {
-        return flpCompare(acosine, bcosine)
-      }
-      return flpCompare(bsine, asine)
+      if (cmpZeroASine >= 0 && cmpZeroBSine >= 0) return cmp(bcosine, acosine)
+      if (cmpZeroASine < 0 && cmpZeroBSine < 0) return cmp(acosine, bcosine)
+      return cmp(bsine, asine)
     }
   }
 

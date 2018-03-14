@@ -40,7 +40,7 @@ describe('sweep event compare', () => {
   })
 
   test('identical equal', () => {
-    const s1 = new Segment([0, 0], [5, 5]).leftSE
+    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
     expect(SweepEvent.compare(s1, s1)).toBe(0)
   })
 
@@ -55,19 +55,6 @@ describe('sweep event compare', () => {
     const s2 = new Segment([0, 0], [4, 4], { id: 1 }).leftSE
     expect(() => SweepEvent.compare(s1, s2)).toThrow()
   })
-})
-
-describe('sweep event compare points', () => {
-  test('earlier X coord', () =>
-    expect(SweepEvent.comparePoints([-1, 1], [0, 0])).toBe(-1))
-  test('later X coord', () =>
-    expect(SweepEvent.comparePoints([1, 0], [0, 1])).toBe(1))
-  test('earlier Y coord', () =>
-    expect(SweepEvent.comparePoints([0, -1], [0, 0])).toBe(-1))
-  test('later Y coord', () =>
-    expect(SweepEvent.comparePoints([0, 1], [0, 0])).toBe(1))
-  test('equal coord', () =>
-    expect(SweepEvent.comparePoints([1, 1], [1, 1])).toBe(0))
 })
 
 describe('sweep event link', () => {

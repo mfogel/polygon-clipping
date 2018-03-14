@@ -1,7 +1,7 @@
 const operation = require('./operation')
 const SweepEvent = require('./sweep-event')
 const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
-const { flpEQ, flpLT, flpCompare, arePointsEqual } = require('./flp')
+const { cmp, cmpPoints } = require('./flp')
 const { crossProduct, compareVectorAngles } = require('./vector')
 
 class Segment {
@@ -16,17 +16,16 @@ class Segment {
     const brx = b.rightSE.point[0]
 
     // check if they're even in the same vertical plane
-    if (flpLT(brx, alx)) return 1
-    if (flpLT(arx, blx)) return -1
+    if (cmp(brx, alx) < 0) return 1
+    if (cmp(arx, blx) < 0) return -1
 
     const cmpLeft = a.comparePoint(b.leftSE.point)
-    const cmpRight = a.comparePoint(b.rightSE.point)
+    const cmpLX = cmp(alx, blx)
 
     // are a and b colinear?
-    if (cmpLeft === 0 && cmpRight === 0) {
+    if (cmpLeft === 0 && a.comparePoint(b.rightSE.point) === 0) {
       // colinear segments with non-matching left-endpoints, consider
       // the more-left endpoint to be earlier
-      const cmpLX = flpCompare(alx, blx)
       if (cmpLX !== 0) return cmpLX
 
       // colinear segments with matching left-endpoints, fall back
@@ -37,19 +36,23 @@ class Segment {
         return a.ringIn.id < b.ringIn.id ? -1 : 1
       }
     } else {
-      // for non-colinear segments with matching left endoints,
-      // consider the one that angles more downward to be earlier
-      if (arePointsEqual(a.leftSE.point, b.leftSE.point)) {
-        return cmpRight === 1 ? -1 : 1
+      // not colinear
+
+      // if the our left endpoints are not in the same vertical line,
+      // consider a vertical line at the rightmore of the two left endpoints,
+      // consider the segment that intersects lower with that line to be earlier
+      if (cmpLX < 0) return cmpLeft === 1 ? -1 : 1
+      if (cmpLX > 0) return b.comparePoint(a.leftSE.point) === 1 ? 1 : -1
+
+      // if our left endpoints match, consider the segment
+      // that angles more downward to be earlier
+      if (cmpPoints(a.leftSE.point, b.leftSE.point) === 0) {
+        return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
       }
 
-      // their left endpoints are in the same vertical line, lower means ealier
-      if (flpCompare(alx, blx) === 0) return flpCompare(aly, bly)
-
-      // along a vertical line at the rightmore of the two left endpoints,
-      // consider the segment that intersects lower with that line to be earlier
-      if (flpLT(alx, blx)) return cmpLeft === 1 ? -1 : 1
-      if (flpLT(blx, alx)) return b.comparePoint(a.leftSE.point) === 1 ? 1 : -1
+      // left endpoints are in the same vertical line but don't overlap exactly,
+      // lower means ealier
+      return cmp(aly, bly)
     }
 
     throw new Error(
@@ -59,14 +62,10 @@ class Segment {
   }
 
   constructor (point1, point2, ring) {
-    if (arePointsEqual(point1, point2)) {
-      throw new Error(`Unable to build segment for equal points at [${point1}]`)
-    }
-
     this.ringIn = ring
     this.ringOut = null
 
-    const ptCmp = SweepEvent.comparePoints(point1, point2)
+    const ptCmp = cmpPoints(point1, point2)
     const lp = ptCmp < 0 ? point1 : point2
     const rp = ptCmp < 0 ? point2 : point1
 
@@ -99,7 +98,7 @@ class Segment {
   }
 
   get isVertical () {
-    return flpEQ(this.leftSE.point[0], this.rightSE.point[0])
+    return cmp(this.leftSE.point[0], this.rightSE.point[0]) === 0
   }
 
   getOtherSE (se) {
@@ -110,8 +109,8 @@ class Segment {
 
   isAnEndpoint (point) {
     return (
-      arePointsEqual(point, this.leftSE.point) ||
-      arePointsEqual(point, this.rightSE.point)
+      cmpPoints(point, this.leftSE.point) === 0 ||
+      cmpPoints(point, this.rightSE.point) === 0
     )
   }
 
@@ -177,10 +176,10 @@ class Segment {
 
     // not on line segment a
     const s = crossProduct(ve, vb) / kross
-    if (flpLT(s, 0) || flpLT(1, s)) return []
+    if (cmp(s, 0) < 0 || cmp(1, s) < 0) return []
 
     const t = crossProduct(ve, va) / kross
-    if (flpLT(t, 0) || flpLT(1, t)) return []
+    if (cmp(t, 0) < 0 || cmp(1, t) < 0) return []
 
     // intersection is in a midpoint of both lines, let's average them
     const aix = al[0] + s * va[0]
@@ -202,9 +201,9 @@ class Segment {
    */
   split (points) {
     // sort them and unique-ify them
-    points.sort(SweepEvent.comparePoints)
+    points.sort(cmpPoints)
     points = points.filter(
-      (pt, i, pts) => i === 0 || SweepEvent.comparePoints(pts[i - 1], pt) !== 0
+      (pt, i, pts) => i === 0 || cmpPoints(pts[i - 1], pt) !== 0
     )
 
     for (let i = 0; i < points.length; i++) {

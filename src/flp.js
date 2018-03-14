@@ -4,33 +4,54 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/EPSILON
  */
 
-/* Is a floating-point equal to b? */
-const flpEQ = (a, b) => {
-  // are they both 0?
-  if (
-    -Number.EPSILON < a &&
-    a < Number.EPSILON &&
-    -Number.EPSILON < b &&
-    b < Number.EPSILON
-  ) {
-    return true
-  }
-  return (a - b) * (a - b) < Number.EPSILON * Number.EPSILON * a * b
-}
+const EPSILON_SQ = Number.EPSILON * Number.EPSILON
 
 /* FLP comparator */
-const flpCompare = (a, b) => {
-  if (flpEQ(a, b)) return 0
+const cmp = (a, b) => {
+  // check if they're both 0
+  if (-Number.EPSILON < a && a < Number.EPSILON) {
+    if (-Number.EPSILON < b && b < Number.EPSILON) {
+      return 0
+    }
+  }
+
+  // check if they're flp equal
+  if ((a - b) * (a - b) < Number.EPSILON * Number.EPSILON * a * b) {
+    return 0
+  }
+
+  // normal comparison
   return a < b ? -1 : 1
 }
 
-/* Is a floating-point less than b? */
-const flpLT = (a, b) => flpCompare(a, b) < 0
+/* FLP point comparator, favors point encountered first by sweep line */
+const cmpPoints = (aPt, bPt) => {
+  // fist compare X, then compare Y
+  // inlined version of cmp here for performance boost
+  for (let i = 0; i < 2; i++) {
+    const a = aPt[i]
+    const b = bPt[i]
 
-/* Is a floating-point less or equal to than b? */
-const flpLTE = (a, b) => flpCompare(a, b) <= 0
+    // check if they're both 0
+    if (-Number.EPSILON < a && a < Number.EPSILON) {
+      if (-Number.EPSILON < b && b < Number.EPSILON) {
+        continue
+      }
+    }
 
-/* Are the two points floating-point equal? */
-const arePointsEqual = (a, b) => flpEQ(a[0], b[0]) && flpEQ(a[1], b[1])
+    // check if they're flp equal
+    const diff = a - b
+    if (diff * diff < EPSILON_SQ * a * b) continue
 
-module.exports = { flpEQ, flpLT, flpLTE, flpCompare, arePointsEqual }
+    // normal comparison
+    return a < b ? -1 : 1
+  }
+
+  // else they're the same
+  return 0
+}
+
+module.exports = {
+  cmp,
+  cmpPoints
+}

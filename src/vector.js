@@ -1,4 +1,4 @@
-const { flpCompare } = require('./flp')
+const { cmp } = require('./flp')
 
 /* Cross Product of two vectors with first point at origin */
 const crossProduct = (a, b) => a[0] * b[1] - a[1] * b[0]
@@ -11,7 +11,7 @@ const compareVectorAngles = (basePt, endPt1, endPt2) => {
   const v1 = [endPt1[0] - basePt[0], endPt1[1] - basePt[1]]
   const v2 = [endPt2[0] - basePt[0], endPt2[1] - basePt[1]]
   const kross = crossProduct(v1, v2)
-  return flpCompare(kross, 0)
+  return cmp(kross, 0)
 }
 
 const length = v => Math.sqrt(dotProduct(v, v))

@@ -1,5 +1,5 @@
 const SplayTree = require('splaytree')
-const { arePointsEqual } = require('./flp')
+const { cmpPoints } = require('./flp')
 const Segment = require('./segment')
 
 /**
@@ -107,7 +107,7 @@ class SweepLine {
       this.tree.remove(segment)
     }
 
-    if (this.prevEvent && arePointsEqual(this.prevEvent.point, event.point)) {
+    if (this.prevEvent && cmpPoints(this.prevEvent.point, event.point) === 0) {
       this.prevEvent.link(event)
     }
     this.prevEvent = event

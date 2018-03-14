@@ -1,4 +1,4 @@
-const { arePointsEqual } = require('./flp')
+const { cmpPoints } = require('./flp')
 const { compareVectorAngles } = require('./vector')
 
 /* WARN: input modified directly */
@@ -60,13 +60,13 @@ const cleanMultiPoly = multipoly => {
  * WARN: input modified directly */
 const cleanRing = ring => {
   if (ring.length === 0) return
-  if (!arePointsEqual(ring[0], ring[ring.length - 1])) {
+  if (cmpPoints(ring[0], ring[ring.length - 1]) !== 0) {
     ring.push([ring[0][0], ring[0][1]]) // copy by value
   }
 
   const isPointUncessary = (prevPt, pt, nextPt) =>
-    arePointsEqual(prevPt, pt) ||
-    arePointsEqual(pt, nextPt) ||
+    cmpPoints(prevPt, pt) === 0 ||
+    cmpPoints(pt, nextPt) === 0 ||
     compareVectorAngles(pt, prevPt, nextPt) === 0
 
   let i = 1

@@ -1,4 +1,4 @@
-const { flpEQ, flpLT, flpLTE } = require('./flp')
+const { cmp } = require('./flp')
 
 /**
  * A bounding box has the format:
@@ -15,19 +15,19 @@ const isInBbox = (bbox, point) => {
   const xpt = point[0]
   const ypt = point[1]
   return (
-    flpLTE(xmin, xpt) &&
-    flpLTE(xpt, xmax) &&
-    flpLTE(ymin, ypt) &&
-    flpLTE(ypt, ymax)
+    cmp(xmin, xpt) <= 0 &&
+    cmp(xpt, xmax) <= 0 &&
+    cmp(ymin, ypt) <= 0 &&
+    cmp(ypt, ymax) <= 0
   )
 }
 
 const doBboxesOverlap = (b1, b2) =>
   !(
-    flpLT(b2[1][0], b1[0][0]) ||
-    flpLT(b1[1][0], b2[0][0]) ||
-    flpLT(b2[1][1], b1[0][1]) ||
-    flpLT(b1[1][1], b2[0][1])
+    cmp(b2[1][0], b1[0][0]) < 0 ||
+    cmp(b1[1][0], b2[0][0]) < 0 ||
+    cmp(b2[1][1], b1[0][1]) < 0 ||
+    cmp(b1[1][1], b2[0][1]) < 0
   )
 
 /* Returns either null, or a bbox (aka an ordered pair of points)
@@ -55,9 +55,11 @@ const getUniqueCorners = bbox => {
   const ymin = bbox[0][1]
   const xmax = bbox[1][0]
   const ymax = bbox[1][1]
-  if (flpEQ(xmin, xmax) && flpEQ(ymin, ymax)) return [[xmin, ymin]]
-  if (flpEQ(xmin, xmax)) return [[xmin, ymin], [xmin, ymax]]
-  if (flpEQ(ymin, ymax)) return [[xmin, ymin], [xmax, ymin]]
+  const xEq = cmp(xmin, xmax) === 0
+  const yEq = cmp(ymin, ymax) === 0
+  if (xEq && yEq) return [[xmin, ymin]]
+  if (xEq) return [[xmin, ymin], [xmin, ymax]]
+  if (yEq) return [[xmin, ymin], [xmax, ymin]]
   return [[xmin, ymin], [xmin, ymax], [xmax, ymin], [xmax, ymax]]
 }
 
