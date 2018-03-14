@@ -7,7 +7,9 @@ class EventQueue {
   }
 
   push (...events) {
-    events.forEach(evt => this.tinyQueue.push(evt))
+    for (let i = 0; i < events.length; i++) {
+      this.tinyQueue.push(events[i])
+    }
   }
 
   pop () {

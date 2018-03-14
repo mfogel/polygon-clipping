@@ -10,19 +10,18 @@ class Ring {
     this.poly = poly
     this.segments = []
 
-    let prevPoint = null
-    geomRing.forEach(point => {
-      if (prevPoint !== null) {
-        this.segments.push(new Segment(prevPoint, point, this))
-      }
-      prevPoint = point
-    })
+    for (let i = 1; i < geomRing.length; i++) {
+      this.segments.push(new Segment(geomRing[i - 1], geomRing[i], this))
+    }
   }
 
-  get sweepEvents () {
-    const ses = []
-    this.segments.forEach(seg => ses.push(seg.leftSE, seg.rightSE))
-    return ses
+  getSweepEvents () {
+    const sweepEvents = []
+    for (let i = 0; i < this.segments.length; i++) {
+      const segment = this.segments[i]
+      sweepEvents.push(segment.leftSE, segment.rightSE)
+    }
+    return sweepEvents
   }
 
   get isExterior () {
@@ -41,11 +40,14 @@ class Ring {
 
     if (this === exterior) {
       // exterior segments inside or interior, nope
-      if (ringsInsideOf.some(r => interiors.includes(r))) return false
+      for (let i = 0; i < ringsInsideOf.length; i++) {
+        if (interiors.includes(ringsInsideOf[i])) return false
+      }
 
       // overlap with an interior of same SWL orientatio, nope
-      const interiorsSameSLER = ringsSameSLER.filter(r => interiors.includes(r))
-      if (interiorsSameSLER.length > 0) return false
+      for (let i = 0; i < ringsSameSLER.length; i++) {
+        if (interiors.includes(ringsSameSLER[i])) return false
+      }
 
       return true
     }
@@ -57,11 +59,14 @@ class Ring {
     }
 
     // interior rings inside another interior, nope
-    if (ringsInsideOf.some(r => interiors.includes(r))) return false
+    for (let i = 0; i < ringsInsideOf.length; i++) {
+      if (interiors.includes(ringsInsideOf[i])) return false
+    }
 
     // overlapping interiors with different sweep line orientation, nope
-    const interiorsDiffSLER = ringsDiffSLER.filter(r => interiors.includes(r))
-    if (interiorsDiffSLER.length > 0) return false
+    for (let i = 0; i < ringsDiffSLER.length; i++) {
+      if (interiors.includes(ringsDiffSLER[i])) return false
+    }
 
     return true
   }
@@ -70,34 +75,49 @@ class Ring {
 class Poly {
   constructor (geomPoly, multiPoly) {
     this.exteriorRing = new Ring(geomPoly[0], this)
-    this.interiorRings = geomPoly.slice(1).map(rg => new Ring(rg, this))
+    this.interiorRings = []
+    for (let i = 1; i < geomPoly.length; i++) {
+      this.interiorRings.push(new Ring(geomPoly[i], this))
+    }
     this.multiPoly = multiPoly
   }
 
-  get sweepEvents () {
-    const ses = this.exteriorRing.sweepEvents
-    this.interiorRings.forEach(r => r.sweepEvents.forEach(se => ses.push(se)))
-    return ses
+  getSweepEvents () {
+    const sweepEvents = this.exteriorRing.getSweepEvents()
+    for (let i = 0; i < this.interiorRings.length; i++) {
+      const ringSweepEvents = this.interiorRings[i].getSweepEvents()
+      for (let j = 0; j < ringSweepEvents.length; j++) {
+        sweepEvents.push(ringSweepEvents[j])
+      }
+    }
+    return sweepEvents
   }
 
   /* Given a segment with these rings, is that segment inside this polygon? */
   isInside (ringsOnEdgeOf, ringsInsideOf) {
-    const onEdgeOf = ringsOnEdgeOf.filter(r => r.poly === this)
-    const insideOf = ringsInsideOf.filter(r => r.poly === this)
-
-    // anything on an edge can't be inside
-    if (onEdgeOf.length > 0) return false
+    // if we're on an edge, we can't be inside
+    for (let i = 0; i < ringsOnEdgeOf.length; i++) {
+      if (ringsOnEdgeOf[i].poly === this) return false
+    }
 
     // we need to be inside the exterior, and nothing else
-    if (insideOf.length !== 1 || !insideOf[0].isExterior) return false
-
-    return true
+    let isInsideExterior = false
+    for (let i = 0; i < ringsInsideOf.length; i++) {
+      const ring = ringsInsideOf[i]
+      if (ring.poly !== this) continue
+      if (ring.isInterior) return false
+      if (ring.isExterior) isInsideExterior = true
+    }
+    return isInsideExterior
   }
 }
 
 class MultiPoly {
   constructor (geomMultiPoly) {
-    this.polys = geomMultiPoly.map(gmp => new Poly(gmp, this))
+    this.polys = []
+    for (let i = 0; i < geomMultiPoly.length; i++) {
+      this.polys.push(new Poly(geomMultiPoly[i], this))
+    }
     this.isSubject = false
   }
 
@@ -105,10 +125,15 @@ class MultiPoly {
     this.isSubject = true
   }
 
-  get sweepEvents () {
-    const ses = []
-    this.polys.forEach(p => p.sweepEvents.forEach(se => ses.push(se)))
-    return ses
+  getSweepEvents () {
+    const sweepEvents = []
+    for (let i = 0; i < this.polys.length; i++) {
+      const polySweepEvents = this.polys[i].getSweepEvents()
+      for (let j = 0; j < polySweepEvents.length; j++) {
+        sweepEvents.push(polySweepEvents[j])
+      }
+    }
+    return sweepEvents
   }
 }
 

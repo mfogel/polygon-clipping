@@ -13,7 +13,7 @@ describe('Ring', () => {
     expect(ring.isExterior).toBeTruthy()
     expect(ring.isInterior).toBeFalsy()
     expect(ring.segments.length).toBe(3)
-    expect(ring.sweepEvents.length).toBe(6)
+    expect(ring.getSweepEvents().length).toBe(6)
 
     expect(ring.segments[0].leftSE.point).toEqual(pt1)
     expect(ring.segments[0].rightSE.point).toEqual(pt2)
@@ -168,7 +168,7 @@ describe('Poly', () => {
     expect(poly.interiorRings.length).toBe(2)
     expect(poly.interiorRings[0].segments.length).toBe(2)
     expect(poly.interiorRings[1].segments.length).toBe(3)
-    expect(poly.sweepEvents.length).toBe(12)
+    expect(poly.getSweepEvents().length).toBe(12)
   })
 
   describe('is inside? ', () => {
@@ -257,6 +257,6 @@ describe('MultiPoly', () => {
     ])
 
     expect(multipoly.polys.length).toBe(2)
-    expect(multipoly.sweepEvents.length).toBe(8)
+    expect(multipoly.getSweepEvents().length).toBe(8)
   })
 })

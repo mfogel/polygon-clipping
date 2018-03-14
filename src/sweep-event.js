@@ -59,10 +59,15 @@ class SweepEvent {
     return this.linkedEvents === other.linkedEvents
   }
 
-  get availableLinkedEvents () {
-    return this.linkedEvents.filter(
-      evt => evt !== this && evt.segment.isInResult && !evt.segment.ringOut
-    )
+  getAvailableLinkedEvents () {
+    const events = []
+    for (let i = 0; i < this.linkedEvents.length; i++) {
+      const evt = this.linkedEvents[i]
+      if (evt !== this && !evt.segment.ringOut && evt.segment.isInResult) {
+        events.push(evt)
+      }
+    }
+    return events
   }
 
   /**

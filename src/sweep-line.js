@@ -26,25 +26,41 @@ class SweepLine {
     const node = event.isLeft
       ? this.tree.insert(segment)
       : this.tree.find(segment)
-    const getKey = node => (node ? node.key : null)
-    const prevSeg = getKey(this.tree.prev(node))
-    const nextSeg = getKey(this.tree.next(node))
+
+    const prevNode = this.tree.prev(node)
+    const prevSeg = prevNode ? prevNode.key : null
+
+    const nextNode = this.tree.next(node)
+    const nextSeg = nextNode ? nextNode.key : null
 
     if (event.isLeft) {
       const mySplitters = []
 
+      // Check for intersections against the previous segment in the sweep line
       if (prevSeg) {
         const prevInters = segment.getIntersections(prevSeg)
-        newEvents.push(...this._possibleSplit(prevSeg, prevInters))
-        mySplitters.push(...prevInters.filter(pt => !segment.isAnEndpoint(pt)))
+        if (prevInters.length > 0) {
+          newEvents.push(...this._possibleSplit(prevSeg, prevInters))
+          for (let i = 0; i < prevInters.length; i++) {
+            const pt = prevInters[i]
+            if (!segment.isAnEndpoint(pt)) mySplitters.push(pt)
+          }
+        }
       }
 
+      // Check for intersections against the next segment in the sweep line
       if (nextSeg) {
         const nextInters = segment.getIntersections(nextSeg)
-        newEvents.push(...this._possibleSplit(nextSeg, nextInters))
-        mySplitters.push(...nextInters.filter(pt => !segment.isAnEndpoint(pt)))
+        if (nextInters.length > 0) {
+          newEvents.push(...this._possibleSplit(nextSeg, nextInters))
+          for (let i = 0; i < nextInters.length; i++) {
+            const pt = nextInters[i]
+            if (!segment.isAnEndpoint(pt)) mySplitters.push(pt)
+          }
+        }
       }
 
+      // did we get some intersections?
       if (newEvents.length > 0 || mySplitters.length > 0) {
         this.tree.remove(segment)
 
@@ -63,10 +79,14 @@ class SweepLine {
     } else {
       // event.isRight
 
+      // since we're about to be removed from the sweep line, check for
+      // intersections between our previous and next segments
       if (prevSeg && nextSeg) {
         const inters = prevSeg.getIntersections(nextSeg)
-        newEvents.push(...this._possibleSplit(prevSeg, inters))
-        newEvents.push(...this._possibleSplit(nextSeg, inters))
+        if (inters.length > 0) {
+          newEvents.push(...this._possibleSplit(prevSeg, inters))
+          newEvents.push(...this._possibleSplit(nextSeg, inters))
+        }
       }
 
       this.tree.remove(segment)
@@ -81,7 +101,12 @@ class SweepLine {
   }
 
   _possibleSplit (segment, intersections) {
-    const splitters = intersections.filter(pt => !segment.isAnEndpoint(pt))
+    const splitters = []
+    for (let i = 0; i < intersections.length; i++) {
+      const pt = intersections[i]
+      if (!segment.isAnEndpoint(pt)) splitters.push(pt)
+    }
+
     const newEvents = []
     if (splitters.length > 0) {
       this.tree.remove(segment)

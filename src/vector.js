@@ -1,4 +1,4 @@
-const { arePointsEqual, flpCompare } = require('./flp')
+const { flpCompare } = require('./flp')
 
 /* Cross Product of two vectors with first point at origin */
 const crossProduct = (a, b) => a[0] * b[1] - a[1] * b[0]

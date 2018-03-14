@@ -13,15 +13,20 @@ class Ring {
     this.poly = poly
   }
 
-  get geom () {
+  getGeom () {
     // Remove superfluous points (ie extra points along a straight line),
     // Note that the starting/ending point doesn't need to be considered,
     // as the sweep line trace gaurantees it to be not in the middle
     // of a straight segment.
-    const points = this._points.filter((pt, i, pts) => {
-      if (i === 0 || i === pts.length - 1) return true
-      return compareVectorAngles(pt, pts[i - 1], pts[i + 1]) !== 0
-    })
+    const points = [this._points[0]]
+    for (let i = 1; i < this._points.length - 1; i++) {
+      const prevPt = this._points[i - 1]
+      const pt = this._points[i]
+      const nextPt = this._points[i + 1]
+      if (compareVectorAngles(pt, prevPt, nextPt) === 0) continue
+      points.push(pt)
+    }
+    points.push(this._points[this._points.length - 1])
     return this.isExteriorRing ? points : points.reverse()
   }
 
@@ -58,7 +63,7 @@ class Ring {
       this._points.push(event.point)
       event.segment.registerRingOut(this)
 
-      const linkedEvents = event.availableLinkedEvents
+      const linkedEvents = event.getAvailableLinkedEvents()
       if (linkedEvents.length === 0) break
       if (linkedEvents.length === 1) nextEvent = linkedEvents[0].otherSE
       if (linkedEvents.length > 1) {
@@ -117,8 +122,12 @@ class Poly {
     ring.registerPoly(this)
   }
 
-  get geom () {
-    return [this.exteriorRing.geom, ...this.interiorRings.map(r => r.geom)]
+  getGeom () {
+    const geom = [this.exteriorRing.getGeom()]
+    for (let i = 0; i < this.interiorRings.length; i++) {
+      geom.push(this.interiorRings[i].getGeom())
+    }
+    return geom
   }
 }
 
@@ -128,20 +137,25 @@ class MultiPoly {
     this.polys = this._composePolys(rings)
   }
 
-  get geom () {
-    return [...this.polys.map(p => p.geom)]
+  getGeom () {
+    const geom = []
+    for (let i = 0; i < this.polys.length; i++) {
+      geom.push(this.polys[i].getGeom())
+    }
+    return geom
   }
 
   _composePolys (rings) {
     const polys = []
-    rings.forEach(ring => {
+    for (let i = 0; i < rings.length; i++) {
+      const ring = rings[i]
       if (ring.poly) return
       if (ring.isExteriorRing) polys.push(new Poly(ring))
       else {
         if (!ring.enclosingRing.poly) polys.push(new Poly(ring.enclosingRing))
         ring.enclosingRing.poly.addInterior(ring)
       }
-    })
+    }
     return polys
   }
 }

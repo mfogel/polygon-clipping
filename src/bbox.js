@@ -49,14 +49,16 @@ const doBboxesOverlap = (b1, b2) =>
 const getBboxOverlap = (b1, b2) => {
   if (!doBboxesOverlap(b1, b2)) return null
 
-  const xs = [b1[0][0], b1[1][0], b2[0][0], b2[1][0]]
-  const ys = [b1[0][1], b1[1][1], b2[0][1], b2[1][1]]
+  // find the middle two X values
+  const lowerX = b1[0][0] < b2[0][0] ? b2[0][0] : b1[0][0]
+  const upperX = b1[1][0] < b2[1][0] ? b1[1][0] : b2[1][0]
 
-  const compareNums = (a, b) => a - b
-  const [x1, x2] = xs.sort(compareNums).slice(1, 3)
-  const [y1, y2] = ys.sort(compareNums).slice(1, 3)
+  // find the middle two Y values
+  const lowerY = b1[0][1] < b2[0][1] ? b2[0][1] : b1[0][1]
+  const upperY = b1[1][1] < b2[1][1] ? b1[1][1] : b2[1][1]
 
-  return [[x1, y1], [x2, y2]]
+  // put those middle values together to get the overlap
+  return [[lowerX, lowerY], [upperX, upperY]]
 }
 
 /* Returns a list of unique corners.

@@ -54,8 +54,8 @@ const cleanMultiPoly = multipoly => {
 
 /* Clean ring:
  *  - remove duplicate points
- *  - remove colinear points TODO
- *  - remove rings with no area (less than 3 distinct points) TODO
+ *  - remove colinear points
+ *  - remove rings with no area (less than 3 distinct points)
  *  - close rings (last point should equal first)
  *
  * WARN: input modified directly */
@@ -95,16 +95,35 @@ const cleanRing = ring => {
 /* Scan the already-linked events of the segments for any
  * self-intersecting input rings (which are not supported) */
 const errorOnSelfIntersectingRings = segments => {
-  segments.forEach(seg => {
-    const events = [seg.leftSE, seg.rightSE]
-    events.forEach(evt => {
-      if (evt.linkedEvents.length <= 2) return
-      const fromSameRing = e => e.segment.ringIn === evt.segment.ringIn
-      if (evt.linkedEvents.filter(fromSameRing).length > 2) {
-        throw new Error(`Self-intersecting input ring found at [${evt.point}]`)
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]
+
+    // check left event for more than one other linked event from same ring
+    const leftLinkedEvents = seg.leftSE.linkedEvents
+    if (leftLinkedEvents.length > 2) {
+      let cntThisRing = 0
+      for (let j = 0; j < leftLinkedEvents.length; j++) {
+        if (leftLinkedEvents[j].segment.ringIn === seg.ringIn) cntThisRing++
       }
-    })
-  })
+      if (cntThisRing > 2) {
+        const pt = seg.leftSE.point
+        throw new Error(`Self-intersecting input ring found at [${pt}]`)
+      }
+    }
+
+    // check right event for more than one other linked event from same ring
+    const rightLinkedEvents = seg.rightSE.linkedEvents
+    if (rightLinkedEvents.length > 2) {
+      let cntThisRing = 0
+      for (let j = 0; j < rightLinkedEvents.length; j++) {
+        if (rightLinkedEvents[j].segment.ringIn === seg.ringIn) cntThisRing++
+      }
+      if (cntThisRing > 2) {
+        const pt = seg.rightSE.point
+        throw new Error(`Self-intersecting input ring found at [${pt}]`)
+      }
+    }
+  }
 }
 
 module.exports = {

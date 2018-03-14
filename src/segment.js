@@ -62,7 +62,10 @@ class Segment {
     this.ringIn = ring
     this.ringOut = null
 
-    const [lp, rp] = [point1, point2].sort(SweepEvent.comparePoints)
+    const ptCmp = SweepEvent.comparePoints(point1, point2)
+    const lp = ptCmp < 0 ? point1 : point2
+    const rp = ptCmp < 0 ? point2 : point1
+
     this.leftSE = new SweepEvent(lp, this)
     this.rightSE = new SweepEvent(rp, this)
 
@@ -75,10 +78,11 @@ class Segment {
   }
 
   get bbox () {
-    const ys = [this.leftSE.point[1], this.rightSE.point[1]]
+    const y1 = this.leftSE.point[1]
+    const y2 = this.rightSE.point[1]
     return [
-      [this.leftSE.point[0], Math.min(...ys)],
-      [this.rightSE.point[0], Math.max(...ys)]
+      [this.leftSE.point[0], y1 < y2 ? y1 : y2],
+      [this.rightSE.point[0], y1 > y2 ? y1 : y2]
     ]
   }
 
@@ -150,10 +154,18 @@ class Segment {
     //
     // In addition, in the case of a T-intersection, this ensures that the
     // interseciton returned matches exactly an endpoint - no rounding error.
-    const isAnIntersection = pt =>
-      (this.isAnEndpoint(pt) && other.isPointOn(pt)) ||
-      (other.isAnEndpoint(pt) && this.isPointOn(pt))
-    const intersections = getUniqueCorners(bboxOverlap).filter(isAnIntersection)
+    const intersections = []
+    const bboxCorners = getUniqueCorners(bboxOverlap)
+    for (let i = 0; i < bboxCorners.length; i++) {
+      const point = bboxCorners[i]
+      // test if this point is an intersection
+      if (
+        (this.isAnEndpoint(point) && other.isPointOn(point)) ||
+        (other.isAnEndpoint(point) && this.isPointOn(point))
+      ) {
+        intersections.push(point)
+      }
+    }
     if (intersections.length > 0) return intersections
 
     // General case for non-overlapping segments.
@@ -194,11 +206,12 @@ class Segment {
       (pt, i, pts) => i === 0 || SweepEvent.comparePoints(pts[i - 1], pt) !== 0
     )
 
-    points.forEach(pt => {
+    for (let i = 0; i < points.length; i++) {
+      const pt = points[i]
       if (this.isAnEndpoint(pt)) {
         throw new Error(`Cannot split segment upon endpoint at [${pt}]`)
       }
-    })
+    }
 
     const point = points.shift()
     const newSeg = this.clone()
@@ -221,35 +234,56 @@ class Segment {
     this.ringOut = ring
   }
 
+  /* The first segment previous segment chain that is in the result */
+  get prevInResult () {
+    const key = 'prevInResult'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
+  }
+
+  _prevInResult () {
+    let prev = this.prev
+    while (prev && !prev.isInResult) prev = prev.prev
+    return prev
+  }
+
+  /* The segments, including ourselves, for which we overlap perfectly */
   get coincidents () {
-    return this._getCached('coincidents')
+    const key = 'coincidents'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
   }
 
   _coincidents () {
-    const leftSegments = this.leftSE.linkedEvents
-      .filter(evt => evt.isLeft)
-      .map(evt => evt.segment)
-    const rightSegments = this.rightSE.linkedEvents
-      .filter(evt => evt.isRight)
-      .map(evt => evt.segment)
-    const coincidents = leftSegments.filter(seg => rightSegments.includes(seg))
+    // a coincident will have both left and right sweepEvents linked with us
+    const coincidents = []
+    const leftLinkedEvents = this.leftSE.linkedEvents
+    const rightLinkedEvents = this.rightSE.linkedEvents
+    for (let i = 0; i < leftLinkedEvents.length; i++) {
+      const leftSE = leftLinkedEvents[i]
+      if (!leftSE.isLeft) continue
+      if (leftSE.segment.rightSE.linkedEvents !== rightLinkedEvents) continue
+      coincidents.push(leftSE.segment)
+    }
 
-    // put the 'winner' at the front
-    // arbitary - winner is the one with lowest ringId
-    coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
+    if (coincidents.length > 0) {
+      // put the 'winner' at the front
+      // arbitary - winner is the one with lowest ringId
+      coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
 
-    // set this in all our coincident's caches so they don't have to calc it
-    coincidents.forEach(c => (c._cache['coincidents'] = coincidents))
+      // set this in all our coincident's caches so they don't have to calc it
+      for (let i = 0; i < coincidents.length; i++) {
+        coincidents[i]._cache['coincidents'] = coincidents
+      }
+    }
     return coincidents
-  }
-
-  get isCoincidenceWinner () {
-    return this === this.coincidents[0]
   }
 
   /* Does the sweep line, when it intersects this segment, enter the ring? */
   get sweepLineEntersRing () {
-    return this._getCached('sweepLineEntersRing')
+    const key = 'sweepLineEntersRing'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
   }
 
   _sweepLineEntersRing () {
@@ -273,108 +307,156 @@ class Segment {
 
   /* Array of input rings this segment is inside of (not on boundary) */
   get ringsInsideOf () {
-    return this._getCached('ringsInsideOf')
+    const key = 'ringsInsideOf'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
   }
 
   _ringsInsideOf () {
+    if (!this.prev) return []
+
+    // coincidents always share the same rings. Return same array to save mem
+    if (this.isCoincidentWith(this.prev)) return this.prev.ringsInsideOf
+
     let rings = []
-    if (this.prev) {
-      // coincidents always share the same rings. Return same array to save mem
-      if (this.isCoincidentWith(this.prev)) return this.prev.ringsInsideOf
-      rings = [...this.prev.ringsInsideOf] // going to edit array, copy by value
+    let prevRingsInsideOf = this.prev.ringsInsideOf
+    let prevRingsEntering = this.prev.getRingsEntering()
+    let ringsExiting = this.getRingsExiting()
+
+    // rings our prev was inside of all count, except those we're exiting
+    for (let i = 0; i < prevRingsInsideOf.length; i++) {
+      const ring = prevRingsInsideOf[i]
+      if (!ringsExiting.includes(ring)) rings.push(ring)
     }
 
-    // remove any we exited, add any we entered
-    if (this.prev) {
-      rings = rings.filter(r => !this.prev.ringsExiting.includes(r))
-      rings.push(...this.prev.ringsEntering)
+    // rings our prev was entering of all count, except those we're exiting
+    for (let i = 0; i < prevRingsEntering.length; i++) {
+      const ring = prevRingsEntering[i]
+      if (!ringsExiting.includes(ring)) rings.push(ring)
     }
 
-    // remove any that we're actually on the boundary of
-    return rings.filter(r => !this.ringsOnEdgeOf.includes(r))
+    return rings
   }
 
   /* Array of input rings this segment is on boundary of */
-  get ringsOnEdgeOf () {
-    return this.coincidents.map(seg => seg.ringIn)
+  getRingsOnEdgeOf () {
+    const rings = []
+    for (let i = 0; i < this.coincidents.length; i++) {
+      rings.push(this.coincidents[i].ringIn)
+    }
+    return rings
   }
 
   /* Array of input rings this segment is on boundary of,
    * and for which the sweep line enters when intersecting there */
-  get ringsEntering () {
-    return this.coincidents
-      .filter(seg => seg.sweepLineEntersRing)
-      .map(seg => seg.ringIn)
+  getRingsEntering () {
+    const rings = []
+    for (let i = 0; i < this.coincidents.length; i++) {
+      const segment = this.coincidents[i]
+      if (!segment.sweepLineEntersRing) continue
+      rings.push(segment.ringIn)
+    }
+    return rings
   }
 
   /* Array of input rings this segment is on boundary of,
    * and for which the sweep line exits when intersecting there */
-  get ringsExiting () {
-    return this.coincidents
-      .filter(seg => !seg.sweepLineEntersRing)
-      .map(seg => seg.ringIn)
+  getRingsExiting () {
+    const rings = []
+    for (let i = 0; i < this.coincidents.length; i++) {
+      const segment = this.coincidents[i]
+      if (segment.sweepLineEntersRing) continue
+      rings.push(segment.ringIn)
+    }
+    return rings
   }
 
   /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
   get isValidEdgeForPoly () {
-    return this._getCached('isValidEdgeForPoly')
+    const key = 'isValidEdgeForPoly'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
   }
 
   _isValidEdgeForPoly () {
-    const args = [this.ringsEntering, this.ringsExiting]
+    const args = [this.getRingsEntering(), this.getRingsExiting()]
     if (!this.sweepLineEntersRing) args.reverse()
     return this.ringIn.isValid(...args, this.ringsInsideOf)
   }
 
   /* Array of polys this segment is inside of */
-  get polysInsideOf () {
-    const polys = Array.from(new Set(this.ringsInsideOf.map(r => r.poly)))
-    return polys.filter(p => p.isInside(this.ringsOnEdgeOf, this.ringsInsideOf))
+  getPolysInsideOf () {
+    const polys = []
+    for (let i = 0; i < this.ringsInsideOf.length; i++) {
+      const poly = this.ringsInsideOf[i].poly
+      if (polys.includes(poly)) continue
+      if (!poly.isInside(this.getRingsOnEdgeOf(), this.ringsInsideOf)) continue
+      polys.push(poly)
+    }
+    return polys
   }
 
   /* Array of multipolys this segment is inside of */
-  get multiPolysInsideOf () {
-    return Array.from(new Set(this.polysInsideOf.map(p => p.multiPoly)))
-  }
-
-  /* The first segment previous segment chain that is in the result */
-  get prevInResult () {
-    let prev = this.prev
-    while (prev && !prev.isInResult) prev = prev.prev
-    return prev
+  getMultiPolysInsideOf () {
+    const polysInsideOf = this.getPolysInsideOf()
+    const mps = []
+    for (let i = 0; i < polysInsideOf.length; i++) {
+      const mp = polysInsideOf[i].multiPoly
+      if (!mps.includes(mp)) mps.push(mp)
+    }
+    return mps
   }
 
   /* The multipolys on one side of us */
-  get multiPolysSLPEnters () {
-    const onlyEnters = this.coincidents
-      .filter(c => c.sweepLineEntersPoly)
-      .map(c => c.ringIn.poly.multiPoly)
-    return Array.from(new Set([...onlyEnters, ...this.multiPolysInsideOf]))
+  getMultiPolysSLPEnters (multiPolysInsideOf) {
+    // start with the multipolys we're fully inside
+    const mps = [...multiPolysInsideOf]
+    // add the multipolys we have the sweep line entering
+    for (let i = 0; i < this.coincidents.length; i++) {
+      const seg = this.coincidents[i]
+      if (!seg.sweepLineEntersPoly) continue
+      const mp = seg.ringIn.poly.multiPoly
+      if (!mps.includes(mp)) mps.push(mp)
+    }
+    return mps
   }
 
   /* The multipolys on the other side of us */
-  get multiPolysSLPExits () {
-    const onlyExits = this.coincidents
-      .filter(c => c.sweepLineExitsPoly)
-      .map(c => c.ringIn.poly.multiPoly)
-    return Array.from(new Set([...onlyExits, ...this.multiPolysInsideOf]))
+  getMultiPolysSLPExits (multiPolysInsideOf) {
+    // start with the multipolys we're fully inside
+    const mps = [...multiPolysInsideOf]
+    // add the multipolys we have the sweep line entering
+    for (let i = 0; i < this.coincidents.length; i++) {
+      const seg = this.coincidents[i]
+      if (!seg.sweepLineExitsPoly) continue
+      const mp = seg.ringIn.poly.multiPoly
+      if (!mps.includes(mp)) mps.push(mp)
+    }
+    return mps
   }
 
   /* Is this segment part of the final result? */
   get isInResult () {
-    return this._getCached('isInResult')
+    const key = 'isInResult'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
   }
 
   _isInResult () {
-    if (!this.isCoincidenceWinner) return false
+    // if it's not the coincidence winner, it's not in the resul
+    if (this !== this.coincidents[0]) return false
+
+    const multiPolysInsideOf = this.getMultiPolysInsideOf()
+    const multiPolysSLPEnters = this.getMultiPolysSLPEnters(multiPolysInsideOf)
+    const multiPolysSLPExits = this.getMultiPolysSLPExits(multiPolysInsideOf)
 
     switch (operation.type) {
       case operation.types.UNION:
         // UNION - included iff:
         //  * On one side of us there is 0 poly interiors AND
         //  * On the other side there is 1 or more.
-        const noEnters = this.multiPolysSLPEnters.length === 0
-        const noExits = this.multiPolysSLPExits.length === 0
+        const noEnters = multiPolysSLPEnters.length === 0
+        const noExits = multiPolysSLPExits.length === 0
         return noEnters !== noExits
 
       case operation.types.INTERSECTION:
@@ -383,8 +465,8 @@ class Segment {
         //  * on the other side of us, not all multipolys are repsented
         //    with poly interiors
         const sideCounts = [
-          this.multiPolysSLPEnters.length,
-          this.multiPolysSLPExits.length
+          multiPolysSLPEnters.length,
+          multiPolysSLPExits.length
         ]
         const most = Math.max(...sideCounts)
         const least = Math.min(...sideCounts)
@@ -395,7 +477,7 @@ class Segment {
         //  * the difference between the number of multipolys represented
         //    with poly interiors on our two sides is an odd number
         const diff = Math.abs(
-          this.multiPolysSLPEnters.length - this.multiPolysSLPExits.length
+          multiPolysSLPEnters.length - multiPolysSLPExits.length
         )
         return diff % 2 === 1
 
@@ -404,8 +486,8 @@ class Segment {
         //  * on exactly one side, we have just the subject
         const isJustSubject = mps => mps.length === 1 && mps[0].isSubject
         return (
-          isJustSubject(this.multiPolysSLPEnters) !==
-          isJustSubject(this.multiPolysSLPExits)
+          isJustSubject(multiPolysSLPEnters) !==
+          isJustSubject(multiPolysSLPExits)
         )
 
       default:
@@ -415,14 +497,6 @@ class Segment {
 
   _clearCache () {
     this._cache = {}
-  }
-
-  _getCached (propName, calcMethod) {
-    // if this._cache[something] isn't set, fill it with this._something()
-    if (this._cache[propName] === undefined) {
-      this._cache[propName] = this[`_${propName}`].bind(this)()
-    }
-    return this._cache[propName]
   }
 }
 

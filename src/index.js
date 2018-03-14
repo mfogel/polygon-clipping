@@ -6,16 +6,26 @@ const operation = require('./operation')
 const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, ...geoms) => {
-  geoms.forEach(g => cleanInput.forceMultiPoly(g))
-  geoms.forEach(g => cleanInput.cleanMultiPoly(g))
+  for (let i = 0; i < geoms.length; i++) {
+    cleanInput.forceMultiPoly(geoms[i])
+    cleanInput.cleanMultiPoly(geoms[i])
+  }
 
-  const multipolys = geoms.map(geom => new geomIn.MultiPoly(geom))
+  const multipolys = []
+  for (let i = 0; i < geoms.length; i++) {
+    multipolys.push(new geomIn.MultiPoly(geoms[i]))
+  }
   multipolys[0].markAsSubject()
   operation.register(operationType, multipolys.length)
 
   /* Put segment endpoints in a priority queue */
   const eventQueue = new EventQueue()
-  multipolys.forEach(mp => mp.sweepEvents.forEach(se => eventQueue.push(se)))
+  for (let i = 0; i < multipolys.length; i++) {
+    const sweepEvents = multipolys[i].getSweepEvents()
+    for (let j = 0; j < sweepEvents.length; j++) {
+      eventQueue.push(sweepEvents[j])
+    }
+  }
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
@@ -28,14 +38,15 @@ const doIt = (operationType, ...geoms) => {
 
   /* Collect the segments we're keeping in a series of rings */
   const ringsOut = []
-  sweepLine.segments.forEach(segment => {
-    if (!segment.isInResult || segment.ringOut) return
+  for (let i = 0; i < sweepLine.segments.length; i++) {
+    const segment = sweepLine.segments[i]
+    if (!segment.isInResult || segment.ringOut) continue
     ringsOut.push(new geomOut.Ring(segment))
-  })
+  }
 
   /* Compile those rings into a multipolygon */
   const result = new geomOut.MultiPoly(ringsOut)
-  return result.geom
+  return result.getGeom()
 }
 
 module.exports = doIt

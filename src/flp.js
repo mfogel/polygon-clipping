@@ -6,7 +6,15 @@
 
 /* Is a floating-point equal to b? */
 const flpEQ = (a, b) => {
-  if (Math.abs(a) < Number.EPSILON && Math.abs(b) < Number.EPSILON) return true
+  // are they both 0?
+  if (
+    -Number.EPSILON < a &&
+    a < Number.EPSILON &&
+    -Number.EPSILON < b &&
+    b < Number.EPSILON
+  ) {
+    return true
+  }
   return (a - b) * (a - b) < Number.EPSILON * Number.EPSILON * a * b
 }
 

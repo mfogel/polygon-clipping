@@ -76,8 +76,8 @@ describe('sweep event link', () => {
     const se2 = new SweepEvent()
     expect(se1.isLinkedTo(se2)).toBeFalsy()
     expect(se2.isLinkedTo(se1)).toBeFalsy()
-    expect(se1.availableLinkedEvents).toEqual([])
-    expect(se2.availableLinkedEvents).toEqual([])
+    expect(se1.getAvailableLinkedEvents()).toEqual([])
+    expect(se2.getAvailableLinkedEvents()).toEqual([])
   })
 
   test('cannot link already linked event', () => {
@@ -98,7 +98,7 @@ describe('sweep event link', () => {
 
     se.link(seAlreadyProcessed)
     se.link(seNotInResult)
-    expect(se.availableLinkedEvents).toEqual([])
+    expect(se.getAvailableLinkedEvents()).toEqual([])
   })
 
   test('available linked events show up', () => {
@@ -110,7 +110,7 @@ describe('sweep event link', () => {
 
     se.link(seOkay1)
     se.link(seOkay2)
-    expect(se.availableLinkedEvents).toEqual([seOkay1, seOkay2])
+    expect(se.getAvailableLinkedEvents()).toEqual([seOkay1, seOkay2])
   })
 
   test('link goes both ways', () => {
@@ -122,8 +122,8 @@ describe('sweep event link', () => {
     seOkay1.link(seOkay2)
     expect(seOkay1.isLinkedTo(seOkay2)).toBeTruthy()
     expect(seOkay2.isLinkedTo(seOkay1)).toBeTruthy()
-    expect(seOkay1.availableLinkedEvents).toEqual([seOkay2])
-    expect(seOkay2.availableLinkedEvents).toEqual([seOkay1])
+    expect(seOkay1.getAvailableLinkedEvents()).toEqual([seOkay2])
+    expect(seOkay2.getAvailableLinkedEvents()).toEqual([seOkay1])
   })
 })
 
