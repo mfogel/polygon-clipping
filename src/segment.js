@@ -8,8 +8,12 @@ class Segment {
   static compare (a, b) {
     if (a === b) return 0
 
-    const [[alx, aly], [blx, bly]] = [a.leftSE.point, b.leftSE.point]
-    const [arx, brx] = [a.rightSE.point[0], b.rightSE.point[0]]
+    const alx = a.leftSE.point[0]
+    const aly = a.leftSE.point[1]
+    const blx = b.leftSE.point[0]
+    const bly = b.leftSE.point[1]
+    const arx = a.rightSE.point[0]
+    const brx = b.rightSE.point[0]
 
     // check if they're even in the same vertical plane
     if (flpLT(brx, alx)) return 1
@@ -115,13 +119,6 @@ class Segment {
     return isInBbox(this.bbox, point) && this.comparePoint(point) === 0
   }
 
-  isCoincidentWith (other) {
-    return (
-      this.leftSE.isLinkedTo(other.leftSE) &&
-      this.rightSE.isLinkedTo(other.rightSE)
-    )
-  }
-
   /* Compare this segment with a point. Return value indicates
    *    1: point is below segment
    *    0: point is colinear to segment
@@ -171,8 +168,10 @@ class Segment {
     // General case for non-overlapping segments.
     // This algorithm is based on Schneider and Eberly.
     // http://www.cimec.org.ar/~ncalvo/Schneider_Eberly.pdf - pg 244
-    const [al, bl] = [this.leftSE.point, other.leftSE.point]
-    const [va, vb] = [this.vector, other.vector]
+    const al = this.leftSE.point
+    const bl = other.leftSE.point
+    const va = this.vector
+    const vb = other.vector
     const ve = [bl[0] - al[0], bl[1] - al[1]]
     const kross = crossProduct(va, vb)
 
@@ -184,8 +183,10 @@ class Segment {
     if (flpLT(t, 0) || flpLT(1, t)) return []
 
     // intersection is in a midpoint of both lines, let's average them
-    const [aix, aiy] = [al[0] + s * va[0], al[1] + s * va[1]]
-    const [bix, biy] = [bl[0] + t * vb[0], bl[1] + t * vb[1]]
+    const aix = al[0] + s * va[0]
+    const aiy = al[1] + s * va[1]
+    const bix = bl[0] + t * vb[0]
+    const biy = bl[1] + t * vb[1]
     return [[(aix + bix) / 2, (aiy + biy) / 2]]
   }
 
@@ -221,7 +222,12 @@ class Segment {
     this.rightSE = new SweepEvent(point, this)
     const newEvents = [this.rightSE, newSeg.leftSE]
 
-    if (points.length > 0) newEvents.push(...newSeg.split(points))
+    if (points.length > 0) {
+      const moreNewEvents = newSeg.split(points)
+      for (let i = 0; i < moreNewEvents.length; i++) {
+        newEvents.push(moreNewEvents[i])
+      }
+    }
     return newEvents
   }
 
@@ -316,7 +322,9 @@ class Segment {
     if (!this.prev) return []
 
     // coincidents always share the same rings. Return same array to save mem
-    if (this.isCoincidentWith(this.prev)) return this.prev.ringsInsideOf
+    if (this.coincidents === this.prev.coincidents) {
+      return this.prev.ringsInsideOf
+    }
 
     let rings = []
     let prevRingsInsideOf = this.prev.ringsInsideOf
@@ -379,30 +387,27 @@ class Segment {
   }
 
   _isValidEdgeForPoly () {
-    const args = [this.getRingsEntering(), this.getRingsExiting()]
-    if (!this.sweepLineEntersRing) args.reverse()
-    return this.ringIn.isValid(...args, this.ringsInsideOf)
-  }
-
-  /* Array of polys this segment is inside of */
-  getPolysInsideOf () {
-    const polys = []
-    for (let i = 0; i < this.ringsInsideOf.length; i++) {
-      const poly = this.ringsInsideOf[i].poly
-      if (polys.includes(poly)) continue
-      if (!poly.isInside(this.getRingsOnEdgeOf(), this.ringsInsideOf)) continue
-      polys.push(poly)
+    // SLER: sweep line entering orientation
+    let sameSLER
+    let diffSLER
+    if (this.sweepLineEntersRing) {
+      sameSLER = this.getRingsEntering()
+      diffSLER = this.getRingsExiting()
+    } else {
+      diffSLER = this.getRingsEntering()
+      sameSLER = this.getRingsExiting()
     }
-    return polys
+    return this.ringIn.isValid(sameSLER, diffSLER, this.ringsInsideOf)
   }
 
   /* Array of multipolys this segment is inside of */
   getMultiPolysInsideOf () {
-    const polysInsideOf = this.getPolysInsideOf()
     const mps = []
-    for (let i = 0; i < polysInsideOf.length; i++) {
-      const mp = polysInsideOf[i].multiPoly
-      if (!mps.includes(mp)) mps.push(mp)
+    for (let i = 0; i < this.ringsInsideOf.length; i++) {
+      const poly = this.ringsInsideOf[i].poly
+      if (mps.includes(poly.multiPoly)) continue
+      if (!poly.isInside(this.getRingsOnEdgeOf(), this.ringsInsideOf)) continue
+      mps.push(poly.multiPoly)
     }
     return mps
   }
@@ -410,7 +415,7 @@ class Segment {
   /* The multipolys on one side of us */
   getMultiPolysSLPEnters (multiPolysInsideOf) {
     // start with the multipolys we're fully inside
-    const mps = [...multiPolysInsideOf]
+    const mps = multiPolysInsideOf.slice()
     // add the multipolys we have the sweep line entering
     for (let i = 0; i < this.coincidents.length; i++) {
       const seg = this.coincidents[i]
@@ -424,7 +429,7 @@ class Segment {
   /* The multipolys on the other side of us */
   getMultiPolysSLPExits (multiPolysInsideOf) {
     // start with the multipolys we're fully inside
-    const mps = [...multiPolysInsideOf]
+    const mps = multiPolysInsideOf.slice()
     // add the multipolys we have the sweep line entering
     for (let i = 0; i < this.coincidents.length; i++) {
       const seg = this.coincidents[i]
@@ -464,12 +469,15 @@ class Segment {
         //  * on one side of us all multipolys are rep. with poly interiors AND
         //  * on the other side of us, not all multipolys are repsented
         //    with poly interiors
-        const sideCounts = [
-          multiPolysSLPEnters.length,
-          multiPolysSLPExits.length
-        ]
-        const most = Math.max(...sideCounts)
-        const least = Math.min(...sideCounts)
+        let least
+        let most
+        if (multiPolysSLPEnters.length < multiPolysSLPExits.length) {
+          least = multiPolysSLPEnters.length
+          most = multiPolysSLPExits.length
+        } else {
+          least = multiPolysSLPExits.length
+          most = multiPolysSLPEnters.length
+        }
         return most === operation.numMultiPolys && least < most
 
       case operation.types.XOR:

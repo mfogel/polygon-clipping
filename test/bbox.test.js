@@ -2,38 +2,10 @@
 
 const {
   doBboxesOverlap,
-  getBbox,
   getBboxOverlap,
   getUniqueCorners,
   isInBbox
 } = require('../src/bbox')
-
-describe('get bbox', () => {
-  test('no points', () => {
-    expect(() => getBbox()).toThrow()
-  })
-
-  test('one point', () => {
-    const p1 = [3, 4]
-    const bbox = [[3, 4], [3, 4]]
-    expect(getBbox(p1)).toEqual(bbox)
-  })
-
-  test('two points', () => {
-    const p1 = [3, 4]
-    const p2 = [-4, 8]
-    const bbox = [[-4, 4], [3, 8]]
-    expect(getBbox(p1, p2)).toEqual(bbox)
-  })
-
-  test('three points', () => {
-    const p1 = [3, 4]
-    const p2 = [-4, 8]
-    const p3 = [2, -3]
-    const bbox = [[-4, -3], [3, 8]]
-    expect(getBbox(p1, p2, p3)).toEqual(bbox)
-  })
-})
 
 describe('is in bbox', () => {
   test('outside', () => {

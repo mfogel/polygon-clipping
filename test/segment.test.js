@@ -192,30 +192,6 @@ describe('is Point On', () => {
   })
 })
 
-describe('is coincident with', () => {
-  test('yup', () => {
-    const a = new Segment([0, -1], [1, 0])
-    const b = new Segment([0, -1], [1, 0])
-    a.leftSE.link(b.leftSE)
-    a.rightSE.link(b.rightSE)
-    expect(a.isCoincidentWith(b)).toBeTruthy()
-  })
-
-  test('no - only left event linked', () => {
-    const a = new Segment([0, -1], [1, 0])
-    const b = new Segment([0, -1], [1, 0])
-    a.leftSE.link(b.leftSE)
-    expect(a.isCoincidentWith(b)).toBeFalsy()
-  })
-
-  test('no - only right event linked', () => {
-    const a = new Segment([0, -1], [1, 0])
-    const b = new Segment([0, -1], [1, 0])
-    a.rightSE.link(b.rightSE)
-    expect(a.isCoincidentWith(b)).toBeFalsy()
-  })
-})
-
 describe('comparison with point', () => {
   test('general', () => {
     const s1 = new Segment([0, 0], [1, 1])

@@ -19,7 +19,8 @@ class Ring {
     const sweepEvents = []
     for (let i = 0; i < this.segments.length; i++) {
       const segment = this.segments[i]
-      sweepEvents.push(segment.leftSE, segment.rightSE)
+      sweepEvents.push(segment.leftSE)
+      sweepEvents.push(segment.rightSE)
     }
     return sweepEvents
   }
@@ -106,7 +107,7 @@ class Poly {
       const ring = ringsInsideOf[i]
       if (ring.poly !== this) continue
       if (ring.isInterior) return false
-      if (ring.isExterior) isInsideExterior = true
+      isInsideExterior = true
     }
     return isInsideExterior
   }

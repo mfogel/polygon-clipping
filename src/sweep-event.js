@@ -14,10 +14,11 @@ class SweepEvent {
 
     // favor events where the line segment is lower
     const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
-    if (pointSegCmp !== 0) return -1 * pointSegCmp
+    if (pointSegCmp !== 0) return pointSegCmp < 0 ? 1 : -1
 
     // as a tie-breaker, favor lower segment creation id
-    const [aId, bId] = [a.segment.ringIn.id, b.segment.ringIn.id]
+    const aId = a.segment.ringIn.id
+    const bId = b.segment.ringIn.id
     if (aId !== bId) return aId < bId ? -1 : 1
 
     // NOTE:  We don't sort on segment length because that changes
@@ -51,12 +52,10 @@ class SweepEvent {
     if (other.linkedEvents.length > 1) {
       throw new Error('Cannot link an already-linked event')
     }
-    this.linkedEvents.push(...other.linkedEvents)
+    for (let i = 0; i < other.linkedEvents.length; i++) {
+      this.linkedEvents.push(other.linkedEvents[i])
+    }
     other.linkedEvents = this.linkedEvents
-  }
-
-  isLinkedTo (other) {
-    return this.linkedEvents === other.linkedEvents
   }
 
   getAvailableLinkedEvents () {

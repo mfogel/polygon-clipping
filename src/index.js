@@ -5,17 +5,19 @@ const geomOut = require('./geom-out')
 const operation = require('./operation')
 const SweepLine = require('./sweep-line')
 
-const doIt = (operationType, ...geoms) => {
-  for (let i = 0; i < geoms.length; i++) {
-    cleanInput.forceMultiPoly(geoms[i])
-    cleanInput.cleanMultiPoly(geoms[i])
+const doIt = (operationType, geom, moreGeoms) => {
+  cleanInput.forceMultiPoly(geom)
+  cleanInput.cleanMultiPoly(geom)
+  for (let i = 0; i < moreGeoms.length; i++) {
+    cleanInput.forceMultiPoly(moreGeoms[i])
+    cleanInput.cleanMultiPoly(moreGeoms[i])
   }
 
-  const multipolys = []
-  for (let i = 0; i < geoms.length; i++) {
-    multipolys.push(new geomIn.MultiPoly(geoms[i]))
-  }
+  const multipolys = [new geomIn.MultiPoly(geom)]
   multipolys[0].markAsSubject()
+  for (let i = 0; i < moreGeoms.length; i++) {
+    multipolys.push(new geomIn.MultiPoly(moreGeoms[i]))
+  }
   operation.register(operationType, multipolys.length)
 
   /* Put segment endpoints in a priority queue */
@@ -30,7 +32,10 @@ const doIt = (operationType, ...geoms) => {
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
   while (!eventQueue.isEmpty) {
-    eventQueue.push(...sweepLine.process(eventQueue.pop()))
+    const newEvents = sweepLine.process(eventQueue.pop())
+    for (let i = 0; i < newEvents.length; i++) {
+      eventQueue.push(newEvents[i])
+    }
   }
 
   /* Self-intersecting input rings are ambigious */

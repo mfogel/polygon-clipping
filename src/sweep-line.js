@@ -40,7 +40,10 @@ class SweepLine {
       if (prevSeg) {
         const prevInters = segment.getIntersections(prevSeg)
         if (prevInters.length > 0) {
-          newEvents.push(...this._possibleSplit(prevSeg, prevInters))
+          const newEventsFromSplit = this._possibleSplit(prevSeg, prevInters)
+          for (let i = 0; i < newEventsFromSplit.length; i++) {
+            newEvents.push(newEventsFromSplit[i])
+          }
           for (let i = 0; i < prevInters.length; i++) {
             const pt = prevInters[i]
             if (!segment.isAnEndpoint(pt)) mySplitters.push(pt)
@@ -52,7 +55,10 @@ class SweepLine {
       if (nextSeg) {
         const nextInters = segment.getIntersections(nextSeg)
         if (nextInters.length > 0) {
-          newEvents.push(...this._possibleSplit(nextSeg, nextInters))
+          const newEventsFromSplit = this._possibleSplit(nextSeg, nextInters)
+          for (let i = 0; i < newEventsFromSplit.length; i++) {
+            newEvents.push(newEventsFromSplit[i])
+          }
           for (let i = 0; i < nextInters.length; i++) {
             const pt = nextInters[i]
             if (!segment.isAnEndpoint(pt)) mySplitters.push(pt)
@@ -65,7 +71,10 @@ class SweepLine {
         this.tree.remove(segment)
 
         if (mySplitters.length > 0) {
-          newEvents.push(...segment.split(mySplitters))
+          const newEventsFromSplit = segment.split(mySplitters)
+          for (let i = 0; i < newEventsFromSplit.length; i++) {
+            newEvents.push(newEventsFromSplit[i])
+          }
         }
 
         // Make sure sweep line ordering is totally consistent for later
@@ -84,8 +93,14 @@ class SweepLine {
       if (prevSeg && nextSeg) {
         const inters = prevSeg.getIntersections(nextSeg)
         if (inters.length > 0) {
-          newEvents.push(...this._possibleSplit(prevSeg, inters))
-          newEvents.push(...this._possibleSplit(nextSeg, inters))
+          let newEventsFromSplit = this._possibleSplit(prevSeg, inters)
+          for (let i = 0; i < newEventsFromSplit.length; i++) {
+            newEvents.push(newEventsFromSplit[i])
+          }
+          newEventsFromSplit = this._possibleSplit(nextSeg, inters)
+          for (let i = 0; i < newEventsFromSplit.length; i++) {
+            newEvents.push(newEventsFromSplit[i])
+          }
         }
       }
 
@@ -107,12 +122,12 @@ class SweepLine {
       if (!segment.isAnEndpoint(pt)) splitters.push(pt)
     }
 
-    const newEvents = []
+    let newEvents
     if (splitters.length > 0) {
       this.tree.remove(segment)
-      newEvents.push(...segment.split(splitters))
+      newEvents = segment.split(splitters)
       this.tree.insert(segment)
-    }
+    } else newEvents = []
     return newEvents
   }
 }

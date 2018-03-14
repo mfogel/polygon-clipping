@@ -6,16 +6,14 @@ class EventQueue {
     this.tinyQueue = new TinyQueue(null, comparator)
   }
 
-  push (...events) {
-    for (let i = 0; i < events.length; i++) {
-      this.tinyQueue.push(events[i])
-    }
+  push (evt) {
+    this.tinyQueue.push(evt)
   }
 
   pop () {
-    const event = this.tinyQueue.pop()
-    if (event === undefined) throw new Error('Cannot pop() from empty queue')
-    return event
+    const evt = this.tinyQueue.pop()
+    if (evt === undefined) throw new Error('Cannot pop() from empty queue')
+    return evt
   }
 
   get isEmpty () {

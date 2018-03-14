@@ -45,6 +45,16 @@ describe('end to end error situations', () => {
       expect(() => xor(multipoly)).toThrow()
       expect(() => difference(multipoly)).toThrow()
     })
+
+    test('self intersect on left endpoints', () => {
+      const multipoly = [
+        [[[0, 0], [4, 0], [4, 4], [0, 0], [3, 1], [2, 1], [0, 0]]]
+      ]
+      expect(() => union(multipoly)).toThrow()
+      expect(() => intersection(multipoly)).toThrow()
+      expect(() => xor(multipoly)).toThrow()
+      expect(() => difference(multipoly)).toThrow()
+    })
   })
 
   describe('interior self-intersects rings', () => {

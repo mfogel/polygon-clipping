@@ -17,12 +17,14 @@ describe('event queue', () => {
     const swe1 = new SweepEvent([1, 5])
     const swe2 = new SweepEvent([5, 5])
 
-    queue.push(swe1, swe2)
+    queue.push(swe1)
+    queue.push(swe2)
     expect(queue.pop()).toBe(swe1)
     expect(queue.pop()).toBe(swe2)
     expect(queue.isEmpty).toBeTruthy()
 
-    queue.push(swe2, swe1)
+    queue.push(swe2)
+    queue.push(swe1)
     expect(queue.pop()).toBe(swe1)
     expect(queue.pop()).toBe(swe2)
     expect(queue.isEmpty).toBeTruthy()

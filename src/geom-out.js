@@ -54,8 +54,11 @@ class Ring {
    * segments that will be part of this ring */
   _claimSegments () {
     const segment = this.firstSegment
-    let [prevEvent, event, nextEvent] = [null, segment.leftSE, segment.rightSE]
+    let prevEvent = null
+    let event = segment.leftSE
+    let nextEvent = segment.rightSE
     this._points = [event.point]
+
     while (true) {
       prevEvent = event
       event = nextEvent

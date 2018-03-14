@@ -14,8 +14,7 @@ const forceMultiPoly = geom => {
     }
     if (typeof geom[0][0][0] === 'number') {
       // polygon
-      geom[0] = [...geom]
-      geom.length = 1
+      geom.unshift(geom.splice(0))
       return
     }
   }
@@ -62,7 +61,7 @@ const cleanMultiPoly = multipoly => {
 const cleanRing = ring => {
   if (ring.length === 0) return
   if (!arePointsEqual(ring[0], ring[ring.length - 1])) {
-    ring.push([...ring[0]]) // copy by value
+    ring.push([ring[0][0], ring[0][1]]) // copy by value
   }
 
   const isPointUncessary = (prevPt, pt, nextPt) =>
@@ -72,15 +71,13 @@ const cleanRing = ring => {
 
   let i = 1
   while (i < ring.length - 1) {
-    const [prevPt, pt, nextPt] = [ring[i - 1], ring[i], ring[i + 1]]
-    if (isPointUncessary(prevPt, pt, nextPt)) ring.splice(i, 1)
+    if (isPointUncessary(ring[i - 1], ring[i], ring[i + 1])) ring.splice(i, 1)
     else i++
   }
 
   // check the first/last point as well
   while (ring.length > 2) {
-    const [prevPt, pt, nextPt] = [ring[ring.length - 2], ring[0], ring[1]]
-    if (!isPointUncessary(prevPt, pt, nextPt)) break
+    if (!isPointUncessary(ring[ring.length - 2], ring[0], ring[1])) break
     ring.splice(0, 1)
     ring.splice(ring.length - 1, 1)
     ring.push(ring[0])

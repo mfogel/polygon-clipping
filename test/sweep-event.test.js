@@ -74,8 +74,6 @@ describe('sweep event link', () => {
   test('no linked events', () => {
     const se1 = new SweepEvent()
     const se2 = new SweepEvent()
-    expect(se1.isLinkedTo(se2)).toBeFalsy()
-    expect(se2.isLinkedTo(se1)).toBeFalsy()
     expect(se1.getAvailableLinkedEvents()).toEqual([])
     expect(se2.getAvailableLinkedEvents()).toEqual([])
   })
@@ -120,8 +118,6 @@ describe('sweep event link', () => {
     seOkay2.segment = { isInResult: true, ringOut: null }
 
     seOkay1.link(seOkay2)
-    expect(seOkay1.isLinkedTo(seOkay2)).toBeTruthy()
-    expect(seOkay2.isLinkedTo(seOkay1)).toBeTruthy()
     expect(seOkay1.getAvailableLinkedEvents()).toEqual([seOkay2])
     expect(seOkay2.getAvailableLinkedEvents()).toEqual([seOkay1])
   })
