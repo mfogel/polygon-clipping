@@ -3,57 +3,57 @@
 const Segment = require('../src/segment')
 const SweepEvent = require('../src/sweep-event')
 
-describe('sweep event compare', () => {
+describe('sweep event compareBefore', () => {
   test('favor earlier x in point', () => {
     const s1 = new SweepEvent([-5, 4])
     const s2 = new SweepEvent([5, 1])
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
+    expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor earlier y in point', () => {
     const s1 = new SweepEvent([5, -4])
     const s2 = new SweepEvent([5, 4])
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
+    expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor right events over left', () => {
     const s1 = new Segment([3, 2], [5, 4]).rightSE
     const s2 = new Segment([5, 4], [6, 5]).leftSE
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
+    expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor lower segment', () => {
     const s1 = new Segment([0, 0], [4, 4]).leftSE
     const s2 = new Segment([0, 0], [5, 6]).leftSE
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
+    expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor lower ring id', () => {
     const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
     const s2 = new Segment([0, 0], [4, 4], { id: 2 }).leftSE
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
+    expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('identical equal', () => {
     const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
-    expect(SweepEvent.compare(s1, s1)).toBe(0)
+    expect(SweepEvent.compareBefore(s1, s1)).toBe(false)
   })
 
   test('totally equal but not identical', () => {
     const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
     const s2 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
-    expect(() => SweepEvent.compare(s1, s2)).toThrow()
+    expect(() => SweepEvent.compareBefore(s1, s2)).toThrow()
   })
 
   test('length does not matter', () => {
     const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
     const s2 = new Segment([0, 0], [4, 4], { id: 1 }).leftSE
-    expect(() => SweepEvent.compare(s1, s2)).toThrow()
+    expect(() => SweepEvent.compareBefore(s1, s2)).toThrow()
   })
 })
 

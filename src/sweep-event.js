@@ -2,28 +2,28 @@ const { cmp, cmpPoints } = require('./flp')
 const { cosineOfAngle, sineOfAngle } = require('./vector')
 
 class SweepEvent {
-  static compare (a, b) {
+  static compareBefore (a, b) {
     // favor event with a point that the sweep line hits first
     const pointCmp = cmpPoints(a.point, b.point)
-    if (pointCmp !== 0) return pointCmp
+    if (pointCmp !== 0) return pointCmp < 0
 
     // favor right events over left
-    if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
+    if (a.isLeft !== b.isLeft) return !a.isLeft
 
     // favor events where the line segment is lower
     const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
-    if (pointSegCmp !== 0) return pointSegCmp < 0 ? 1 : -1
+    if (pointSegCmp !== 0) return pointSegCmp > 0
 
     // as a tie-breaker, favor lower segment creation id
     const aId = a.segment.ringIn.id
     const bId = b.segment.ringIn.id
-    if (aId !== bId) return aId < bId ? -1 : 1
+    if (aId !== bId) return aId < bId
 
     // NOTE:  We don't sort on segment length because that changes
     //        as segments are divided.
 
     // they appear to be the same point... are they?
-    if (a === b) return 0
+    if (a === b) return false
 
     throw new Error(
       `SweepEvent comparison failed at [${a.point}]... equal but not identical?`
