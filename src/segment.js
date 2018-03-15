@@ -152,7 +152,7 @@ class Segment {
     // interseciton returned matches exactly an endpoint - no rounding error.
     const intersections = []
     const bboxCorners = getUniqueCorners(bboxOverlap)
-    for (let i = 0; i < bboxCorners.length; i++) {
+    for (let i = 0, iMax = bboxCorners.length; i < iMax; i++) {
       const point = bboxCorners[i]
       // test if this point is an intersection
       if (
@@ -206,7 +206,7 @@ class Segment {
       (pt, i, pts) => i === 0 || cmpPoints(pts[i - 1], pt) !== 0
     )
 
-    for (let i = 0; i < points.length; i++) {
+    for (let i = 0, iMax = points.length; i < iMax; i++) {
       const pt = points[i]
       if (this.isAnEndpoint(pt)) {
         throw new Error(`Cannot split segment upon endpoint at [${pt}]`)
@@ -223,7 +223,7 @@ class Segment {
 
     if (points.length > 0) {
       const moreNewEvents = newSeg.split(points)
-      for (let i = 0; i < moreNewEvents.length; i++) {
+      for (let i = 0, iMax = moreNewEvents.length; i < iMax; i++) {
         newEvents.push(moreNewEvents[i])
       }
     }
@@ -264,7 +264,7 @@ class Segment {
     const coincidents = []
     const leftLinkedEvents = this.leftSE.linkedEvents
     const rightLinkedEvents = this.rightSE.linkedEvents
-    for (let i = 0; i < leftLinkedEvents.length; i++) {
+    for (let i = 0, iMax = leftLinkedEvents.length; i < iMax; i++) {
       const leftSE = leftLinkedEvents[i]
       if (!leftSE.isLeft) continue
       if (leftSE.segment.rightSE.linkedEvents !== rightLinkedEvents) continue
@@ -277,7 +277,7 @@ class Segment {
       coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
 
       // set this in all our coincident's caches so they don't have to calc it
-      for (let i = 0; i < coincidents.length; i++) {
+      for (let i = 0, iMax = coincidents.length; i < iMax; i++) {
         coincidents[i]._cache['coincidents'] = coincidents
       }
     }
@@ -331,13 +331,13 @@ class Segment {
     let ringsExiting = this.getRingsExiting()
 
     // rings our prev was inside of all count, except those we're exiting
-    for (let i = 0; i < prevRingsInsideOf.length; i++) {
+    for (let i = 0, iMax = prevRingsInsideOf.length; i < iMax; i++) {
       const ring = prevRingsInsideOf[i]
       if (!ringsExiting.includes(ring)) rings.push(ring)
     }
 
     // rings our prev was entering of all count, except those we're exiting
-    for (let i = 0; i < prevRingsEntering.length; i++) {
+    for (let i = 0, iMax = prevRingsEntering.length; i < iMax; i++) {
       const ring = prevRingsEntering[i]
       if (!ringsExiting.includes(ring)) rings.push(ring)
     }
@@ -348,7 +348,7 @@ class Segment {
   /* Array of input rings this segment is on boundary of */
   getRingsOnEdgeOf () {
     const rings = []
-    for (let i = 0; i < this.coincidents.length; i++) {
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       rings.push(this.coincidents[i].ringIn)
     }
     return rings
@@ -358,7 +358,7 @@ class Segment {
    * and for which the sweep line enters when intersecting there */
   getRingsEntering () {
     const rings = []
-    for (let i = 0; i < this.coincidents.length; i++) {
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const segment = this.coincidents[i]
       if (!segment.sweepLineEntersRing) continue
       rings.push(segment.ringIn)
@@ -370,7 +370,7 @@ class Segment {
    * and for which the sweep line exits when intersecting there */
   getRingsExiting () {
     const rings = []
-    for (let i = 0; i < this.coincidents.length; i++) {
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const segment = this.coincidents[i]
       if (segment.sweepLineEntersRing) continue
       rings.push(segment.ringIn)
@@ -402,7 +402,7 @@ class Segment {
   /* Array of multipolys this segment is inside of */
   getMultiPolysInsideOf () {
     const mps = []
-    for (let i = 0; i < this.ringsInsideOf.length; i++) {
+    for (let i = 0, iMax = this.ringsInsideOf.length; i < iMax; i++) {
       const poly = this.ringsInsideOf[i].poly
       if (mps.includes(poly.multiPoly)) continue
       if (!poly.isInside(this.getRingsOnEdgeOf(), this.ringsInsideOf)) continue
@@ -416,7 +416,7 @@ class Segment {
     // start with the multipolys we're fully inside
     const mps = multiPolysInsideOf.slice()
     // add the multipolys we have the sweep line entering
-    for (let i = 0; i < this.coincidents.length; i++) {
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const seg = this.coincidents[i]
       if (!seg.sweepLineEntersPoly) continue
       const mp = seg.ringIn.poly.multiPoly
@@ -430,7 +430,7 @@ class Segment {
     // start with the multipolys we're fully inside
     const mps = multiPolysInsideOf.slice()
     // add the multipolys we have the sweep line entering
-    for (let i = 0; i < this.coincidents.length; i++) {
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const seg = this.coincidents[i]
       if (!seg.sweepLineExitsPoly) continue
       const mp = seg.ringIn.poly.multiPoly

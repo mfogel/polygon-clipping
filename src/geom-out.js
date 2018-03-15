@@ -19,7 +19,7 @@ class Ring {
     // as the sweep line trace gaurantees it to be not in the middle
     // of a straight segment.
     const points = [this._points[0]]
-    for (let i = 1; i < this._points.length - 1; i++) {
+    for (let i = 1, iMax = this._points.length - 1; i < iMax; i++) {
       const prevPt = this._points[i - 1]
       const pt = this._points[i]
       const nextPt = this._points[i + 1]
@@ -127,7 +127,7 @@ class Poly {
 
   getGeom () {
     const geom = [this.exteriorRing.getGeom()]
-    for (let i = 0; i < this.interiorRings.length; i++) {
+    for (let i = 0, iMax = this.interiorRings.length; i < iMax; i++) {
       geom.push(this.interiorRings[i].getGeom())
     }
     return geom
@@ -142,7 +142,7 @@ class MultiPoly {
 
   getGeom () {
     const geom = []
-    for (let i = 0; i < this.polys.length; i++) {
+    for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
       geom.push(this.polys[i].getGeom())
     }
     return geom
@@ -150,7 +150,7 @@ class MultiPoly {
 
   _composePolys (rings) {
     const polys = []
-    for (let i = 0; i < rings.length; i++) {
+    for (let i = 0, iMax = rings.length; i < iMax; i++) {
       const ring = rings[i]
       if (ring.poly) return
       if (ring.isExteriorRing) polys.push(new Poly(ring))

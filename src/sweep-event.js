@@ -40,7 +40,7 @@ class SweepEvent {
     if (other.linkedEvents.length > 1) {
       throw new Error('Cannot link an already-linked event')
     }
-    for (let i = 0; i < other.linkedEvents.length; i++) {
+    for (let i = 0, iMax = other.linkedEvents.length; i < iMax; i++) {
       this.linkedEvents.push(other.linkedEvents[i])
     }
     other.linkedEvents = this.linkedEvents
@@ -48,7 +48,7 @@ class SweepEvent {
 
   getAvailableLinkedEvents () {
     const events = []
-    for (let i = 0; i < this.linkedEvents.length; i++) {
+    for (let i = 0, iMax = this.linkedEvents.length; i < iMax; i++) {
       const evt = this.linkedEvents[i]
       if (evt !== this && !evt.segment.ringOut && evt.segment.isInResult) {
         events.push(evt)

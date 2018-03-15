@@ -41,10 +41,10 @@ class SweepLine {
         const prevInters = segment.getIntersections(prevSeg)
         if (prevInters.length > 0) {
           const newEventsFromSplit = this._possibleSplit(prevSeg, prevInters)
-          for (let i = 0; i < newEventsFromSplit.length; i++) {
+          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
             newEvents.push(newEventsFromSplit[i])
           }
-          for (let i = 0; i < prevInters.length; i++) {
+          for (let i = 0, iMax = prevInters.length; i < iMax; i++) {
             const pt = prevInters[i]
             if (!segment.isAnEndpoint(pt)) mySplitters.push(pt)
           }
@@ -56,10 +56,10 @@ class SweepLine {
         const nextInters = segment.getIntersections(nextSeg)
         if (nextInters.length > 0) {
           const newEventsFromSplit = this._possibleSplit(nextSeg, nextInters)
-          for (let i = 0; i < newEventsFromSplit.length; i++) {
+          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
             newEvents.push(newEventsFromSplit[i])
           }
-          for (let i = 0; i < nextInters.length; i++) {
+          for (let i = 0, iMax = nextInters.length; i < iMax; i++) {
             const pt = nextInters[i]
             if (!segment.isAnEndpoint(pt)) mySplitters.push(pt)
           }
@@ -72,7 +72,7 @@ class SweepLine {
 
         if (mySplitters.length > 0) {
           const newEventsFromSplit = segment.split(mySplitters)
-          for (let i = 0; i < newEventsFromSplit.length; i++) {
+          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
             newEvents.push(newEventsFromSplit[i])
           }
         }
@@ -94,11 +94,11 @@ class SweepLine {
         const inters = prevSeg.getIntersections(nextSeg)
         if (inters.length > 0) {
           let newEventsFromSplit = this._possibleSplit(prevSeg, inters)
-          for (let i = 0; i < newEventsFromSplit.length; i++) {
+          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
             newEvents.push(newEventsFromSplit[i])
           }
           newEventsFromSplit = this._possibleSplit(nextSeg, inters)
-          for (let i = 0; i < newEventsFromSplit.length; i++) {
+          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
             newEvents.push(newEventsFromSplit[i])
           }
         }
@@ -117,7 +117,7 @@ class SweepLine {
 
   _possibleSplit (segment, intersections) {
     const splitters = []
-    for (let i = 0; i < intersections.length; i++) {
+    for (let i = 0, iMax = intersections.length; i < iMax; i++) {
       const pt = intersections[i]
       if (!segment.isAnEndpoint(pt)) splitters.push(pt)
     }

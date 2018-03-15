@@ -92,14 +92,14 @@ const cleanRing = ring => {
 /* Scan the already-linked events of the segments for any
  * self-intersecting input rings (which are not supported) */
 const errorOnSelfIntersectingRings = segments => {
-  for (let i = 0; i < segments.length; i++) {
+  for (let i = 0, iMax = segments.length; i < iMax; i++) {
     const seg = segments[i]
 
     // check left event for more than one other linked event from same ring
     const leftLinkedEvents = seg.leftSE.linkedEvents
     if (leftLinkedEvents.length > 2) {
       let cntThisRing = 0
-      for (let j = 0; j < leftLinkedEvents.length; j++) {
+      for (let j = 0, jMax = leftLinkedEvents.length; j < jMax; j++) {
         if (leftLinkedEvents[j].segment.ringIn === seg.ringIn) cntThisRing++
       }
       if (cntThisRing > 2) {
@@ -112,7 +112,7 @@ const errorOnSelfIntersectingRings = segments => {
     const rightLinkedEvents = seg.rightSE.linkedEvents
     if (rightLinkedEvents.length > 2) {
       let cntThisRing = 0
-      for (let j = 0; j < rightLinkedEvents.length; j++) {
+      for (let j = 0, jMax = rightLinkedEvents.length; j < jMax; j++) {
         if (rightLinkedEvents[j].segment.ringIn === seg.ringIn) cntThisRing++
       }
       if (cntThisRing > 2) {

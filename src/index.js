@@ -9,23 +9,23 @@ const SweepLine = require('./sweep-line')
 const doIt = (operationType, geom, moreGeoms) => {
   cleanInput.forceMultiPoly(geom)
   cleanInput.cleanMultiPoly(geom)
-  for (let i = 0; i < moreGeoms.length; i++) {
+  for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
     cleanInput.forceMultiPoly(moreGeoms[i])
     cleanInput.cleanMultiPoly(moreGeoms[i])
   }
 
   const multipolys = [new geomIn.MultiPoly(geom)]
   multipolys[0].markAsSubject()
-  for (let i = 0; i < moreGeoms.length; i++) {
+  for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
     multipolys.push(new geomIn.MultiPoly(moreGeoms[i]))
   }
   operation.register(operationType, multipolys.length)
 
   /* Put segment endpoints in a priority queue */
   const queue = new Queue({ comparBefore: SweepEvent.compareBefore })
-  for (let i = 0; i < multipolys.length; i++) {
+  for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
     const sweepEvents = multipolys[i].getSweepEvents()
-    for (let j = 0; j < sweepEvents.length; j++) {
+    for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
       queue.insert(sweepEvents[j])
     }
   }
@@ -34,7 +34,7 @@ const doIt = (operationType, geom, moreGeoms) => {
   const sweepLine = new SweepLine()
   while (queue.length) {
     const newEvents = sweepLine.process(queue.remove())
-    for (let i = 0; i < newEvents.length; i++) {
+    for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
       queue.insert(newEvents[i])
     }
   }
@@ -44,7 +44,7 @@ const doIt = (operationType, geom, moreGeoms) => {
 
   /* Collect the segments we're keeping in a series of rings */
   const ringsOut = []
-  for (let i = 0; i < sweepLine.segments.length; i++) {
+  for (let i = 0, iMax = sweepLine.segments.length; i < iMax; i++) {
     const segment = sweepLine.segments[i]
     if (!segment.isInResult || segment.ringOut) continue
     ringsOut.push(new geomOut.Ring(segment))
