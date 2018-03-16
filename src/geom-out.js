@@ -1,3 +1,4 @@
+const { cmpPoints } = require('./flp')
 const { compareVectorAngles } = require('./vector')
 
 class Ring {
@@ -73,6 +74,15 @@ class Ring {
         const comparator = event.getLeftmostComparator(prevEvent)
         nextEvent = linkedEvents.sort(comparator)[0].otherSE
       }
+    }
+
+    const firstPt = this._points[0]
+    const lastPt = this._points[this._points.length - 1]
+    if (cmpPoints(firstPt, lastPt) !== 0) {
+      throw new Error(
+        `Unable to complete output ring starting at [${firstPt}].` +
+          ` Last matching segment found ends at [${lastPt}].`
+      )
     }
   }
 

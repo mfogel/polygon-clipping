@@ -23,7 +23,12 @@ class Segment {
     const cmpLX = cmp(alx, blx)
 
     // are a and b colinear?
-    if (cmpLeft === 0 && a.comparePoint(b.rightSE.point) === 0) {
+    if (
+      cmpLeft === 0 &&
+      a.comparePoint(b.rightSE.point) === 0 &&
+      b.comparePoint(a.leftSE.point) === 0 &&
+      b.comparePoint(a.rightSE.point) === 0
+    ) {
       // colinear segments with non-matching left-endpoints, consider
       // the more-left endpoint to be earlier
       if (cmpLX !== 0) return cmpLX
@@ -56,8 +61,8 @@ class Segment {
     }
 
     throw new Error(
-      `Segment comparison (with left point [${a.leftSE
-        .point}]) failed... equal but not identical?`
+      `Segment comparison (from left [${a.leftSE.point}]) ` +
+        `to [${a.rightSE.point}] failed... equal but not identical?`
     )
   }
 

@@ -8,36 +8,64 @@ const { Ring, Poly, MultiPoly } = require('../src/geom-out')
 
 describe('ring', () => {
   test('exterior ring', () => {
-    const seg = new Segment([0, 0], [1, 1])
-    const ring = new Ring(seg)
-    ring._points.push([1, 0])
-    ring._points.push([0, 0])
+    const seg1 = new Segment([0, 0], [1, 1])
+    const seg2 = new Segment([1, 1], [0, 1])
+    const seg3 = new Segment([0, 1], [0, 0])
+
+    seg1.rightSE.link(seg2.rightSE)
+    seg2.leftSE.link(seg3.rightSE)
+    seg3.leftSE.link(seg1.leftSE)
+
+    seg1._cache['isInResult'] = true
+    seg2._cache['isInResult'] = true
+    seg3._cache['isInResult'] = true
+
+    const ring = new Ring(seg1)
 
     expect(ring.enclosingRing).toBeNull()
     expect(ring.isExteriorRing).toBeTruthy()
-    expect(ring.getGeom()).toEqual([[0, 0], [1, 1], [1, 0], [0, 0]])
+    expect(ring.getGeom()).toEqual([[0, 0], [1, 1], [0, 1], [0, 0]])
   })
 
   test('interior ring points reversed', () => {
-    const seg = new Segment([0, 0], [1, 1])
-    const ring = new Ring(seg)
+    const seg1 = new Segment([0, 0], [1, 1])
+    const seg2 = new Segment([1, 1], [0, 1])
+    const seg3 = new Segment([0, 1], [0, 0])
+
+    seg1.rightSE.link(seg2.rightSE)
+    seg2.leftSE.link(seg3.rightSE)
+    seg3.leftSE.link(seg1.leftSE)
+
+    seg1._cache['isInResult'] = true
+    seg2._cache['isInResult'] = true
+    seg3._cache['isInResult'] = true
+
+    const ring = new Ring(seg1)
     ring._cache = { isExteriorRing: false }
-    ring._points.push([1, 0])
-    ring._points.push([0, 0])
 
     expect(ring.isExteriorRing).toBeFalsy()
-    expect(ring.getGeom()).toEqual([[0, 0], [1, 0], [1, 1], [0, 0]])
+    expect(ring.getGeom()).toEqual([[0, 0], [0, 1], [1, 1], [0, 0]])
   })
 
   test('removes colinear points successfully', () => {
-    const seg = new Segment([0, 0], [1, 1])
-    const ring = new Ring(seg)
-    ring._points.push([2, 2])
-    ring._points.push([3, 3])
-    ring._points.push([0, 3])
-    ring._points.push([0, 0])
+    const seg1 = new Segment([0, 0], [1, 1])
+    const seg2 = new Segment([1, 1], [2, 2])
+    const seg3 = new Segment([2, 2], [0, 2])
+    const seg4 = new Segment([0, 2], [0, 0])
 
-    expect(ring.getGeom()).toEqual([[0, 0], [3, 3], [0, 3], [0, 0]])
+    seg1.rightSE.link(seg2.leftSE)
+    seg2.rightSE.link(seg3.rightSE)
+    seg3.leftSE.link(seg4.rightSE)
+    seg4.leftSE.link(seg1.leftSE)
+
+    seg1._cache['isInResult'] = true
+    seg2._cache['isInResult'] = true
+    seg3._cache['isInResult'] = true
+    seg4._cache['isInResult'] = true
+
+    const ring = new Ring(seg1)
+
+    expect(ring.getGeom()).toEqual([[0, 0], [2, 2], [0, 2], [0, 0]])
   })
 })
 
