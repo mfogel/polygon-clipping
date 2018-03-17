@@ -3,19 +3,22 @@ const { compareVectorAngles } = require('./vector')
 
 /* WARN: input modified directly */
 const forceMultiPoly = geom => {
-  if (
-    Array.isArray(geom) &&
-    Array.isArray(geom[0]) &&
-    Array.isArray(geom[0][0])
-  ) {
-    if (Array.isArray(geom[0][0][0]) && typeof geom[0][0][0][0] === 'number') {
-      // multipolygon
-      return
-    }
-    if (typeof geom[0][0][0] === 'number') {
-      // polygon
-      geom.unshift(geom.splice(0))
-      return
+  if (Array.isArray(geom)) {
+    if (geom.length === 0) return // allow empty multipolys
+
+    if (Array.isArray(geom[0]) && Array.isArray(geom[0][0])) {
+      if (
+        Array.isArray(geom[0][0][0]) &&
+        typeof geom[0][0][0][0] === 'number'
+      ) {
+        // multipolygon
+        return
+      }
+      if (typeof geom[0][0][0] === 'number') {
+        // polygon
+        geom.unshift(geom.splice(0))
+        return
+      }
     }
   }
   throw new Error('Unrecognized input - not a polygon nor multipolygon')

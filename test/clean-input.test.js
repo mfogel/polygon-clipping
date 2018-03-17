@@ -49,6 +49,13 @@ describe('forceMultiPoly()', () => {
     forceMultiPoly(poly)
     expect(poly).toEqual(expected)
   })
+
+  test('empty multipoly input unchanged', () => {
+    const poly = []
+    const expected = []
+    forceMultiPoly(poly)
+    expect(poly).toEqual(expected)
+  })
 })
 
 describe('cleanMultiPoly()', () => {
@@ -70,6 +77,13 @@ describe('cleanMultiPoly()', () => {
       [[[0, 0], [1, 0], [0, 1], [0, 0]]],
       [[[0, 0], [2, 0], [0, 2], [0, 0]], [[0, 0], [1, 0], [0, 1], [0, 0]]]
     ]
+    const stillAllGood = deepCopyArray(allGood)
+    cleanMultiPoly(allGood)
+    expect(allGood).toEqual(stillAllGood)
+  })
+
+  test('empty multipoly unchanged', () => {
+    const allGood = []
     const stillAllGood = deepCopyArray(allGood)
     cleanMultiPoly(allGood)
     expect(allGood).toEqual(stillAllGood)
