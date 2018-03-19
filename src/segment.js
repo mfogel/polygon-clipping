@@ -61,8 +61,8 @@ class Segment {
     }
 
     throw new Error(
-      `Segment comparison (from left [${a.leftSE.point}]) ` +
-        `to [${a.rightSE.point}] failed... equal but not identical?`
+      `Segment comparison (from [${a.leftSE.point}]) -> to ` +
+        `[${a.rightSE.point}]) failed... segments equal but not identical?`
     )
   }
 
@@ -289,6 +289,23 @@ class Segment {
     return coincidents
   }
 
+  get prevNotCoincident () {
+    const key = 'prevNotCoincident'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
+  }
+
+  _prevNotCoincident () {
+    // iterating backwards from next to prev
+    let next = this
+    let prev = this.prev
+    while (prev && next.coincidents === prev.coincidents) {
+      next = prev
+      prev = prev.prev
+    }
+    return prev
+  }
+
   /* Does the sweep line, when it intersects this segment, enter the ring? */
   get sweepLineEntersRing () {
     const key = 'sweepLineEntersRing'
@@ -298,9 +315,15 @@ class Segment {
 
   _sweepLineEntersRing () {
     // opposite of previous segment on the same ring
-    let prev = this.prev
-    while (prev && prev.ringIn !== this.ringIn) prev = prev.prev
-    return !prev || !prev.sweepLineEntersRing
+    let prev = this.prevNotCoincident
+    while (prev) {
+      for (let i = 0, iMax = prev.coincidents.length; i < iMax; i++) {
+        const seg = prev.coincidents[i]
+        if (seg.ringIn === this.ringIn) return !seg.sweepLineEntersRing
+      }
+      prev = prev.prevNotCoincident
+    }
+    return true
   }
 
   /* Does the sweep line, when it intersects this segment, enter the polygon? */
