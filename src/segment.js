@@ -186,12 +186,15 @@ class Segment {
     const t = crossProduct(ve, va) / kross
     if (cmp(t, 0) < 0 || cmp(1, t) < 0) return []
 
-    // intersection is in a midpoint of both lines, let's average them
-    const aix = al[0] + s * va[0]
-    const aiy = al[1] + s * va[1]
-    const bix = bl[0] + t * vb[0]
-    const biy = bl[1] + t * vb[1]
-    return [[(aix + bix) / 2, (aiy + biy) / 2]]
+    // intersection is in a midpoint of both lines, let's average them and
+    // bound the result by org bbox (otherwise leftSE and rightSE could swap)
+    let x = (al[0] + s * va[0] + bl[0] + t * vb[0]) / 2
+    let y = (al[1] + s * va[1] + bl[1] + t * vb[1]) / 2
+    if (x < bboxOverlap[0][0]) x = bboxOverlap[0][0]
+    if (x > bboxOverlap[1][0]) x = bboxOverlap[1][0]
+    if (y < bboxOverlap[0][1]) y = bboxOverlap[0][1]
+    if (y > bboxOverlap[1][1]) y = bboxOverlap[1][1]
+    return [[x, y]]
   }
 
   /**
