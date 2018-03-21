@@ -98,29 +98,27 @@ const errorOnSelfIntersectingRings = segments => {
   for (let i = 0, iMax = segments.length; i < iMax; i++) {
     const seg = segments[i]
 
-    // check left event for more than one other linked event from same ring
-    const leftLinkedEvents = seg.leftSE.linkedEvents
-    if (leftLinkedEvents.length > 2) {
-      let cntThisRing = 0
-      for (let j = 0, jMax = leftLinkedEvents.length; j < jMax; j++) {
-        if (leftLinkedEvents[j].segment.ringIn === seg.ringIn) cntThisRing++
-      }
-      if (cntThisRing > 2) {
-        const pt = seg.leftSE.point
-        throw new Error(`Self-intersecting input ring found at [${pt}]`)
-      }
-    }
+    const evt = seg.flowIntoSE
 
-    // check right event for more than one other linked event from same ring
-    const rightLinkedEvents = seg.rightSE.linkedEvents
-    if (rightLinkedEvents.length > 2) {
-      let cntThisRing = 0
-      for (let j = 0, jMax = rightLinkedEvents.length; j < jMax; j++) {
-        if (rightLinkedEvents[j].segment.ringIn === seg.ringIn) cntThisRing++
-      }
-      if (cntThisRing > 2) {
-        const pt = seg.rightSE.point
-        throw new Error(`Self-intersecting input ring found at [${pt}]`)
+    if (evt.linkedEvents.length > 2) {
+      const evtsThisRing = evt.linkedEvents.filter(
+        other => other.segment.ringIn === seg.ringIn
+      )
+      if (evtsThisRing.length > 2) {
+        evtsThisRing.sort(evt.getLeftmostComparator(evt.otherSE))
+        const leftMostEvt = evtsThisRing[1] // skip ourself
+        const rightMostEvt = evtsThisRing[evtsThisRing.length - 1]
+
+        // both the segment on our immediate left and right will flow
+        // 'out' in intersection point was a touch and not a crossing
+        if (
+          leftMostEvt.segment.flowIntoSE === leftMostEvt ||
+          rightMostEvt.segment.flowIntoSE === rightMostEvt
+        ) {
+          throw new Error(
+            `Self-intersecting, crossing input ring found at [${evt.point}]`
+          )
+        }
       }
     }
   }

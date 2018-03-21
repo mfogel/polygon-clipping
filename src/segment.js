@@ -71,8 +71,19 @@ class Segment {
     this.ringOut = null
 
     const ptCmp = cmpPoints(point1, point2)
-    const lp = ptCmp < 0 ? point1 : point2
-    const rp = ptCmp < 0 ? point2 : point1
+    let lp
+    let rp
+    if (ptCmp < 0) {
+      lp = point1
+      rp = point2
+      this.flowL2R = true
+    } else if (ptCmp > 0) {
+      lp = point2
+      rp = point1
+      this.flowL2R = false
+    } else {
+      throw new Error(`Tried to create degenerate segment at [${point1}]`)
+    }
 
     this.leftSE = new SweepEvent(lp, this)
     this.rightSE = new SweepEvent(rp, this)
@@ -82,7 +93,9 @@ class Segment {
   }
 
   clone () {
-    return new Segment(this.leftSE.point, this.rightSE.point, this.ringIn)
+    const seg = new Segment(this.leftSE.point, this.rightSE.point, this.ringIn)
+    seg.flowL2R = this.flowL2R
+    return seg
   }
 
   get bbox () {
@@ -104,6 +117,11 @@ class Segment {
 
   get isVertical () {
     return cmp(this.leftSE.point[0], this.rightSE.point[0]) === 0
+  }
+
+  /* In the original ringIn, which event came second */
+  get flowIntoSE () {
+    return this.flowL2R ? this.rightSE : this.leftSE
   }
 
   getOtherSE (se) {

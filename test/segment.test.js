@@ -9,6 +9,7 @@ describe('constructor', () => {
     const seg = new Segment(p1, p2)
     expect(seg.leftSE.point).toEqual(p1)
     expect(seg.rightSE.point).toEqual(p2)
+    expect(seg.flowL2R).toBeTruthy()
   })
 
   test('correct point on left and right 1', () => {
@@ -17,6 +18,13 @@ describe('constructor', () => {
     const seg = new Segment(p1, p2)
     expect(seg.leftSE.point).toEqual(p2)
     expect(seg.rightSE.point).toEqual(p1)
+    expect(seg.flowL2R).toBeFalsy()
+  })
+
+  test('attempt create segment with same poitns', () => {
+    const p1 = [0, 0]
+    const p2 = [0, 0]
+    expect(() => new Segment(p1, p2)).toThrow()
   })
 })
 
@@ -30,6 +38,7 @@ describe('clone', () => {
     expect(clone.leftSE.point).toEqual(seg.leftSE.point)
     expect(clone.rightSE.point).toEqual(seg.rightSE.point)
     expect(clone.ringIn).toBe(seg.ringIn)
+    expect(clone.flowL2R).toBe(seg.flowL2R)
   })
 })
 
