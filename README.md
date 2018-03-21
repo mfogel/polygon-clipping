@@ -80,6 +80,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ### v0.6 (in development)
 
+ * Allow self-touching (but not crossing) input rings ([#10](https://github.com/mfogel/polygon-clipping/issues/10))
  * Support empty MultiPolygons as input
  * Performance improvements (reduced memory footprint and lower CPU time)
  * Handle segments with many coincidents ([#7](https://github.com/mfogel/polygon-clipping/issues/7))
