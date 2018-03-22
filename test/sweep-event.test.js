@@ -65,13 +65,20 @@ describe('sweep event link', () => {
     expect(se2.getAvailableLinkedEvents()).toEqual([])
   })
 
-  test('cannot link already linked event', () => {
+  test('link already linked event', () => {
     const se1 = new SweepEvent()
     const se2 = new SweepEvent()
     const se3 = new SweepEvent()
+    const se4 = new SweepEvent()
 
-    se2.link(se3)
-    expect(() => se1.link(se3)).toThrow()
+    se2.link(se1)
+    se4.link(se3)
+    se3.link(se2)
+
+    expect(se1.linkedEvents.length).toBe(4)
+    expect(se1.linkedEvents).toBe(se2.linkedEvents)
+    expect(se1.linkedEvents).toBe(se3.linkedEvents)
+    expect(se1.linkedEvents).toBe(se4.linkedEvents)
   })
 
   test('unavailable linked events do not show up', () => {

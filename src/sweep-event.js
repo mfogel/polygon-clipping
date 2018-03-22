@@ -37,13 +37,12 @@ class SweepEvent {
   }
 
   link (other) {
-    if (other.linkedEvents.length > 1) {
-      throw new Error('Cannot link an already-linked event')
+    const otherLE = other.linkedEvents
+    for (let i = 0, iMax = otherLE.length; i < iMax; i++) {
+      const evt = otherLE[i]
+      this.linkedEvents.push(evt)
+      evt.linkedEvents = this.linkedEvents
     }
-    for (let i = 0, iMax = other.linkedEvents.length; i < iMax; i++) {
-      this.linkedEvents.push(other.linkedEvents[i])
-    }
-    other.linkedEvents = this.linkedEvents
   }
 
   getAvailableLinkedEvents () {

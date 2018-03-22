@@ -7,6 +7,7 @@ const SweepEvent = require('./sweep-event')
 const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, geom, moreGeoms) => {
+  /* Clean inputs */
   cleanInput.forceMultiPoly(geom)
   cleanInput.cleanMultiPoly(geom)
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
@@ -14,6 +15,7 @@ const doIt = (operationType, geom, moreGeoms) => {
     cleanInput.cleanMultiPoly(moreGeoms[i])
   }
 
+  /* Convert inputs to MultiPoly objects, mark subject & register operation */
   const multipolys = [new geomIn.MultiPoly(geom)]
   multipolys[0].markAsSubject()
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
@@ -39,18 +41,11 @@ const doIt = (operationType, geom, moreGeoms) => {
     }
   }
 
-  /* Self-intersecting input rings are ambigious */
+  /* Error on self-crossing input rings */
   cleanInput.errorOnSelfIntersectingRings(sweepLine.segments)
 
-  /* Collect the segments we're keeping in a series of rings */
-  const ringsOut = []
-  for (let i = 0, iMax = sweepLine.segments.length; i < iMax; i++) {
-    const segment = sweepLine.segments[i]
-    if (!segment.isInResult || segment.ringOut) continue
-    ringsOut.push(new geomOut.Ring(segment))
-  }
-
-  /* Compile those rings into a multipolygon */
+  /* Collect and compile segments we're keeping into a multipolygon */
+  const ringsOut = geomOut.Ring.factory(sweepLine.segments)
   const result = new geomOut.MultiPoly(ringsOut)
   return result.getGeom()
 }

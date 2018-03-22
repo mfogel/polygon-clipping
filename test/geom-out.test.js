@@ -7,6 +7,302 @@ const Segment = require('../src/segment')
 const { Ring, Poly, MultiPoly } = require('../src/geom-out')
 
 describe('ring', () => {
+  describe('factory', () => {
+    test('simple triangle', () => {
+      const seg1 = new Segment([0, 0], [1, 1])
+      const seg2 = new Segment([1, 1], [0, 1])
+      const seg3 = new Segment([0, 1], [0, 0])
+
+      seg1.rightSE.link(seg2.rightSE)
+      seg2.leftSE.link(seg3.rightSE)
+      seg3.leftSE.link(seg1.leftSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = true
+
+      const rings = Ring.factory([seg1, seg2, seg3])
+
+      expect(rings.length).toBe(1)
+      expect(rings[0].getGeom()).toEqual([[0, 0], [1, 1], [0, 1], [0, 0]])
+    })
+
+    test('bow tie', () => {
+      const seg1 = new Segment([0, 0], [1, 1])
+      const seg2 = new Segment([1, 1], [0, 2])
+      const seg3 = new Segment([0, 2], [0, 0])
+
+      seg1.rightSE.link(seg2.rightSE)
+      seg2.leftSE.link(seg3.rightSE)
+      seg3.leftSE.link(seg1.leftSE)
+
+      const seg4 = new Segment([1, 1], [2, 0])
+      const seg5 = new Segment([1, 1], [2, 2])
+      const seg6 = new Segment([0, 2], [2, 2])
+
+      seg4.leftSE.link(seg5.leftSE)
+      seg4.rightSE.link(seg6.leftSE)
+      seg5.rightSE.link(seg6.rightSE)
+
+      seg4.leftSE.link(seg1.rightSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = true
+      seg4._cache['isInResult'] = true
+      seg5._cache['isInResult'] = true
+      seg6._cache['isInResult'] = true
+
+      const rings = Ring.factory([seg1, seg2, seg3, seg4, seg5, seg6])
+
+      expect(rings.length).toBe(2)
+      expect(rings[0].getGeom()).toEqual([[0, 0], [1, 1], [0, 2], [0, 0]])
+      expect(rings[1].getGeom()).toEqual([[1, 1], [2, 0], [2, 2], [1, 1]])
+    })
+
+    test('ringed ring', () => {
+      const seg1 = new Segment([0, 0], [3, -3])
+      const seg2 = new Segment([3, -3], [3, 0])
+      const seg3 = new Segment([3, 0], [3, 3])
+      const seg4 = new Segment([0, 0], [3, 3])
+
+      seg1.rightSE.link(seg2.leftSE)
+      seg2.rightSE.link(seg3.leftSE)
+      seg3.rightSE.link(seg4.rightSE)
+      seg4.leftSE.link(seg1.leftSE)
+
+      const seg5 = new Segment([2, -1], [3, 0])
+      const seg6 = new Segment([2, 1], [3, 0])
+      const seg7 = new Segment([2, -1], [2, 1])
+
+      seg5.leftSE.link(seg7.leftSE)
+      seg5.rightSE.link(seg6.rightSE)
+      seg6.leftSE.link(seg7.rightSE)
+
+      seg5.rightSE.link(seg2.rightSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = true
+      seg4._cache['isInResult'] = true
+      seg5._cache['isInResult'] = true
+      seg6._cache['isInResult'] = true
+      seg7._cache['isInResult'] = true
+
+      const rings = Ring.factory([seg1, seg2, seg3, seg4, seg5, seg6, seg7])
+
+      expect(rings.length).toBe(2)
+      expect(rings[0].getGeom()).toEqual([[3, 0], [2, 1], [2, -1], [3, 0]])
+      expect(rings[1].getGeom()).toEqual([[0, 0], [3, -3], [3, 3], [0, 0]])
+    })
+
+    test('ringed ring interior ring starting point extraneous', () => {
+      const seg1 = new Segment([0, 0], [5, -5])
+      const seg2 = new Segment([4, 0], [5, -5])
+      const seg3 = new Segment([4, 0], [5, 5])
+      const seg4 = new Segment([0, 0], [5, 5])
+
+      seg1.leftSE.link(seg4.leftSE)
+      seg1.rightSE.link(seg2.rightSE)
+      seg2.leftSE.link(seg3.leftSE)
+      seg3.rightSE.link(seg4.rightSE)
+
+      const seg5 = new Segment([1, 0], [4, 1])
+      const seg6 = new Segment([1, 0], [4, -1])
+      const seg7 = new Segment([4, -1], [4, 0])
+      const seg8 = new Segment([4, 0], [4, 1])
+
+      seg5.leftSE.link(seg6.leftSE)
+      seg5.rightSE.link(seg8.rightSE)
+      seg6.rightSE.link(seg7.leftSE)
+      seg7.rightSE.link(seg8.leftSE)
+
+      seg7.rightSE.link(seg2.leftSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = true
+      seg4._cache['isInResult'] = true
+      seg5._cache['isInResult'] = true
+      seg6._cache['isInResult'] = true
+      seg7._cache['isInResult'] = true
+      seg8._cache['isInResult'] = true
+
+      const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8]
+      const rings = Ring.factory(segs)
+
+      expect(rings.length).toBe(2)
+      expect(rings[0].getGeom()).toEqual([[4, 1], [1, 0], [4, -1], [4, 1]])
+      expect(rings[1].getGeom()).toEqual([
+        [0, 0],
+        [5, -5],
+        [4, 0],
+        [5, 5],
+        [0, 0]
+      ])
+    })
+
+    test('ringed ring and bow tie at same point', () => {
+      const seg1 = new Segment([0, 0], [3, -3])
+      const seg2 = new Segment([3, -3], [3, 0])
+      const seg3 = new Segment([3, 0], [3, 3])
+      const seg4 = new Segment([0, 0], [3, 3])
+
+      seg1.rightSE.link(seg2.leftSE)
+      seg2.rightSE.link(seg3.leftSE)
+      seg3.rightSE.link(seg4.rightSE)
+      seg4.leftSE.link(seg1.leftSE)
+
+      const seg5 = new Segment([2, -1], [3, 0])
+      const seg6 = new Segment([2, 1], [3, 0])
+      const seg7 = new Segment([2, -1], [2, 1])
+
+      seg5.leftSE.link(seg7.leftSE)
+      seg5.rightSE.link(seg6.rightSE)
+      seg6.leftSE.link(seg7.rightSE)
+
+      const seg8 = new Segment([3, 0], [4, -1])
+      const seg9 = new Segment([3, 0], [4, 1])
+      const seg10 = new Segment([4, -1], [4, 1])
+
+      seg8.leftSE.link(seg9.leftSE)
+      seg8.rightSE.link(seg10.leftSE)
+      seg9.rightSE.link(seg10.rightSE)
+
+      seg5.rightSE.link(seg2.rightSE)
+      seg8.leftSE.link(seg2.rightSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = true
+      seg4._cache['isInResult'] = true
+      seg5._cache['isInResult'] = true
+      seg6._cache['isInResult'] = true
+      seg7._cache['isInResult'] = true
+      seg8._cache['isInResult'] = true
+      seg9._cache['isInResult'] = true
+      seg10._cache['isInResult'] = true
+
+      const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10]
+      const rings = Ring.factory(segs)
+
+      expect(rings.length).toBe(3)
+      expect(rings[0].getGeom()).toEqual([[3, 0], [2, 1], [2, -1], [3, 0]])
+      expect(rings[1].getGeom()).toEqual([[0, 0], [3, -3], [3, 3], [0, 0]])
+      expect(rings[2].getGeom()).toEqual([[3, 0], [4, -1], [4, 1], [3, 0]])
+    })
+
+    test('double bow tie', () => {
+      const seg1 = new Segment([0, 0], [1, -2])
+      const seg2 = new Segment([0, 0], [1, 2])
+      const seg3 = new Segment([1, -2], [1, 2])
+
+      seg1.leftSE.link(seg2.leftSE)
+      seg1.rightSE.link(seg3.leftSE)
+      seg2.rightSE.link(seg3.rightSE)
+
+      const seg4 = new Segment([1, -2], [2, -3])
+      const seg5 = new Segment([1, -2], [2, -1])
+      const seg6 = new Segment([2, -3], [2, -1])
+
+      seg4.leftSE.link(seg5.leftSE)
+      seg4.rightSE.link(seg6.leftSE)
+      seg5.rightSE.link(seg6.rightSE)
+
+      const seg7 = new Segment([1, 2], [2, 1])
+      const seg8 = new Segment([1, 2], [2, 3])
+      const seg9 = new Segment([2, 1], [2, 3])
+
+      seg7.leftSE.link(seg8.leftSE)
+      seg7.rightSE.link(seg9.leftSE)
+      seg8.rightSE.link(seg9.rightSE)
+
+      seg4.leftSE.link(seg1.rightSE)
+      seg7.leftSE.link(seg2.rightSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = true
+      seg4._cache['isInResult'] = true
+      seg5._cache['isInResult'] = true
+      seg6._cache['isInResult'] = true
+      seg7._cache['isInResult'] = true
+      seg8._cache['isInResult'] = true
+      seg9._cache['isInResult'] = true
+
+      const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9]
+      const rings = Ring.factory(segs)
+
+      expect(rings.length).toBe(3)
+      expect(rings[0].getGeom()).toEqual([[0, 0], [1, -2], [1, 2], [0, 0]])
+      expect(rings[1].getGeom()).toEqual([[1, -2], [2, -3], [2, -1], [1, -2]])
+      expect(rings[2].getGeom()).toEqual([[1, 2], [2, 1], [2, 3], [1, 2]])
+    })
+
+    test('double ringed ring', () => {
+      const seg1 = new Segment([0, 0], [5, -5])
+      const seg2 = new Segment([0, 0], [5, 5])
+      const seg3 = new Segment([5, -5], [5, 5])
+
+      seg1.leftSE.link(seg2.leftSE)
+      seg1.rightSE.link(seg3.leftSE)
+      seg2.rightSE.link(seg3.rightSE)
+
+      const seg4 = new Segment([1, -1], [5, -5])
+      const seg5 = new Segment([1, -1], [2, -1])
+      const seg6 = new Segment([2, -1], [5, -5])
+
+      seg4.leftSE.link(seg5.leftSE)
+      seg4.rightSE.link(seg6.rightSE)
+      seg5.rightSE.link(seg6.leftSE)
+
+      const seg7 = new Segment([1, 1], [2, 1])
+      const seg8 = new Segment([1, 1], [5, 5])
+      const seg9 = new Segment([2, 1], [5, 5])
+
+      seg7.leftSE.link(seg8.leftSE)
+      seg7.rightSE.link(seg9.leftSE)
+      seg8.rightSE.link(seg9.rightSE)
+
+      seg4.rightSE.link(seg1.rightSE)
+      seg8.rightSE.link(seg2.rightSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = true
+      seg4._cache['isInResult'] = true
+      seg5._cache['isInResult'] = true
+      seg6._cache['isInResult'] = true
+      seg7._cache['isInResult'] = true
+      seg8._cache['isInResult'] = true
+      seg9._cache['isInResult'] = true
+
+      const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9]
+      const rings = Ring.factory(segs)
+
+      expect(rings.length).toBe(3)
+      expect(rings[0].getGeom()).toEqual([[5, -5], [2, -1], [1, -1], [5, -5]])
+      expect(rings[1].getGeom()).toEqual([[5, 5], [1, 1], [2, 1], [5, 5]])
+      expect(rings[2].getGeom()).toEqual([[0, 0], [5, -5], [5, 5], [0, 0]])
+    })
+
+    test('errors on on malformed ring', () => {
+      const seg1 = new Segment([0, 0], [1, 1])
+      const seg2 = new Segment([1, 1], [0, 1])
+      const seg3 = new Segment([0, 1], [0, 0])
+
+      seg1.rightSE.link(seg2.rightSE)
+      seg2.leftSE.link(seg3.rightSE)
+      seg3.leftSE.link(seg1.leftSE)
+
+      seg1._cache['isInResult'] = true
+      seg2._cache['isInResult'] = true
+      seg3._cache['isInResult'] = false // broken ring
+
+      expect(() => Ring.factory([seg1, seg2, seg3])).toThrow()
+    })
+  })
+
   test('exterior ring', () => {
     const seg1 = new Segment([0, 0], [1, 1])
     const seg2 = new Segment([1, 1], [0, 1])
@@ -20,7 +316,7 @@ describe('ring', () => {
     seg2._cache['isInResult'] = true
     seg3._cache['isInResult'] = true
 
-    const ring = new Ring(seg1)
+    const ring = Ring.factory([seg1, seg2, seg3])[0]
 
     expect(ring.enclosingRing).toBeNull()
     expect(ring.isExteriorRing).toBeTruthy()
@@ -40,7 +336,7 @@ describe('ring', () => {
     seg2._cache['isInResult'] = true
     seg3._cache['isInResult'] = true
 
-    const ring = new Ring(seg1)
+    const ring = Ring.factory([seg1, seg2, seg3])[0]
     ring._cache = { isExteriorRing: false }
 
     expect(ring.isExteriorRing).toBeFalsy()
@@ -63,7 +359,7 @@ describe('ring', () => {
     seg3._cache['isInResult'] = true
     seg4._cache['isInResult'] = true
 
-    const ring = new Ring(seg1)
+    const ring = Ring.factory([seg1, seg2, seg3, seg4])[0]
 
     expect(ring.getGeom()).toEqual([[0, 0], [2, 2], [0, 2], [0, 0]])
   })

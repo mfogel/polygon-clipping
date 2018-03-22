@@ -1,12 +1,91 @@
-const { cmpPoints } = require('./flp')
 const { compareVectorAngles } = require('./vector')
 
 class Ring {
-  constructor (segment) {
-    this.firstSegment = segment
+  /* Given the segments from the sweep line pass, compute & return a series
+   * of closed rings from all the segments marked to be part of the result */
+  static factory (allSegments) {
+    const ringsOut = []
+
+    for (let i = 0, iMax = allSegments.length; i < iMax; i++) {
+      const segment = allSegments[i]
+      if (!segment.isInResult || segment.ringOut) continue
+
+      let prevEvent = null
+      let event = segment.leftSE
+      let nextEvent = segment.rightSE
+      const events = [event]
+
+      const startingLE = event.linkedEvents
+      const intersectionLEs = []
+
+      /* Walk the chain of linked events to form a closed ring */
+      while (true) {
+        prevEvent = event
+        event = nextEvent
+        events.push(event)
+
+        /* Is the ring complete? */
+        if (event.linkedEvents === startingLE) break
+
+        while (true) {
+          const availableLEs = event.getAvailableLinkedEvents()
+
+          /* Did we hit a dead end? This shouldn't happen. Indicates some earlier
+           * part of the algorithm malfunctioned... please file a bug report. */
+          if (availableLEs.length === 0) {
+            const firstPt = events[0].point
+            const lastPt = events[events.length - 1].point
+            throw new Error(
+              `Unable to complete output ring starting at [${firstPt}].` +
+                ` Last matching segment found ends at [${lastPt}].`
+            )
+          }
+
+          /* Only one way to go, so cotinue on the path */
+          if (availableLEs.length === 1) {
+            nextEvent = availableLEs[0].otherSE
+            break
+          }
+
+          /* We must have an intersection. Check for a completed loop */
+          let indexLE = null
+          for (let j = 0, jMax = intersectionLEs.length; j < jMax; j++) {
+            if (intersectionLEs[j].linkedEvents === event.linkedEvents) {
+              indexLE = j
+              break
+            }
+          }
+          /* Found a completed loop. Cut that off and make a ring */
+          if (indexLE !== null) {
+            const intersectionLE = intersectionLEs.splice(indexLE)[0]
+            const ringEvents = events.splice(intersectionLE.index)
+            ringEvents.unshift(ringEvents[0].otherSE)
+            ringsOut.push(new Ring(ringEvents.reverse()))
+            continue
+          }
+          /* register the intersection */
+          intersectionLEs.push({
+            index: events.length,
+            linkedEvents: event.linkedEvents
+          })
+          /* Choose the left-most option to continue the walk */
+          const comparator = event.getLeftmostComparator(prevEvent)
+          nextEvent = availableLEs.sort(comparator)[0].otherSE
+          break
+        }
+      }
+
+      ringsOut.push(new Ring(events))
+    }
+    return ringsOut
+  }
+
+  constructor (events) {
+    this.events = events
+    for (let i = 0, iMax = events.length; i < iMax; i++) {
+      events[i].segment.registerRingOut(this)
+    }
     this.poly = null
-    this._points = null
-    this._claimSegments()
     this._clearCache()
   }
 
@@ -16,18 +95,22 @@ class Ring {
 
   getGeom () {
     // Remove superfluous points (ie extra points along a straight line),
-    // Note that the starting/ending point doesn't need to be considered,
-    // as the sweep line trace gaurantees it to be not in the middle
-    // of a straight segment.
-    const points = [this._points[0]]
-    for (let i = 1, iMax = this._points.length - 1; i < iMax; i++) {
-      const prevPt = this._points[i - 1]
-      const pt = this._points[i]
-      const nextPt = this._points[i + 1]
+    const points = [this.events[0].point]
+    for (let i = 1, iMax = this.events.length - 1; i < iMax; i++) {
+      const prevPt = this.events[i - 1].point
+      const pt = this.events[i].point
+      const nextPt = this.events[i + 1].point
       if (compareVectorAngles(pt, prevPt, nextPt) === 0) continue
       points.push(pt)
     }
-    points.push(this._points[this._points.length - 1])
+
+    // check if the starting point is necessary
+    const prevPt = this.events[this.events.length - 2].point
+    const pt = this.events[0].point
+    const nextPt = this.events[1].point
+    if (compareVectorAngles(pt, prevPt, nextPt) === 0) points.shift()
+
+    points.push(points[0])
     return this.isExteriorRing ? points : points.reverse()
   }
 
@@ -51,41 +134,6 @@ class Ring {
     return this._cache[propName]
   }
 
-  /* Walk down the segments via the linked events, and claim the
-   * segments that will be part of this ring */
-  _claimSegments () {
-    const segment = this.firstSegment
-    let prevEvent = null
-    let event = segment.leftSE
-    let nextEvent = segment.rightSE
-    this._points = [event.point]
-
-    while (true) {
-      prevEvent = event
-      event = nextEvent
-
-      this._points.push(event.point)
-      event.segment.registerRingOut(this)
-
-      const linkedEvents = event.getAvailableLinkedEvents()
-      if (linkedEvents.length === 0) break
-      if (linkedEvents.length === 1) nextEvent = linkedEvents[0].otherSE
-      if (linkedEvents.length > 1) {
-        const comparator = event.getLeftmostComparator(prevEvent)
-        nextEvent = linkedEvents.sort(comparator)[0].otherSE
-      }
-    }
-
-    const firstPt = this._points[0]
-    const lastPt = this._points[this._points.length - 1]
-    if (cmpPoints(firstPt, lastPt) !== 0) {
-      throw new Error(
-        `Unable to complete output ring starting at [${firstPt}].` +
-          ` Last matching segment found ends at [${lastPt}].`
-      )
-    }
-  }
-
   _isExteriorRing () {
     if (!this.enclosingRing) return true
     if (!this.enclosingRing.enclosingRing) return false
@@ -95,7 +143,8 @@ class Ring {
 
   /* Returns the ring that encloses this one, if any */
   _enclosingRing () {
-    let prevSeg = this.firstSegment.prevInResult
+    let prevSeg = this.events[0].segment.prevInResult
+    while (prevSeg && prevSeg.ringOut === this) prevSeg = prevSeg.prevInResult
     let prevPrevSeg = prevSeg ? prevSeg.prevInResult : null
 
     while (true) {
@@ -162,7 +211,7 @@ class MultiPoly {
     const polys = []
     for (let i = 0, iMax = rings.length; i < iMax; i++) {
       const ring = rings[i]
-      if (ring.poly) return
+      if (ring.poly) continue
       if (ring.isExteriorRing) polys.push(new Poly(ring))
       else {
         if (!ring.enclosingRing.poly) polys.push(new Poly(ring.enclosingRing))
