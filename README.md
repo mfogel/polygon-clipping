@@ -46,7 +46,7 @@ Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3
 * winding order of rings of Polygon does not matter
 * interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
 * interior rings may touch or overlap each other
-* rings may **not** be self-intersecting. If a self-intersecting ring is found, an exception will be thrown. To clean up self-intersecting rings, you may want to use the [Non-zero rule](https://en.wikipedia.org/wiki/Nonzero-rule) or the [Even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
+* rings may touch themselves, but may **not** cross themselves. If a self-crossing ring is found, an exception will be thrown. To clean up self-crossing rings, you may want to use the [non-zero rule](https://en.wikipedia.org/wiki/Nonzero-rule) or the [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
 
 #### MultiPolygon
 
@@ -62,7 +62,7 @@ Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing P
 * rings will be self-closing
 * rings will not contain repeated points
 * rings will not contain superfluous points (intermediate points along a straight line)
-* rings will not be self-intersecting
+* rings will not be self-touching nor self-crossing
 
 In the event that the result of the operation is the empty set, the output will be an empty array: `[]`.
 
