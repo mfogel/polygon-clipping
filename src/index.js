@@ -1,4 +1,5 @@
 const Queue = require('qheap')
+const box = require('./box.js')
 const cleanInput = require('./clean-input.js')
 const geomIn = require('./geom-in')
 const geomOut = require('./geom-out')
@@ -15,13 +16,17 @@ const doIt = (operationType, geom, moreGeoms) => {
     cleanInput.cleanMultiPoly(moreGeoms[i])
   }
 
-  /* Convert inputs to MultiPoly objects, mark subject & register operation */
-  const multipolys = [new geomIn.MultiPoly(geom)]
-  multipolys[0].markAsSubject()
-  for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    multipolys.push(new geomIn.MultiPoly(moreGeoms[i]))
+  /* register operation, extract portions of input to operate on */
+  operation.register(operationType, 1 + moreGeoms.length)
+  const opBbox = operation.getOperationalBbox(geom, moreGeoms)
+  const [inOpGeoms, notInOpGeoms] = box.split(opBbox, geom, moreGeoms)
+
+  /* Convert inputs to MultiPoly objects, mark subject */
+  const multipolys = []
+  for (let i = 0, iMax = inOpGeoms.length; i < iMax; i++) {
+    multipolys.push(new geomIn.MultiPoly(inOpGeoms[i]))
   }
-  operation.register(operationType, multipolys.length)
+  multipolys[0].markAsSubject()
 
   /* Put segment endpoints in a priority queue */
   const queue = new Queue({ comparBefore: SweepEvent.compareBefore })
@@ -46,8 +51,10 @@ const doIt = (operationType, geom, moreGeoms) => {
 
   /* Collect and compile segments we're keeping into a multipolygon */
   const ringsOut = geomOut.Ring.factory(sweepLine.segments)
-  const result = new geomOut.MultiPoly(ringsOut)
-  return result.getGeom()
+  const resultGeom = new geomOut.MultiPoly(ringsOut).getGeom()
+
+  /* Join that back up with the part that wasn't operated on */
+  return box.join(resultGeom, notInOpGeoms)
 }
 
 module.exports = doIt

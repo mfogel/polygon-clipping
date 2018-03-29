@@ -12,6 +12,10 @@ class Operation {
     this.type = type
     this.numMultiPolys = numMultiPolys
   }
+
+  getOperationalBbox (geom, moreGeoms) {
+    return [0, 0, 0, 0]
+  }
 }
 
 // global to register details about the operation on
