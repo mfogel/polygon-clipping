@@ -2,6 +2,7 @@
 
 const {
   doBboxesOverlap,
+  getBboxForMultiPoly,
   getBboxOverlap,
   getUniqueCorners,
   isInBbox
@@ -301,5 +302,24 @@ describe('get unique corners', () => {
   test('point', () => {
     const pt = [2, 2]
     expect(getUniqueCorners([pt, pt])).toEqual([pt])
+  })
+})
+
+describe('get bbox for multipoly', () => {
+  test('empty', () => {
+    const mp = []
+    expect(() => getBboxForMultiPoly(mp)).toThrow()
+  })
+
+  test('basic', () => {
+    const mp = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const expected = [[0, 0], [1, 1]]
+    expect(getBboxForMultiPoly(mp)).toEqual(expected)
+  })
+
+  test('basic2', () => {
+    const mp = [[[[1, 0], [1, 1], [0, 1], [1, 0]]]]
+    const expected = [[0, 0], [1, 1]]
+    expect(getBboxForMultiPoly(mp)).toEqual(expected)
   })
 })

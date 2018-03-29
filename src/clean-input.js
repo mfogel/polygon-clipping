@@ -1,3 +1,4 @@
+const operation = require('./operation')
 const { cmpPoints } = require('./flp')
 const { compareVectorAngles } = require('./vector')
 
@@ -92,6 +93,25 @@ const cleanRing = ring => {
   while (ring.length < 4 && ring.length > 0) ring.pop()
 }
 
+/* WARN: input modified directly: empty multipolys will be removed.
+ * Return value will be a boolean indidicating whether or not at this point
+ * we already know the result will be empty. */
+const handleEmptyInputs = (geoms, operationType) => {
+  for (let i = 0, iMax = geoms.length; i < iMax; i++) {
+    const geom = geoms[i]
+    if (geom.length > 0) continue
+
+    if (operationType === operation.types.INTERSECTION) return true
+    if (i === 0 && operationType === operation.types.DIFFERENCE) return true
+
+    geoms.splice(i, 1)
+    iMax = geoms.length
+    i--
+  }
+  if (geoms.length === 0) return true
+  return false
+}
+
 /* Scan the already-linked events of the segments for any
  * self-intersecting input rings (which are not supported) */
 const errorOnSelfIntersectingRings = segments => {
@@ -128,5 +148,6 @@ module.exports = {
   cleanMultiPoly,
   cleanRing,
   errorOnSelfIntersectingRings,
-  forceMultiPoly
+  forceMultiPoly,
+  handleEmptyInputs
 }

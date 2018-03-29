@@ -63,8 +63,39 @@ const getUniqueCorners = bbox => {
   return [[xmin, ymin], [xmin, ymax], [xmax, ymin], [xmax, ymax]]
 }
 
+/* Given a multipolygon (geojson style), calculate & return its bounding box.
+ * If the given multipoly is empty, return null. */
+const getBboxForMultiPoly = multipoly => {
+  const bbox = [
+    [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
+    [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]
+  ]
+  for (let i = 0, iMax = multipoly.length; i < iMax; i++) {
+    const poly = multipoly[i]
+
+    for (let j = 0, jMax = poly.length; j < jMax; j++) {
+      const ring = poly[j]
+
+      for (let k = 0, kMax = ring.length; k < kMax; k++) {
+        const x = ring[k][0]
+        const y = ring[k][1]
+
+        if (bbox[0][0] > x) bbox[0][0] = x
+        if (bbox[0][1] > y) bbox[0][1] = y
+        if (bbox[1][0] < x) bbox[1][0] = x
+        if (bbox[1][1] < y) bbox[1][1] = y
+      }
+    }
+  }
+  if (bbox[0][0] === Number.POSITIVE_INFINITY) {
+    throw new Error('Cannot calculate bbox of empty multipolygon')
+  }
+  return bbox
+}
+
 module.exports = {
   doBboxesOverlap,
+  getBboxForMultiPoly,
   getBboxOverlap,
   getUniqueCorners,
   isInBbox

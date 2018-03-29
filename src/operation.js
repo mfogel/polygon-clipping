@@ -1,3 +1,5 @@
+const bbox = require('./bbox')
+
 class Operation {
   constructor () {
     this.types = {
@@ -8,13 +10,20 @@ class Operation {
     }
   }
 
-  register (type, numMultiPolys) {
+  register (type, geoms) {
     this.type = type
-    this.numMultiPolys = numMultiPolys
+    this.numMultiPolys = geoms.length
+    this.bbox = this._calcBbox(geoms)
   }
 
-  getOperationalBbox (geom, moreGeoms) {
-    return [0, 0, 0, 0]
+  _calcBbox (geoms) {
+    const bboxes = []
+    for (let i = 0, iMax = geoms.length; i < iMax; i++) {
+      bboxes.push(bbox.getBboxForMultiPoly(geoms[i]))
+    }
+    // TODO: combine the bboxes together appropriately to form the opBbox
+    const opBbox = [[0, 0], [0, 0]]
+    return opBbox
   }
 }
 

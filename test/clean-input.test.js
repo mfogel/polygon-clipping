@@ -1,6 +1,8 @@
 /* eslint-env jest */
 
+const operation = require('../src/operation')
 const {
+  handleEmptyInputs,
   cleanRing,
   cleanMultiPoly,
   forceMultiPoly
@@ -159,5 +161,97 @@ describe('cleanRing()', () => {
     const ringBad = [[0, 0], [1, 0], [1, 0], [0, 0], [0, 0]]
     cleanRing(ringBad)
     expect(ringBad).toEqual([])
+  })
+})
+
+describe('handleEmptyInputs()', () => {
+  const emptyGeom = []
+  const nonEmptyGeom = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+
+  describe('none are empty', () => {
+    test('intersection', () => {
+      const geoms = [nonEmptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.INTERSECTION
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom, nonEmptyGeom])
+    })
+
+    test('union', () => {
+      const geoms = [nonEmptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.UNION
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom, nonEmptyGeom])
+    })
+
+    test('xor', () => {
+      const geoms = [nonEmptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.XOR
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom, nonEmptyGeom])
+    })
+
+    test('difference', () => {
+      const geoms = [nonEmptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.DIFFERENCE
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom, nonEmptyGeom])
+    })
+  })
+
+  describe('non-subject is empty', () => {
+    test('intersection', () => {
+      const geoms = [nonEmptyGeom, emptyGeom, nonEmptyGeom]
+      const opType = operation.types.INTERSECTION
+      expect(handleEmptyInputs(geoms, opType)).toBe(true)
+    })
+
+    test('union', () => {
+      const geoms = [nonEmptyGeom, emptyGeom, nonEmptyGeom]
+      const opType = operation.types.UNION
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom])
+    })
+
+    test('xor', () => {
+      const geoms = [nonEmptyGeom, emptyGeom, nonEmptyGeom]
+      const opType = operation.types.XOR
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom])
+    })
+
+    test('difference', () => {
+      const geoms = [nonEmptyGeom, emptyGeom, nonEmptyGeom]
+      const opType = operation.types.DIFFERENCE
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom])
+    })
+  })
+
+  describe('subject is empty', () => {
+    test('intersection', () => {
+      const geoms = [emptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.INTERSECTION
+      expect(handleEmptyInputs(geoms, opType)).toBe(true)
+    })
+
+    test('union', () => {
+      const geoms = [emptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.UNION
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom])
+    })
+
+    test('xor', () => {
+      const geoms = [emptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.XOR
+      expect(handleEmptyInputs(geoms, opType)).toBe(false)
+      expect(geoms).toEqual([nonEmptyGeom, nonEmptyGeom])
+    })
+
+    test('difference', () => {
+      const geoms = [emptyGeom, nonEmptyGeom, nonEmptyGeom]
+      const opType = operation.types.DIFFERENCE
+      expect(handleEmptyInputs(geoms, opType)).toBe(true)
+    })
   })
 })

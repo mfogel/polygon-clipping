@@ -8,18 +8,25 @@ const SweepEvent = require('./sweep-event')
 const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, geom, moreGeoms) => {
-  /* Clean inputs */
-  cleanInput.forceMultiPoly(geom)
-  cleanInput.cleanMultiPoly(geom)
+  /* Collect inputs */
+  const geoms = [geom]
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    cleanInput.forceMultiPoly(moreGeoms[i])
-    cleanInput.cleanMultiPoly(moreGeoms[i])
+    geoms.push(moreGeoms[i])
   }
 
+  /* Clean inputs */
+  for (let i = 0, iMax = geoms.length; i < iMax; i++) {
+    cleanInput.forceMultiPoly(geoms[i])
+    cleanInput.cleanMultiPoly(geoms[i])
+  }
+
+  /* Check for empty inputs */
+  const isResultEmpty = cleanInput.handleEmptyInputs(geoms, operationType)
+  if (isResultEmpty) return []
+
   /* register operation, extract portions of input to operate on */
-  operation.register(operationType, 1 + moreGeoms.length)
-  const opBbox = operation.getOperationalBbox(geom, moreGeoms)
-  const [inOpGeoms, notInOpGeoms] = box.split(opBbox, geom, moreGeoms)
+  operation.register(operationType, geoms)
+  const [inOpGeoms, outOpGeoms] = box.splitAll(operation.bbox, geoms)
 
   /* Convert inputs to MultiPoly objects, mark subject */
   const multipolys = []
@@ -54,7 +61,7 @@ const doIt = (operationType, geom, moreGeoms) => {
   const resultGeom = new geomOut.MultiPoly(ringsOut).getGeom()
 
   /* Join that back up with the part that wasn't operated on */
-  return box.join(resultGeom, notInOpGeoms)
+  return box.join(resultGeom, outOpGeoms)
 }
 
 module.exports = doIt
