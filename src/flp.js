@@ -4,6 +4,9 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/EPSILON
  */
 
+// IE Polyfill
+if (Number.EPSILON === undefined) Number.EPSILON = Math.pow(2, -52)
+
 const EPSILON_SQ = Number.EPSILON * Number.EPSILON
 
 /* FLP comparator */
@@ -16,7 +19,7 @@ const cmp = (a, b) => {
   }
 
   // check if they're flp equal
-  if ((a - b) * (a - b) < Number.EPSILON * Number.EPSILON * a * b) {
+  if ((a - b) * (a - b) < EPSILON_SQ * a * b) {
     return 0
   }
 
