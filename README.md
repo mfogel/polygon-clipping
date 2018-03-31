@@ -78,6 +78,10 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
+### next release
+
+ * Drop (within rounding error) infinitely thin rings from output ([#14](https://github.com/mfogel/polygon-clipping/issues/14))
+
 ### v0.6 (2018-03-26)
 
  * Ensure output rings are not self-intersecting ([#11](https://github.com/mfogel/polygon-clipping/issues/11))

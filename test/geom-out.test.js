@@ -363,6 +363,27 @@ describe('ring', () => {
 
     expect(ring.getGeom()).toEqual([[0, 0], [2, 2], [0, 2], [0, 0]])
   })
+
+  test('ring with all colinear points returns null', () => {
+    const seg1 = new Segment([0, 0], [1, 1])
+    const seg2 = new Segment([1, 1], [2, 2])
+    const seg3 = new Segment([2, 2], [3, 3])
+    const seg4 = new Segment([3, 3], [0, 0])
+
+    seg1.rightSE.link(seg2.leftSE)
+    seg2.rightSE.link(seg3.rightSE)
+    seg3.leftSE.link(seg4.rightSE)
+    seg4.leftSE.link(seg1.leftSE)
+
+    seg1._cache['isInResult'] = true
+    seg2._cache['isInResult'] = true
+    seg3._cache['isInResult'] = true
+    seg4._cache['isInResult'] = true
+
+    const ring = Ring.factory([seg1, seg2, seg3, seg4])[0]
+
+    expect(ring.getGeom()).toEqual(null)
+  })
 })
 
 describe('poly', () => {
@@ -381,6 +402,31 @@ describe('poly', () => {
 
     expect(poly.getGeom()).toEqual([1, 2, 3])
   })
+
+  test('has all colinear exterior ring', () => {
+    const ring1 = { registerPoly: jest.fn(), getGeom: () => null }
+    const poly = new Poly(ring1)
+
+    expect(ring1.registerPoly).toHaveBeenCalledWith(poly)
+
+    expect(poly.getGeom()).toEqual(null)
+  })
+
+  test('has all colinear interior ring', () => {
+    const ring1 = { registerPoly: jest.fn(), getGeom: () => 1 }
+    const ring2 = { registerPoly: jest.fn(), getGeom: () => null }
+    const ring3 = { registerPoly: jest.fn(), getGeom: () => 3 }
+
+    const poly = new Poly(ring1)
+    poly.addInterior(ring2)
+    poly.addInterior(ring3)
+
+    expect(ring1.registerPoly).toHaveBeenCalledWith(poly)
+    expect(ring2.registerPoly).toHaveBeenCalledWith(poly)
+    expect(ring3.registerPoly).toHaveBeenCalledWith(poly)
+
+    expect(poly.getGeom()).toEqual([1, 3])
+  })
 })
 
 describe('multipoly', () => {
@@ -391,5 +437,14 @@ describe('multipoly', () => {
     multipoly.polys = [poly1, poly2]
 
     expect(multipoly.getGeom()).toEqual([0, 1])
+  })
+
+  test('has poly with all colinear exterior ring', () => {
+    const multipoly = new MultiPoly([])
+    const poly1 = { getGeom: () => null }
+    const poly2 = { getGeom: () => 1 }
+    multipoly.polys = [poly1, poly2]
+
+    expect(multipoly.getGeom()).toEqual([1])
   })
 })

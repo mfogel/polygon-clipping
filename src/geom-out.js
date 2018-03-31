@@ -110,6 +110,9 @@ class Ring {
     const nextPt = this.events[1].point
     if (compareVectorAngles(pt, prevPt, nextPt) === 0) points.shift()
 
+    // ring was all (within rounding error of angle calc) colinear points
+    if (points.length === 0) return null
+
     points.push(points[0])
     return this.isExteriorRing ? points : points.reverse()
   }
@@ -186,8 +189,13 @@ class Poly {
 
   getGeom () {
     const geom = [this.exteriorRing.getGeom()]
+    // exterior ring was all (within rounding error of angle calc) colinear points
+    if (geom[0] === null) return null
     for (let i = 0, iMax = this.interiorRings.length; i < iMax; i++) {
-      geom.push(this.interiorRings[i].getGeom())
+      const ringGeom = this.interiorRings[i].getGeom()
+      // interior ring was all (within rounding error of angle calc) colinear points
+      if (ringGeom === null) continue
+      geom.push(ringGeom)
     }
     return geom
   }
@@ -202,7 +210,10 @@ class MultiPoly {
   getGeom () {
     const geom = []
     for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
-      geom.push(this.polys[i].getGeom())
+      const polyGeom = this.polys[i].getGeom()
+      // exterior ring was all (within rounding error of angle calc) colinear points
+      if (polyGeom === null) continue
+      geom.push(polyGeom)
     }
     return geom
   }
