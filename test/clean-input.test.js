@@ -3,7 +3,8 @@
 const {
   cleanRing,
   cleanMultiPoly,
-  forceMultiPoly
+  forceMultiPoly,
+  pointsAsObjects
 } = require('../src/clean-input')
 
 const deepCopyArray = input => {
@@ -21,31 +22,44 @@ describe('forceMultiPoly()', () => {
   })
 
   test('throws error on point input', () => {
-    const point = [3, 4]
+    const point = { x: 3, y: 4 }
     expect(() => forceMultiPoly(point)).toThrow()
   })
 
   test('throws error on ring input', () => {
-    const ring = [[3, 4], [4, 5], [5, 6], [3, 4]]
+    const ring = [
+      { x: 3, y: 4 },
+      { x: 4, y: 5 },
+      { x: 5, y: 6 },
+      { x: 3, y: 4 }
+    ]
     expect(() => forceMultiPoly(ring)).toThrow()
   })
 
   test('throws error numbers too deep input', () => {
     // multipolygons are 4 deep, anything more than that is not valid
-    const invalidGeom = [[[[[4, 5]]]]]
+    const invalidGeom = [[[[{ x: 4, y: 5 }]]]]
     expect(() => forceMultiPoly(invalidGeom)).toThrow()
   })
 
   test('converts polygon to multipolygon', () => {
-    const poly = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
-    const expected = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const poly = [
+      [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
+    ]
+    const expected = [
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
+    ]
     forceMultiPoly(poly)
     expect(poly).toEqual(expected)
   })
 
   test('multipoly input unchanged', () => {
-    const poly = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
-    const expected = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const poly = [
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
+    ]
+    const expected = [
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
+    ]
     forceMultiPoly(poly)
     expect(poly).toEqual(expected)
   })
@@ -61,12 +75,18 @@ describe('forceMultiPoly()', () => {
 describe('cleanMultiPoly()', () => {
   test('adds closing elements to rings', () => {
     const openRings = [
-      [[[0, 0], [1, 0], [0, 1]]],
-      [[[0, 0], [2, 0], [0, 2]], [[0, 0], [1, 0], [0, 1]]]
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]],
+      [
+        [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]
+      ]
     ]
     const closedRings = [
-      [[[0, 0], [1, 0], [0, 1], [0, 0]]],
-      [[[0, 0], [2, 0], [0, 2], [0, 0]], [[0, 0], [1, 0], [0, 1], [0, 0]]]
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]],
+      [
+        [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 0 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
+      ]
     ]
     cleanMultiPoly(openRings)
     expect(openRings).toEqual(closedRings)
@@ -74,8 +94,11 @@ describe('cleanMultiPoly()', () => {
 
   test('already standardized input unchanged', () => {
     const allGood = [
-      [[[0, 0], [1, 0], [0, 1], [0, 0]]],
-      [[[0, 0], [2, 0], [0, 2], [0, 0]], [[0, 0], [1, 0], [0, 1], [0, 0]]]
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]],
+      [
+        [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 0 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
+      ]
     ]
     const stillAllGood = deepCopyArray(allGood)
     cleanMultiPoly(allGood)
@@ -91,16 +114,24 @@ describe('cleanMultiPoly()', () => {
 
   test('interior degenerate rings removed', () => {
     const mpIn = [
-      [[[0, 0], [4, 0], [0, 4], [0, 0]], [[0, 0], [1, 1], [1, 1], [0, 0]]]
+      [
+        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }, { x: 0, y: 0 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 0 }]
+      ]
     ]
-    const mpExpected = [[[[0, 0], [4, 0], [0, 4], [0, 0]]]]
+    const mpExpected = [
+      [[{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }, { x: 0, y: 0 }]]
+    ]
     cleanMultiPoly(mpIn)
     expect(mpIn).toEqual(mpExpected)
   })
 
   test('exterior degenerate ring removes polygon', () => {
     const mpIn = [
-      [[[0, 0], [4, 0], [4, 0], [0, 0]], [[0, 0], [1, 0], [0, 1], [0, 0]]]
+      [
+        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 0 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
+      ]
     ]
     cleanMultiPoly(mpIn)
     expect(mpIn).toEqual([])
@@ -121,43 +152,139 @@ describe('cleanMultiPoly()', () => {
 
 describe('cleanRing()', () => {
   test('already standardized input unchanged', () => {
-    const allGood = [[0, 0], [1, 0], [0, 1], [0, 0]]
-    const stillAllGood = deepCopyArray(allGood)
+    const allGood = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 }
+    ]
+    const stillAllGood = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 }
+    ]
     cleanRing(allGood)
     expect(allGood).toEqual(stillAllGood)
   })
 
   test('adds closing elements to rings', () => {
-    const openRing = [[0, 0], [1, 0], [0, 1]]
-    const closedRing = [[0, 0], [1, 0], [0, 1], [0, 0]]
+    const openRing = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]
+    const closedRing = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 }
+    ]
     cleanRing(openRing)
     expect(openRing).toEqual(closedRing)
   })
 
   test('removes duplicate points', () => {
-    const ringBad = [[0, 0], [1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 0]]
-    const ringGood = [[0, 0], [1, 0], [0, 1], [0, 0]]
+    const ringBad = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 }
+    ]
+    const ringGood = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 }
+    ]
     cleanRing(ringBad)
     expect(ringBad).toEqual(ringGood)
   })
 
   test('removes colinear points', () => {
-    const ringBad = [[0, 0], [1, 0], [2, 0], [1, 0], [0, 2], [0, 1], [0, 0]]
-    const ringGood = [[0, 0], [1, 0], [0, 2], [0, 0]]
+    const ringBad = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 2 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 }
+    ]
+    const ringGood = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 2 },
+      { x: 0, y: 0 }
+    ]
     cleanRing(ringBad)
     expect(ringBad).toEqual(ringGood)
   })
 
   test('removes first/last when colinear', () => {
-    const ringBad = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, 0]]
-    const ringGood = [[1, 0], [0, 1], [-1, 0], [1, 0]]
+    const ringBad = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: -1, y: 0 },
+      { x: 0, y: 0 }
+    ]
+    const ringGood = [
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: -1, y: 0 },
+      { x: 1, y: 0 }
+    ]
     cleanRing(ringBad)
     expect(ringBad).toEqual(ringGood)
   })
 
   test('degenerate ring shrinks to empty array', () => {
-    const ringBad = [[0, 0], [1, 0], [1, 0], [0, 0], [0, 0]]
+    const ringBad = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 0 },
+      { x: 0, y: 0 }
+    ]
     cleanRing(ringBad)
     expect(ringBad).toEqual([])
+  })
+})
+
+describe('pointsAsObjects()', () => {
+  test('basic poly', () => {
+    const input = [[[0, 0], [1, 0], [0, 1], [0, 0]]]
+    const expected = [
+      [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
+    ]
+    expect(pointsAsObjects(input)).toEqual(expected)
+  })
+
+  test('basic multipoly', () => {
+    const input = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
+    const expected = [
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
+    ]
+    expect(pointsAsObjects(input)).toEqual(expected)
+  })
+
+  test('too shallow', () => {
+    const input = [[0, 0], [1, 0], [0, 1], [0, 0]]
+    expect(() => pointsAsObjects(input)).toThrow()
+  })
+
+  test('way too shallow', () => {
+    const input = [0, 0]
+    expect(() => pointsAsObjects(input)).toThrow()
+  })
+
+  test('wrong type', () => {
+    const input = 0
+    expect(() => pointsAsObjects(input)).toThrow()
+  })
+
+  test('too deep', () => {
+    const input = [[[[[0, 0], [1, 0], [0, 1], [0, 0]]]]]
+    expect(() => pointsAsObjects(input)).toThrow()
   })
 })

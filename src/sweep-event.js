@@ -26,7 +26,8 @@ class SweepEvent {
     if (a === b) return false
 
     throw new Error(
-      `SweepEvent comparison failed at [${a.point}]... equal but not identical?`
+      `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]... ` +
+        `equal but not identical?`
     )
   }
 

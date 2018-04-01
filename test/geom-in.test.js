@@ -4,7 +4,12 @@ const { Ring, Poly, MultiPoly } = require('../src/geom-in')
 
 describe('Ring', () => {
   test('create exterior ring', () => {
-    const [pt1, pt2, pt3, pt4] = [[0, 0], [1, 0], [1, 1], [0, 0]]
+    const [pt1, pt2, pt3, pt4] = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 0, y: 0 }
+    ]
     const poly = {}
     const ring = new Ring([pt1, pt2, pt3, pt4], poly)
     poly.exteriorRing = ring
@@ -156,9 +161,9 @@ describe('Poly', () => {
     const multiPoly = {}
     const poly = new Poly(
       [
-        [[0, 0], [1, 1]],
-        [[2, 2], [3, 3], [4, 4]],
-        [[4, 4], [5, 5], [6, 6], [7, 7]]
+        [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 4 }],
+        [{ x: 4, y: 4 }, { x: 5, y: 5 }, { x: 6, y: 6 }, { x: 7, y: 7 }]
       ],
       multiPoly
     )
@@ -252,8 +257,11 @@ describe('Poly', () => {
 describe('MultiPoly', () => {
   test('creation', () => {
     const multipoly = new MultiPoly([
-      [[[0, 0], [1, 1]]],
-      [[[0, 0], [1, 1]], [[2, 2], [3, 3], [4, 4]]]
+      [[{ x: 0, y: 0 }, { x: 1, y: 1 }]],
+      [
+        [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 4 }]
+      ]
     ])
 
     expect(multipoly.polys.length).toBe(2)

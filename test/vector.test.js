@@ -9,18 +9,26 @@ const {
 } = require('../src/vector')
 
 describe('cross product', () => {
-  test('general', () => expect(crossProduct([1, 2], [3, 4])).toEqual(-2))
+  test('general', () => {
+    const pt1 = { x: 1, y: 2 }
+    const pt2 = { x: 3, y: 4 }
+    expect(crossProduct(pt1, pt2)).toEqual(-2)
+  })
 })
 
 describe('dot product', () => {
-  test('general', () => expect(dotProduct([1, 2], [3, 4])).toEqual(11))
+  test('general', () => {
+    const pt1 = { x: 1, y: 2 }
+    const pt2 = { x: 3, y: 4 }
+    expect(dotProduct(pt1, pt2)).toEqual(11)
+  })
 })
 
 describe('compare vector angles', () => {
   test('colinear', () => {
-    const pt1 = [1, 1]
-    const pt2 = [2, 2]
-    const pt3 = [3, 3]
+    const pt1 = { x: 1, y: 1 }
+    const pt2 = { x: 2, y: 2 }
+    const pt3 = { x: 3, y: 3 }
 
     expect(compareVectorAngles(pt1, pt2, pt3)).toBe(0)
     expect(compareVectorAngles(pt2, pt1, pt3)).toBe(0)
@@ -29,9 +37,9 @@ describe('compare vector angles', () => {
   })
 
   test('offset', () => {
-    const pt1 = [0, 0]
-    const pt2 = [1, 1]
-    const pt3 = [1, 0]
+    const pt1 = { x: 0, y: 0 }
+    const pt2 = { x: 1, y: 1 }
+    const pt3 = { x: 1, y: 0 }
 
     expect(compareVectorAngles(pt1, pt2, pt3)).toBe(-1)
     expect(compareVectorAngles(pt2, pt1, pt3)).toBe(1)
@@ -42,9 +50,9 @@ describe('compare vector angles', () => {
 
 describe('sine and cosine of angle', () => {
   describe('parallel', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [1, 0]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: 1, y: 0 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBe(0)
     })
@@ -54,9 +62,9 @@ describe('sine and cosine of angle', () => {
   })
 
   describe('45 degrees', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [1, -1]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: 1, y: -1 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBeCloseTo(Math.sqrt(2) / 2)
     })
@@ -66,9 +74,9 @@ describe('sine and cosine of angle', () => {
   })
 
   describe('90 degrees', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [0, -1]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: 0, y: -1 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBe(1)
     })
@@ -78,9 +86,9 @@ describe('sine and cosine of angle', () => {
   })
 
   describe('135 degrees', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [-1, -1]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: -1, y: -1 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBeCloseTo(Math.sqrt(2) / 2)
     })
@@ -90,9 +98,9 @@ describe('sine and cosine of angle', () => {
   })
 
   describe('anti-parallel', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [-1, 0]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: -1, y: 0 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBe(-0)
     })
@@ -102,9 +110,9 @@ describe('sine and cosine of angle', () => {
   })
 
   describe('225 degrees', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [-1, 1]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: -1, y: 1 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBeCloseTo(-Math.sqrt(2) / 2)
     })
@@ -114,9 +122,9 @@ describe('sine and cosine of angle', () => {
   })
 
   describe('270 degrees', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [0, 1]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: 0, y: 1 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBe(-1)
     })
@@ -126,9 +134,9 @@ describe('sine and cosine of angle', () => {
   })
 
   describe('315 degrees', () => {
-    const shared = [0, 0]
-    const base = [1, 0]
-    const angle = [1, 1]
+    const shared = { x: 0, y: 0 }
+    const base = { x: 1, y: 0 }
+    const angle = { x: 1, y: 1 }
     test('sine', () => {
       expect(sineOfAngle(shared, base, angle)).toBeCloseTo(-Math.sqrt(2) / 2)
     })

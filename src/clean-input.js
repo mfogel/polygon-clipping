@@ -1,20 +1,58 @@
 const { cmpPoints } = require('./flp')
 const { compareVectorAngles } = require('./vector')
 
+/* Given input geometry as a standard array-of-arrays geojson-style
+ * geometry, return one that uses objects as points, for better perf */
+const pointsAsObjects = geom => {
+  // we can handle well-formed multipolys and polys
+  const output = []
+  if (!Array.isArray(geom)) {
+    throw new Error('Input is not a Polygon or MultiPolygon')
+  }
+  for (let i = 0, iMax = geom.length; i < iMax; i++) {
+    if (!Array.isArray(geom[i])) {
+      throw new Error('Input is not a Polygon or MultiPolygon')
+    }
+    output.push([])
+    for (let j = 0, jMax = geom[i].length; j < jMax; j++) {
+      if (!Array.isArray(geom[i][j])) {
+        throw new Error('Input is not a Polygon or MultiPolygon')
+      }
+      if (geom[i][j].length === 2) {
+        output[i].push({ x: geom[i][j][0], y: geom[i][j][1] })
+        continue
+      }
+      output[i].push([])
+      for (let k = 0, kMax = geom[i][j].length; k < kMax; k++) {
+        if (!Array.isArray(geom[i][j][k]) || geom[i][j][k].length !== 2) {
+          throw new Error('Input is not a Polygon or MultiPolygon')
+        }
+        output[i][j].push({ x: geom[i][j][k][0], y: geom[i][j][k][1] })
+      }
+    }
+  }
+  return output
+}
+
 /* WARN: input modified directly */
 const forceMultiPoly = geom => {
   if (Array.isArray(geom)) {
     if (geom.length === 0) return // allow empty multipolys
 
-    if (Array.isArray(geom[0]) && Array.isArray(geom[0][0])) {
-      if (
-        Array.isArray(geom[0][0][0]) &&
-        typeof geom[0][0][0][0] === 'number'
-      ) {
-        // multipolygon
-        return
+    if (Array.isArray(geom[0])) {
+      if (Array.isArray(geom[0][0])) {
+        if (
+          typeof geom[0][0][0].x === 'number' &&
+          typeof geom[0][0][0].y === 'number'
+        ) {
+          // multipolygon
+          return
+        }
       }
-      if (typeof geom[0][0][0] === 'number') {
+      if (
+        typeof geom[0][0].x === 'number' &&
+        typeof geom[0][0].y === 'number'
+      ) {
         // polygon
         geom.unshift(geom.splice(0))
         return
@@ -64,7 +102,7 @@ const cleanMultiPoly = multipoly => {
 const cleanRing = ring => {
   if (ring.length === 0) return
   if (cmpPoints(ring[0], ring[ring.length - 1]) !== 0) {
-    ring.push([ring[0][0], ring[0][1]]) // copy by value
+    ring.push({ x: ring[0].x, y: ring[0].y }) // copy by value
   }
 
   const isPointUncessary = (prevPt, pt, nextPt) =>
@@ -116,7 +154,8 @@ const errorOnSelfIntersectingRings = segments => {
           rightMostEvt.segment.flowIntoSE === rightMostEvt
         ) {
           throw new Error(
-            `Self-intersecting, crossing input ring found at [${evt.point}]`
+            `Self-intersecting, crossing input ring found at ` +
+              `[${evt.point.x}, ${evt.point.y}]`
           )
         }
       }
@@ -128,5 +167,6 @@ module.exports = {
   cleanMultiPoly,
   cleanRing,
   errorOnSelfIntersectingRings,
-  forceMultiPoly
+  forceMultiPoly,
+  pointsAsObjects
 }

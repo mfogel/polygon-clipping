@@ -36,8 +36,9 @@ class Ring {
             const firstPt = events[0].point
             const lastPt = events[events.length - 1].point
             throw new Error(
-              `Unable to complete output ring starting at [${firstPt}].` +
-                ` Last matching segment found ends at [${lastPt}].`
+              `Unable to complete output ring starting at [${firstPt.x},` +
+                ` ${firstPt.y}]. Last matching segment found ends at ` +
+                ` [${lastPt.x}, ${lastPt.y}].`
             )
           }
 
@@ -95,13 +96,13 @@ class Ring {
 
   getGeom () {
     // Remove superfluous points (ie extra points along a straight line),
-    const points = [this.events[0].point]
+    const points = [[this.events[0].point.x, this.events[0].point.y]]
     for (let i = 1, iMax = this.events.length - 1; i < iMax; i++) {
       const prevPt = this.events[i - 1].point
       const pt = this.events[i].point
       const nextPt = this.events[i + 1].point
       if (compareVectorAngles(pt, prevPt, nextPt) === 0) continue
-      points.push(pt)
+      points.push([pt.x, pt.y])
     }
 
     // check if the starting point is necessary

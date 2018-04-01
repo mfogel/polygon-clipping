@@ -9,9 +9,9 @@ const { Ring, Poly, MultiPoly } = require('../src/geom-out')
 describe('ring', () => {
   describe('factory', () => {
     test('simple triangle', () => {
-      const seg1 = new Segment([0, 0], [1, 1])
-      const seg2 = new Segment([1, 1], [0, 1])
-      const seg3 = new Segment([0, 1], [0, 0])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: 1 })
+      const seg2 = new Segment({ x: 1, y: 1 }, { x: 0, y: 1 })
+      const seg3 = new Segment({ x: 0, y: 1 }, { x: 0, y: 0 })
 
       seg1.rightSE.link(seg2.rightSE)
       seg2.leftSE.link(seg3.rightSE)
@@ -28,17 +28,17 @@ describe('ring', () => {
     })
 
     test('bow tie', () => {
-      const seg1 = new Segment([0, 0], [1, 1])
-      const seg2 = new Segment([1, 1], [0, 2])
-      const seg3 = new Segment([0, 2], [0, 0])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: 1 })
+      const seg2 = new Segment({ x: 1, y: 1 }, { x: 0, y: 2 })
+      const seg3 = new Segment({ x: 0, y: 2 }, { x: 0, y: 0 })
 
       seg1.rightSE.link(seg2.rightSE)
       seg2.leftSE.link(seg3.rightSE)
       seg3.leftSE.link(seg1.leftSE)
 
-      const seg4 = new Segment([1, 1], [2, 0])
-      const seg5 = new Segment([1, 1], [2, 2])
-      const seg6 = new Segment([0, 2], [2, 2])
+      const seg4 = new Segment({ x: 1, y: 1 }, { x: 2, y: 0 })
+      const seg5 = new Segment({ x: 1, y: 1 }, { x: 2, y: 2 })
+      const seg6 = new Segment({ x: 0, y: 2 }, { x: 2, y: 2 })
 
       seg4.leftSE.link(seg5.leftSE)
       seg4.rightSE.link(seg6.leftSE)
@@ -61,19 +61,19 @@ describe('ring', () => {
     })
 
     test('ringed ring', () => {
-      const seg1 = new Segment([0, 0], [3, -3])
-      const seg2 = new Segment([3, -3], [3, 0])
-      const seg3 = new Segment([3, 0], [3, 3])
-      const seg4 = new Segment([0, 0], [3, 3])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 3, y: -3 })
+      const seg2 = new Segment({ x: 3, y: -3 }, { x: 3, y: 0 })
+      const seg3 = new Segment({ x: 3, y: 0 }, { x: 3, y: 3 })
+      const seg4 = new Segment({ x: 0, y: 0 }, { x: 3, y: 3 })
 
       seg1.rightSE.link(seg2.leftSE)
       seg2.rightSE.link(seg3.leftSE)
       seg3.rightSE.link(seg4.rightSE)
       seg4.leftSE.link(seg1.leftSE)
 
-      const seg5 = new Segment([2, -1], [3, 0])
-      const seg6 = new Segment([2, 1], [3, 0])
-      const seg7 = new Segment([2, -1], [2, 1])
+      const seg5 = new Segment({ x: 2, y: -1 }, { x: 3, y: 0 })
+      const seg6 = new Segment({ x: 2, y: 1 }, { x: 3, y: 0 })
+      const seg7 = new Segment({ x: 2, y: -1 }, { x: 2, y: 1 })
 
       seg5.leftSE.link(seg7.leftSE)
       seg5.rightSE.link(seg6.rightSE)
@@ -97,20 +97,20 @@ describe('ring', () => {
     })
 
     test('ringed ring interior ring starting point extraneous', () => {
-      const seg1 = new Segment([0, 0], [5, -5])
-      const seg2 = new Segment([4, 0], [5, -5])
-      const seg3 = new Segment([4, 0], [5, 5])
-      const seg4 = new Segment([0, 0], [5, 5])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 5, y: -5 })
+      const seg2 = new Segment({ x: 4, y: 0 }, { x: 5, y: -5 })
+      const seg3 = new Segment({ x: 4, y: 0 }, { x: 5, y: 5 })
+      const seg4 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 })
 
       seg1.leftSE.link(seg4.leftSE)
       seg1.rightSE.link(seg2.rightSE)
       seg2.leftSE.link(seg3.leftSE)
       seg3.rightSE.link(seg4.rightSE)
 
-      const seg5 = new Segment([1, 0], [4, 1])
-      const seg6 = new Segment([1, 0], [4, -1])
-      const seg7 = new Segment([4, -1], [4, 0])
-      const seg8 = new Segment([4, 0], [4, 1])
+      const seg5 = new Segment({ x: 1, y: 0 }, { x: 4, y: 1 })
+      const seg6 = new Segment({ x: 1, y: 0 }, { x: 4, y: -1 })
+      const seg7 = new Segment({ x: 4, y: -1 }, { x: 4, y: 0 })
+      const seg8 = new Segment({ x: 4, y: 0 }, { x: 4, y: 1 })
 
       seg5.leftSE.link(seg6.leftSE)
       seg5.rightSE.link(seg8.rightSE)
@@ -143,27 +143,27 @@ describe('ring', () => {
     })
 
     test('ringed ring and bow tie at same point', () => {
-      const seg1 = new Segment([0, 0], [3, -3])
-      const seg2 = new Segment([3, -3], [3, 0])
-      const seg3 = new Segment([3, 0], [3, 3])
-      const seg4 = new Segment([0, 0], [3, 3])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 3, y: -3 })
+      const seg2 = new Segment({ x: 3, y: -3 }, { x: 3, y: 0 })
+      const seg3 = new Segment({ x: 3, y: 0 }, { x: 3, y: 3 })
+      const seg4 = new Segment({ x: 0, y: 0 }, { x: 3, y: 3 })
 
       seg1.rightSE.link(seg2.leftSE)
       seg2.rightSE.link(seg3.leftSE)
       seg3.rightSE.link(seg4.rightSE)
       seg4.leftSE.link(seg1.leftSE)
 
-      const seg5 = new Segment([2, -1], [3, 0])
-      const seg6 = new Segment([2, 1], [3, 0])
-      const seg7 = new Segment([2, -1], [2, 1])
+      const seg5 = new Segment({ x: 2, y: -1 }, { x: 3, y: 0 })
+      const seg6 = new Segment({ x: 2, y: 1 }, { x: 3, y: 0 })
+      const seg7 = new Segment({ x: 2, y: -1 }, { x: 2, y: 1 })
 
       seg5.leftSE.link(seg7.leftSE)
       seg5.rightSE.link(seg6.rightSE)
       seg6.leftSE.link(seg7.rightSE)
 
-      const seg8 = new Segment([3, 0], [4, -1])
-      const seg9 = new Segment([3, 0], [4, 1])
-      const seg10 = new Segment([4, -1], [4, 1])
+      const seg8 = new Segment({ x: 3, y: 0 }, { x: 4, y: -1 })
+      const seg9 = new Segment({ x: 3, y: 0 }, { x: 4, y: 1 })
+      const seg10 = new Segment({ x: 4, y: -1 }, { x: 4, y: 1 })
 
       seg8.leftSE.link(seg9.leftSE)
       seg8.rightSE.link(seg10.leftSE)
@@ -193,25 +193,25 @@ describe('ring', () => {
     })
 
     test('double bow tie', () => {
-      const seg1 = new Segment([0, 0], [1, -2])
-      const seg2 = new Segment([0, 0], [1, 2])
-      const seg3 = new Segment([1, -2], [1, 2])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: -2 })
+      const seg2 = new Segment({ x: 0, y: 0 }, { x: 1, y: 2 })
+      const seg3 = new Segment({ x: 1, y: -2 }, { x: 1, y: 2 })
 
       seg1.leftSE.link(seg2.leftSE)
       seg1.rightSE.link(seg3.leftSE)
       seg2.rightSE.link(seg3.rightSE)
 
-      const seg4 = new Segment([1, -2], [2, -3])
-      const seg5 = new Segment([1, -2], [2, -1])
-      const seg6 = new Segment([2, -3], [2, -1])
+      const seg4 = new Segment({ x: 1, y: -2 }, { x: 2, y: -3 })
+      const seg5 = new Segment({ x: 1, y: -2 }, { x: 2, y: -1 })
+      const seg6 = new Segment({ x: 2, y: -3 }, { x: 2, y: -1 })
 
       seg4.leftSE.link(seg5.leftSE)
       seg4.rightSE.link(seg6.leftSE)
       seg5.rightSE.link(seg6.rightSE)
 
-      const seg7 = new Segment([1, 2], [2, 1])
-      const seg8 = new Segment([1, 2], [2, 3])
-      const seg9 = new Segment([2, 1], [2, 3])
+      const seg7 = new Segment({ x: 1, y: 2 }, { x: 2, y: 1 })
+      const seg8 = new Segment({ x: 1, y: 2 }, { x: 2, y: 3 })
+      const seg9 = new Segment({ x: 2, y: 1 }, { x: 2, y: 3 })
 
       seg7.leftSE.link(seg8.leftSE)
       seg7.rightSE.link(seg9.leftSE)
@@ -240,25 +240,25 @@ describe('ring', () => {
     })
 
     test('double ringed ring', () => {
-      const seg1 = new Segment([0, 0], [5, -5])
-      const seg2 = new Segment([0, 0], [5, 5])
-      const seg3 = new Segment([5, -5], [5, 5])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 5, y: -5 })
+      const seg2 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 })
+      const seg3 = new Segment({ x: 5, y: -5 }, { x: 5, y: 5 })
 
       seg1.leftSE.link(seg2.leftSE)
       seg1.rightSE.link(seg3.leftSE)
       seg2.rightSE.link(seg3.rightSE)
 
-      const seg4 = new Segment([1, -1], [5, -5])
-      const seg5 = new Segment([1, -1], [2, -1])
-      const seg6 = new Segment([2, -1], [5, -5])
+      const seg4 = new Segment({ x: 1, y: -1 }, { x: 5, y: -5 })
+      const seg5 = new Segment({ x: 1, y: -1 }, { x: 2, y: -1 })
+      const seg6 = new Segment({ x: 2, y: -1 }, { x: 5, y: -5 })
 
       seg4.leftSE.link(seg5.leftSE)
       seg4.rightSE.link(seg6.rightSE)
       seg5.rightSE.link(seg6.leftSE)
 
-      const seg7 = new Segment([1, 1], [2, 1])
-      const seg8 = new Segment([1, 1], [5, 5])
-      const seg9 = new Segment([2, 1], [5, 5])
+      const seg7 = new Segment({ x: 1, y: 1 }, { x: 2, y: 1 })
+      const seg8 = new Segment({ x: 1, y: 1 }, { x: 5, y: 5 })
+      const seg9 = new Segment({ x: 2, y: 1 }, { x: 5, y: 5 })
 
       seg7.leftSE.link(seg8.leftSE)
       seg7.rightSE.link(seg9.leftSE)
@@ -287,9 +287,9 @@ describe('ring', () => {
     })
 
     test('errors on on malformed ring', () => {
-      const seg1 = new Segment([0, 0], [1, 1])
-      const seg2 = new Segment([1, 1], [0, 1])
-      const seg3 = new Segment([0, 1], [0, 0])
+      const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: 1 })
+      const seg2 = new Segment({ x: 1, y: 1 }, { x: 0, y: 1 })
+      const seg3 = new Segment({ x: 0, y: 1 }, { x: 0, y: 0 })
 
       seg1.rightSE.link(seg2.rightSE)
       seg2.leftSE.link(seg3.rightSE)
@@ -304,9 +304,9 @@ describe('ring', () => {
   })
 
   test('exterior ring', () => {
-    const seg1 = new Segment([0, 0], [1, 1])
-    const seg2 = new Segment([1, 1], [0, 1])
-    const seg3 = new Segment([0, 1], [0, 0])
+    const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: 1 })
+    const seg2 = new Segment({ x: 1, y: 1 }, { x: 0, y: 1 })
+    const seg3 = new Segment({ x: 0, y: 1 }, { x: 0, y: 0 })
 
     seg1.rightSE.link(seg2.rightSE)
     seg2.leftSE.link(seg3.rightSE)
@@ -324,9 +324,9 @@ describe('ring', () => {
   })
 
   test('interior ring points reversed', () => {
-    const seg1 = new Segment([0, 0], [1, 1])
-    const seg2 = new Segment([1, 1], [0, 1])
-    const seg3 = new Segment([0, 1], [0, 0])
+    const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: 1 })
+    const seg2 = new Segment({ x: 1, y: 1 }, { x: 0, y: 1 })
+    const seg3 = new Segment({ x: 0, y: 1 }, { x: 0, y: 0 })
 
     seg1.rightSE.link(seg2.rightSE)
     seg2.leftSE.link(seg3.rightSE)
@@ -344,10 +344,10 @@ describe('ring', () => {
   })
 
   test('removes colinear points successfully', () => {
-    const seg1 = new Segment([0, 0], [1, 1])
-    const seg2 = new Segment([1, 1], [2, 2])
-    const seg3 = new Segment([2, 2], [0, 2])
-    const seg4 = new Segment([0, 2], [0, 0])
+    const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: 1 })
+    const seg2 = new Segment({ x: 1, y: 1 }, { x: 2, y: 2 })
+    const seg3 = new Segment({ x: 2, y: 2 }, { x: 0, y: 2 })
+    const seg4 = new Segment({ x: 0, y: 2 }, { x: 0, y: 0 })
 
     seg1.rightSE.link(seg2.leftSE)
     seg2.rightSE.link(seg3.rightSE)
@@ -365,10 +365,10 @@ describe('ring', () => {
   })
 
   test('ring with all colinear points returns null', () => {
-    const seg1 = new Segment([0, 0], [1, 1])
-    const seg2 = new Segment([1, 1], [2, 2])
-    const seg3 = new Segment([2, 2], [3, 3])
-    const seg4 = new Segment([3, 3], [0, 0])
+    const seg1 = new Segment({ x: 0, y: 0 }, { x: 1, y: 1 })
+    const seg2 = new Segment({ x: 1, y: 1 }, { x: 2, y: 2 })
+    const seg3 = new Segment({ x: 2, y: 2 }, { x: 3, y: 3 })
+    const seg4 = new Segment({ x: 3, y: 3 }, { x: 0, y: 0 })
 
     seg1.rightSE.link(seg2.leftSE)
     seg2.rightSE.link(seg3.rightSE)

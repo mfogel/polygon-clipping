@@ -31,9 +31,16 @@ const cmp = (a, b) => {
 const cmpPoints = (aPt, bPt) => {
   // fist compare X, then compare Y
   // inlined version of cmp here for performance boost
+  let a
+  let b
   for (let i = 0; i < 2; i++) {
-    const a = aPt[i]
-    const b = bPt[i]
+    if (i === 0) {
+      a = aPt.x
+      b = bPt.x
+    } else {
+      a = aPt.y
+      b = bPt.y
+    }
 
     // check if they're both 0
     if (-Number.EPSILON < a && a < Number.EPSILON) {

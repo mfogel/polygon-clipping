@@ -7,20 +7,24 @@ const SweepEvent = require('./sweep-event')
 const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, geom, moreGeoms) => {
-  /* Clean inputs */
-  cleanInput.forceMultiPoly(geom)
-  cleanInput.cleanMultiPoly(geom)
+  /* Make a copy of the input geometry with points as objects, for perf */
+  const geoms = [cleanInput.pointsAsObjects(geom)]
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    cleanInput.forceMultiPoly(moreGeoms[i])
-    cleanInput.cleanMultiPoly(moreGeoms[i])
+    geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
+  }
+
+  /* Clean inputs */
+  for (let i = 0, iMax = geoms.length; i < iMax; i++) {
+    cleanInput.forceMultiPoly(geoms[i])
+    cleanInput.cleanMultiPoly(geoms[i])
   }
 
   /* Convert inputs to MultiPoly objects, mark subject & register operation */
-  const multipolys = [new geomIn.MultiPoly(geom)]
-  multipolys[0].markAsSubject()
-  for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    multipolys.push(new geomIn.MultiPoly(moreGeoms[i]))
+  const multipolys = []
+  for (let i = 0, iMax = geoms.length; i < iMax; i++) {
+    multipolys.push(new geomIn.MultiPoly(geoms[i]))
   }
+  multipolys[0].markAsSubject()
   operation.register(operationType, multipolys.length)
 
   /* Put segment endpoints in a priority queue */

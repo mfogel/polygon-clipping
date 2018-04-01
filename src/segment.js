@@ -8,12 +8,12 @@ class Segment {
   static compare (a, b) {
     if (a === b) return 0
 
-    const alx = a.leftSE.point[0]
-    const aly = a.leftSE.point[1]
-    const blx = b.leftSE.point[0]
-    const bly = b.leftSE.point[1]
-    const arx = a.rightSE.point[0]
-    const brx = b.rightSE.point[0]
+    const alx = a.leftSE.point.x
+    const aly = a.leftSE.point.y
+    const blx = b.leftSE.point.x
+    const bly = b.leftSE.point.y
+    const arx = a.rightSE.point.x
+    const brx = b.rightSE.point.x
 
     // check if they're even in the same vertical plane
     if (cmp(brx, alx) < 0) return 1
@@ -61,8 +61,9 @@ class Segment {
     }
 
     throw new Error(
-      `Segment comparison (from [${a.leftSE.point}]) -> to ` +
-        `[${a.rightSE.point}]) failed... segments equal but not identical?`
+      `Segment comparison (from [${a.leftSE.point.x}, ${a.leftSR.point.y}])` +
+        ` -> to [${a.rightSE.point.x}, ${a.rightSE.point.y}]) failed... ` +
+        ` segments equal but not identical?`
     )
   }
 
@@ -82,7 +83,9 @@ class Segment {
       rp = point1
       this.flowL2R = false
     } else {
-      throw new Error(`Tried to create degenerate segment at [${point1}]`)
+      throw new Error(
+        `Tried to create degenerate segment at [${point1.x}, ${point1.y}]`
+      )
     }
 
     this.leftSE = new SweepEvent(lp, this)
@@ -99,24 +102,24 @@ class Segment {
   }
 
   get bbox () {
-    const y1 = this.leftSE.point[1]
-    const y2 = this.rightSE.point[1]
-    return [
-      [this.leftSE.point[0], y1 < y2 ? y1 : y2],
-      [this.rightSE.point[0], y1 > y2 ? y1 : y2]
-    ]
+    const y1 = this.leftSE.point.y
+    const y2 = this.rightSE.point.y
+    return {
+      ll: { x: this.leftSE.point.x, y: y1 < y2 ? y1 : y2 },
+      ur: { x: this.rightSE.point.x, y: y1 > y2 ? y1 : y2 }
+    }
   }
 
   /* A vector from the left point to the right */
   get vector () {
-    return [
-      this.rightSE.point[0] - this.leftSE.point[0],
-      this.rightSE.point[1] - this.leftSE.point[1]
-    ]
+    return {
+      x: this.rightSE.point.x - this.leftSE.point.x,
+      y: this.rightSE.point.y - this.leftSE.point.y
+    }
   }
 
   get isVertical () {
-    return cmp(this.leftSE.point[0], this.rightSE.point[0]) === 0
+    return cmp(this.leftSE.point.x, this.rightSE.point.x) === 0
   }
 
   /* In the original ringIn, which event came second */
@@ -194,7 +197,7 @@ class Segment {
     const bl = other.leftSE.point
     const va = this.vector
     const vb = other.vector
-    const ve = [bl[0] - al[0], bl[1] - al[1]]
+    const ve = { x: bl.x - al.x, y: bl.y - al.y }
     const kross = crossProduct(va, vb)
 
     // not on line segment a
@@ -206,13 +209,13 @@ class Segment {
 
     // intersection is in a midpoint of both lines, let's average them and
     // bound the result by org bbox (otherwise leftSE and rightSE could swap)
-    let x = (al[0] + s * va[0] + bl[0] + t * vb[0]) / 2
-    let y = (al[1] + s * va[1] + bl[1] + t * vb[1]) / 2
-    if (x < bboxOverlap[0][0]) x = bboxOverlap[0][0]
-    if (x > bboxOverlap[1][0]) x = bboxOverlap[1][0]
-    if (y < bboxOverlap[0][1]) y = bboxOverlap[0][1]
-    if (y > bboxOverlap[1][1]) y = bboxOverlap[1][1]
-    return [[x, y]]
+    let x = (al.x + s * va.x + bl.x + t * vb.x) / 2
+    let y = (al.y + s * va.y + bl.y + t * vb.y) / 2
+    if (x < bboxOverlap.ll.x) x = bboxOverlap.ll.x
+    if (x > bboxOverlap.ur.x) x = bboxOverlap.ur.x
+    if (y < bboxOverlap.ll.y) y = bboxOverlap.ll.y
+    if (y > bboxOverlap.ur.y) y = bboxOverlap.ur.y
+    return [{ x: x, y: y }]
   }
 
   /**
@@ -235,7 +238,9 @@ class Segment {
     for (let i = 0, iMax = points.length; i < iMax; i++) {
       const pt = points[i]
       if (this.isAnEndpoint(pt)) {
-        throw new Error(`Cannot split segment upon endpoint at [${pt}]`)
+        throw new Error(
+          `Cannot split segment upon endpoint at [${pt.x}, ${pt.y}]`
+        )
       }
     }
 

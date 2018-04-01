@@ -5,54 +5,54 @@ const SweepEvent = require('../src/sweep-event')
 
 describe('sweep event compareBefore', () => {
   test('favor earlier x in point', () => {
-    const s1 = new SweepEvent([-5, 4])
-    const s2 = new SweepEvent([5, 1])
+    const s1 = new SweepEvent({ x: -5, y: 4 })
+    const s2 = new SweepEvent({ x: 5, y: 1 })
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor earlier y in point', () => {
-    const s1 = new SweepEvent([5, -4])
-    const s2 = new SweepEvent([5, 4])
+    const s1 = new SweepEvent({ x: 5, y: -4 })
+    const s2 = new SweepEvent({ x: 5, y: 4 })
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor right events over left', () => {
-    const s1 = new Segment([3, 2], [5, 4]).rightSE
-    const s2 = new Segment([5, 4], [6, 5]).leftSE
+    const s1 = new Segment({ x: 3, y: 2 }, { x: 5, y: 4 }).rightSE
+    const s2 = new Segment({ x: 5, y: 4 }, { x: 6, y: 5 }).leftSE
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor lower segment', () => {
-    const s1 = new Segment([0, 0], [4, 4]).leftSE
-    const s2 = new Segment([0, 0], [5, 6]).leftSE
+    const s1 = new Segment({ x: 0, y: 0 }, { x: 4, y: 4 }).leftSE
+    const s2 = new Segment({ x: 0, y: 0 }, { x: 5, y: 6 }).leftSE
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor lower ring id', () => {
-    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
-    const s2 = new Segment([0, 0], [4, 4], { id: 2 }).leftSE
+    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s2 = new Segment({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 2 }).leftSE
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('identical equal', () => {
-    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
+    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
     expect(SweepEvent.compareBefore(s1, s1)).toBe(false)
   })
 
   test('totally equal but not identical', () => {
-    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
-    const s2 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
+    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s2 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
     expect(() => SweepEvent.compareBefore(s1, s2)).toThrow()
   })
 
   test('length does not matter', () => {
-    const s1 = new Segment([0, 0], [5, 5], { id: 1 }).leftSE
-    const s2 = new Segment([0, 0], [4, 4], { id: 1 }).leftSE
+    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s2 = new Segment({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 }).leftSE
     expect(() => SweepEvent.compareBefore(s1, s2)).toThrow()
   })
 })
@@ -95,9 +95,9 @@ describe('sweep event link', () => {
 
   test('available linked events show up', () => {
     const se = new SweepEvent()
-    const seOkay1 = new SweepEvent([0, 0])
+    const seOkay1 = new SweepEvent({ x: 0, y: 0 })
     seOkay1.segment = { isInResult: true, ringOut: null }
-    const seOkay2 = new SweepEvent([1, 0])
+    const seOkay2 = new SweepEvent({ x: 1, y: 0 })
     seOkay2.segment = { isInResult: true, ringOut: null }
 
     se.link(seOkay1)
@@ -106,9 +106,9 @@ describe('sweep event link', () => {
   })
 
   test('link goes both ways', () => {
-    const seOkay1 = new SweepEvent([0, 0])
+    const seOkay1 = new SweepEvent({ x: 0, y: 0 })
     seOkay1.segment = { isInResult: true, ringOut: null }
-    const seOkay2 = new SweepEvent([1, 0])
+    const seOkay2 = new SweepEvent({ x: 1, y: 0 })
     seOkay2.segment = { isInResult: true, ringOut: null }
 
     seOkay1.link(seOkay2)
@@ -119,15 +119,15 @@ describe('sweep event link', () => {
 
 describe('sweep event get leftmost comparator', () => {
   test('after a segment straight to the right', () => {
-    const prevEvent = new SweepEvent([0, 0])
-    const event = new SweepEvent([1, 0])
+    const prevEvent = new SweepEvent({ x: 0, y: 0 })
+    const event = new SweepEvent({ x: 1, y: 0 })
     const comparator = event.getLeftmostComparator(prevEvent)
 
-    const e1 = new Segment([1, 0], [0, 1]).rightSE
-    const e2 = new Segment([1, 0], [1, 1]).leftSE
-    const e3 = new Segment([1, 0], [2, 0]).leftSE
-    const e4 = new Segment([1, 0], [1, -1]).rightSE
-    const e5 = new Segment([1, 0], [0, -1]).rightSE
+    const e1 = new Segment({ x: 1, y: 0 }, { x: 0, y: 1 }).rightSE
+    const e2 = new Segment({ x: 1, y: 0 }, { x: 1, y: 1 }).leftSE
+    const e3 = new Segment({ x: 1, y: 0 }, { x: 2, y: 0 }).leftSE
+    const e4 = new Segment({ x: 1, y: 0 }, { x: 1, y: -1 }).rightSE
+    const e5 = new Segment({ x: 1, y: 0 }, { x: 0, y: -1 }).rightSE
 
     expect(comparator(e1, e2)).toBe(-1)
     expect(comparator(e2, e3)).toBe(-1)
@@ -147,14 +147,14 @@ describe('sweep event get leftmost comparator', () => {
   })
 
   test('after a down and to the left', () => {
-    const prevEvent = new SweepEvent([1, 1])
-    const event = new SweepEvent([0, 0])
+    const prevEvent = new SweepEvent({ x: 1, y: 1 })
+    const event = new SweepEvent({ x: 0, y: 0 })
     const comparator = event.getLeftmostComparator(prevEvent)
 
-    const e1 = new Segment([0, 0], [0, 1]).leftSE
-    const e2 = new Segment([0, 0], [1, 0]).leftSE
-    const e3 = new Segment([0, 0], [0, -1]).rightSE
-    const e4 = new Segment([0, 0], [-1, 0]).rightSE
+    const e1 = new Segment({ x: 0, y: 0 }, { x: 0, y: 1 }).leftSE
+    const e2 = new Segment({ x: 0, y: 0 }, { x: 1, y: 0 }).leftSE
+    const e3 = new Segment({ x: 0, y: 0 }, { x: 0, y: -1 }).rightSE
+    const e4 = new Segment({ x: 0, y: 0 }, { x: -1, y: 0 }).rightSE
 
     expect(comparator(e1, e2)).toBe(1)
     expect(comparator(e1, e3)).toBe(1)
