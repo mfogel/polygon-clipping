@@ -30,34 +30,40 @@ const cmp = (a, b) => {
 /* FLP point comparator, favors point encountered first by sweep line */
 const cmpPoints = (aPt, bPt) => {
   // fist compare X, then compare Y
-  // inlined version of cmp here for performance boost
-  let a
-  let b
-  for (let i = 0; i < 2; i++) {
-    if (i === 0) {
-      a = aPt.x
-      b = bPt.x
-    } else {
-      a = aPt.y
-      b = bPt.y
-    }
 
-    // check if they're both 0
-    if (-Number.EPSILON < a && a < Number.EPSILON) {
-      if (-Number.EPSILON < b && b < Number.EPSILON) {
-        continue
-      }
-    }
+  let a = aPt.x
+  let b = bPt.x
 
-    // check if they're flp equal
+  // inlined version of cmp() for performance boost
+  if (
+    a <= -Number.EPSILON ||
+    Number.EPSILON <= a ||
+    b <= -Number.EPSILON ||
+    Number.EPSILON <= b
+  ) {
     const diff = a - b
-    if (diff * diff < EPSILON_SQ * a * b) continue
-
-    // normal comparison
-    return a < b ? -1 : 1
+    if (diff * diff >= EPSILON_SQ * a * b) {
+      return a < b ? -1 : 1
+    }
   }
 
-  // else they're the same
+  a = aPt.y
+  b = bPt.y
+
+  // inlined version of cmp() for performance boost
+  if (
+    a <= -Number.EPSILON ||
+    Number.EPSILON <= a ||
+    b <= -Number.EPSILON ||
+    Number.EPSILON <= b
+  ) {
+    const diff = a - b
+    if (diff * diff >= EPSILON_SQ * a * b) {
+      return a < b ? -1 : 1
+    }
+  }
+
+  // they're the same
   return 0
 }
 

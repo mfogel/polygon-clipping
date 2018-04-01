@@ -51,7 +51,7 @@ class Segment {
 
       // if our left endpoints match, consider the segment
       // that angles more downward to be earlier
-      if (cmpPoints(a.leftSE.point, b.leftSE.point) === 0) {
+      if (cmpLX === 0 && cmp(a.leftSE.point.y, b.leftSE.point.y) === 0) {
         return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
       }
 

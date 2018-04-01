@@ -1,11 +1,14 @@
-const { cmp, cmpPoints } = require('./flp')
+const { cmp } = require('./flp')
 const { cosineOfAngle, sineOfAngle } = require('./vector')
 
 class SweepEvent {
   static compareBefore (a, b) {
     // favor event with a point that the sweep line hits first
-    const pointCmp = cmpPoints(a.point, b.point)
-    if (pointCmp !== 0) return pointCmp < 0
+    const cmpX = cmp(a.point.x, b.point.x)
+    if (cmpX !== 0) return cmpX < 0
+
+    const cmpY = cmp(a.point.y, b.point.y)
+    if (cmpY !== 0) return cmpY < 0
 
     // favor right events over left
     if (a.isLeft !== b.isLeft) return !a.isLeft
