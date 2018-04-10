@@ -4,8 +4,8 @@ const load = require('load-json-file');
 const Benchmark = require('benchmark');
 const jstsUnion = require('@turf/union');
 const w8r = require('martinez-polygon-clipping');
-const mfogel = require('./src/index');
-const operation = require('./src/operation');
+const mfogel = require('../src/index');
+const operation = require('../src/operation');
 
 const options = {
   onStart (event) { console.log(this.name); },
@@ -16,7 +16,7 @@ const options = {
   }
 };
 
-const hole_hole = load.sync('./test/fixtures/hole_hole.geojson')
+const hole_hole = load.sync('./bench/fixtures/hole_hole.geojson')
 new Benchmark.Suite('Hole_Hole', options)
   .add('mfogel', () => {
     mfogel(
@@ -34,8 +34,8 @@ new Benchmark.Suite('Hole_Hole', options)
   })
   .run();
 
-const asia = load.sync('./test/fixtures/asia.geojson');
-const unionPoly = load.sync('./test/fixtures/asia_unionPoly.geojson');
+const asia = load.sync('./bench/fixtures/asia.geojson');
+const unionPoly = load.sync('./bench/fixtures/asia_unionPoly.geojson');
 new Benchmark.Suite('Asia union', options)
   .add('mfogel', () => {
     mfogel(
@@ -51,7 +51,7 @@ new Benchmark.Suite('Asia union', options)
   .add('JSTS', () => jstsUnion(asia.features[0], unionPoly))
   .run();
 
-const states = load.sync('./test/fixtures/states_source.geojson');
+const states = load.sync('./bench/fixtures/states_source.geojson');
 new Benchmark.Suite('States clip', options)
   .add('mfogel', () => {
     mfogel(
