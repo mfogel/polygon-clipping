@@ -6,6 +6,28 @@ const jstsUnion = require('@turf/union')
 const w8r = require('martinez-polygon-clipping')
 const mfogel = require('../main')
 
+/**
+ * Benchmark results ( c9b02e5 )
+ * 
+ * Hole_Hole
+ * mfogel x 5,155 ops/sec ±0.56% (92 runs sampled)
+ * w8r x 37,182 ops/sec ±1.05% (95 runs sampled)
+ * JSTS x 2,259 ops/sec ±6.95% (84 runs sampled)
+ * - Fastest is w8r
+ * 
+ * Asia union
+ * mfogel x 5.81 ops/sec ±2.74% (18 runs sampled)
+ * w8r x 13.05 ops/sec ±4.98% (37 runs sampled)
+ * JSTS x 8.71 ops/sec ±5.38% (26 runs sampled)
+ * - Fastest is w8r
+ * 
+ * States clip
+ * mfogel x 98.03 ops/sec ±1.78% (72 runs sampled)
+ * w8r x 284 ops/sec ±4.36% (84 runs sampled)
+ * JSTS x 112 ops/sec ±2.20% (82 runs sampled)
+ * - Fastest is w8r
+ */
+
 const options = {
   onStart (event) { console.log(this.name) },
   onError (event) { console.log(event.target.error) },
