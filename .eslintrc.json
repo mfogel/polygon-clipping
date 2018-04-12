@@ -1,6 +1,8 @@
 {
-    "extends": "airbnb-base",
-    "plugins": [
-        "import"
-    ]
+  "extends": ["plugin:vue-libs/recommended"],
+  "globals": {
+    "turf": true,
+    "performance": true,
+    "L": true
+  }
 }

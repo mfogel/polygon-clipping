@@ -2,7 +2,7 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
-  entry: './debug/main.js',
+  entry: './docs/src/main.js',
   output: {
     path: path.resolve(__dirname, './docs'),
     publicPath: '/docs/',
@@ -20,9 +20,6 @@ module.exports = {
         test: /\.vue$/,
         loader: 'vue-loader',
         options: {
-          loaders: {
-          }
-          // other vue-loader options go here
         }
       },
       {
@@ -52,7 +49,8 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
     noInfo: true,
-    overlay: true
+    overlay: true,
+    openPage: 'docs/index.html'
   },
   performance: {
     hints: false

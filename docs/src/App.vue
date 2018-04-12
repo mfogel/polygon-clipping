@@ -26,7 +26,7 @@
 
 <script>
 
-var pc = require('../main')
+var pc = require('../../main')
 var martinez = require('martinez-polygon-clipping')
 
 var operation = pc.intersection
@@ -37,13 +37,13 @@ var inLayer = null
 var outLayer = null
 var map = null
 
-import asia from '../test/fixtures/asia-with-poly.geojson'
-import parallel from '../test/end-to-end/almost-parrallel-segments/args.geojson'
-import cheese from '../test/end-to-end/saw-and-cheese/args.geojson'
+import asia from '../../test/fixtures/asia-with-poly.geojson'
+import parallel from '../../test/end-to-end/almost-parrallel-segments/args.geojson'
+import cheese from '../../test/end-to-end/saw-and-cheese/args.geojson'
 
 const fc = JSON.parse(asia)
 const fc2 = JSON.parse(parallel)
-const f3 = JSON.parse(cheese)
+const fc3 = JSON.parse(cheese)
 
 export default {
   name: 'app',
@@ -96,32 +96,30 @@ export default {
 
       this.runOperation()
     },
-    runOperation() {
-
+    runOperation () {
       var t0 = performance.now()
       var outData = operation(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
       var t1 = performance.now()
       this.performance = (t1 - t0).toFixed(2)
 
       outLayer.addData({
-          "type": "MultiPolygon",
-          "coordinates": outData
+        'type': 'MultiPolygon',
+        'coordinates': outData
       }).addTo(map)
 
       var m0 = performance.now()
-      var outMartinez = martinezOp(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
+      martinezOp(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
       var m1 = performance.now()
       this.martinezPerf = (m1 - m0).toFixed(2)
 
       if (turfOperation !== null) {
         var j0 = performance.now()
-        var outTurf = turfOperation(inData.features[0], inData.features[1])
+        turfOperation(inData.features[0], inData.features[1])
         var j1 = performance.now()
-        this.jstsPerf = (j1 - j0).toFixed(2)        
+        this.jstsPerf = (j1 - j0).toFixed(2)
       } else {
-        this.jstsPerf = 'N/A'      
+        this.jstsPerf = 'N/A'
       }
-
     }
   },
   mounted () {
@@ -139,7 +137,10 @@ export default {
     map.fitBounds(inLayer.getBounds(), {
       padding: [20, 20]
     })
-    outLayer = L.geoJson({type: 'FeatureCollection', features: []}, {
+    outLayer = L.geoJson({
+      type: 'FeatureCollection',
+      features: []
+    }, {
       color: 'red'
     }).addTo(map)
 
