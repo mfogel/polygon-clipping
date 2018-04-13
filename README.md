@@ -78,6 +78,10 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
+### vNext (in developement)
+
+ * Add benchmarks `npm run bench` ([#15](https://github.com/mfogel/polygon-clipping/issues/15))
+
 ### v0.6.1 (2018-04-01)
 
  * Performance improvements
