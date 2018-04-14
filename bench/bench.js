@@ -38,11 +38,11 @@ const options = {
 }
 
 const hole_hole = load.sync('./bench/fixtures/hole_hole.geojson')
+const hole_hole_obj_0 = mfogel.toObjects(hole_hole.features[0].geometry.coordinates)
+const hole_hole_obj_1 = mfogel.toObjects(hole_hole.features[1].geometry.coordinates)
 new Benchmark.Suite('Hole_Hole', options)
   .add('mfogel', () => {
-    mfogel.union(
-      hole_hole.features[0].geometry.coordinates,
-      hole_hole.features[1].geometry.coordinates)
+    mfogel.union(hole_hole_obj_0, hole_hole_obj_1)
   })
   .add('w8r', () => {
     w8r.union(
@@ -56,11 +56,11 @@ new Benchmark.Suite('Hole_Hole', options)
 
 const asia = load.sync('./bench/fixtures/asia.geojson')
 const unionPoly = load.sync('./bench/fixtures/asia_unionPoly.geojson')
+const asia_obj = mfogel.toObjects(asia.features[0].geometry.coordinates)
+const union_obj = mfogel.toObjects(unionPoly.geometry.coordinates)
 new Benchmark.Suite('Asia union', options)
   .add('mfogel', () => {
-    mfogel.union(
-      asia.features[0].geometry.coordinates,
-      unionPoly.geometry.coordinates)
+    mfogel.union(asia_obj, union_obj)
   })
   .add('w8r', () => {
     w8r.union(
@@ -71,11 +71,11 @@ new Benchmark.Suite('Asia union', options)
   .run()
 
 const states = load.sync('./bench/fixtures/states_source.geojson')
+const states_obj_0 = mfogel.toObjects(states.features[0].geometry.coordinates)
+const states_obj_1 = mfogel.toObjects(states.features[1].geometry.coordinates)
 new Benchmark.Suite('States clip', options)
   .add('mfogel', () => {
-    mfogel.union(
-      states.features[0].geometry.coordinates,
-      states.features[1].geometry.coordinates)
+    mfogel.union(states_obj_0, states_obj_1)
   })
   .add('w8r', () => {
     w8r.union(

@@ -6,11 +6,11 @@ const operation = require('./operation')
 const SweepEvent = require('./sweep-event')
 const SweepLine = require('./sweep-line')
 
-const doIt = (operationType, geom, moreGeoms) => {
+const doIt = (operationType, geom, moreGeoms, toObjects=false) => {
   /* Make a copy of the input geometry with points as objects, for perf */
-  const geoms = [cleanInput.pointsAsObjects(geom)]
+  const geoms = [toObjects ? cleanInput.pointsAsObjects(geom) : geom]
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
+    geoms.push(toObjects ? cleanInput.pointsAsObjects(moreGeoms[i]) : moreGeoms[i])
   }
 
   /* Clean inputs */
