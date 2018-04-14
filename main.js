@@ -1,5 +1,6 @@
 const doIt = require('./src')
 const operation = require('./src/operation')
+const clean = require('./src/clean-input')
 
 const union = (geom, ...moreGeoms) => {
   return doIt(operation.types.UNION, geom, moreGeoms)
@@ -17,4 +18,8 @@ const difference = (subjectGeom, ...clippingGeoms) => {
   return doIt(operation.types.DIFFERENCE, subjectGeom, clippingGeoms)
 }
 
-module.exports = { union, intersection, xor, difference }
+const toObjects = (geom) => {
+	return clean.pointsAsObjects(geom)
+}
+
+module.exports = { union, intersection, xor, difference, toObjects }

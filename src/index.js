@@ -8,9 +8,9 @@ const SweepLine = require('./sweep-line')
 
 const doIt = (operationType, geom, moreGeoms) => {
   /* Make a copy of the input geometry with points as objects, for perf */
-  const geoms = [cleanInput.pointsAsObjects(geom)]
+  const geoms = [geom]
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
+    geoms.push(moreGeoms[i])
   }
 
   /* Clean inputs */
