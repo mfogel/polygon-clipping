@@ -42,6 +42,7 @@ module.exports = {
   },
   resolve: {
     alias: {
+      'splaytree$': 'splaytree/dist/splay.js',
       'vue$': 'vue/dist/vue.esm.js'
     },
     extensions: ['*', '.js', '.vue', '.json']

@@ -99,8 +99,7 @@ export default {
     runOperation () {
       var t0 = performance.now()
       var outData = operation(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
-      var t1 = performance.now()
-      this.performance = (t1 - t0).toFixed(2)
+      this.performance = (performance.now() - t0).toFixed(2)
 
       outLayer.addData({
         'type': 'MultiPolygon',
@@ -109,14 +108,12 @@ export default {
 
       var m0 = performance.now()
       martinezOp(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
-      var m1 = performance.now()
-      this.martinezPerf = (m1 - m0).toFixed(2)
+      this.martinezPerf = (performance.now() - m0).toFixed(2)
 
       if (turfOperation !== null) {
         var j0 = performance.now()
         turfOperation(inData.features[0], inData.features[1])
-        var j1 = performance.now()
-        this.jstsPerf = (j1 - j0).toFixed(2)
+        this.jstsPerf = (performance.now() - j0).toFixed(2)
       } else {
         this.jstsPerf = 'N/A'
       }

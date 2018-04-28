@@ -1,4 +1,4 @@
-import SplayTree from 'splaytree'
+const SplayTree = require('splaytree')
 const { cmpPoints } = require('./flp')
 const Segment = require('./segment')
 
