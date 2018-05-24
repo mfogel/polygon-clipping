@@ -38,7 +38,7 @@ class SweepLine {
 
       // Check for intersections against the previous segment in the sweep line
       if (prevSeg) {
-        const prevInters = segment.getIntersections(prevSeg)
+        const prevInters = prevSeg.getIntersections(segment)
         if (prevInters.length > 0) {
           const newEventsFromSplit = this._possibleSplit(prevSeg, prevInters)
           for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
@@ -53,7 +53,7 @@ class SweepLine {
 
       // Check for intersections against the next segment in the sweep line
       if (nextSeg) {
-        const nextInters = segment.getIntersections(nextSeg)
+        const nextInters = nextSeg.getIntersections(segment)
         if (nextInters.length > 0) {
           const newEventsFromSplit = this._possibleSplit(nextSeg, nextInters)
           for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
