@@ -81,6 +81,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 ### vNext (in developement)
 
  * Fix bug with overlapping segments ([#19](https://github.com/mfogel/polygon-clipping/issues/19))
+ * Add [basic demo site](https://polygon-clipping.js.org/) ([#16](https://github.com/mfogel/polygon-clipping/issues/16))
  * Add benchmarks `npm run bench` ([#15](https://github.com/mfogel/polygon-clipping/issues/15))
 
 ### v0.6.1 (2018-04-01)
