@@ -1,9 +1,9 @@
-const { cmpPoints } = require('./flp')
-const { compareVectorAngles } = require('./vector')
+import { cmpPoints } from './flp'
+import { compareVectorAngles } from './vector'
 
 /* Given input geometry as a standard array-of-arrays geojson-style
  * geometry, return one that uses objects as points, for better perf */
-const pointsAsObjects = geom => {
+export const pointsAsObjects = geom => {
   // we can handle well-formed multipolys and polys
   const output = []
   if (!Array.isArray(geom)) {
@@ -35,7 +35,7 @@ const pointsAsObjects = geom => {
 }
 
 /* WARN: input modified directly */
-const forceMultiPoly = geom => {
+export const forceMultiPoly = geom => {
   if (Array.isArray(geom)) {
     if (geom.length === 0) return // allow empty multipolys
 
@@ -63,7 +63,7 @@ const forceMultiPoly = geom => {
 }
 
 /* WARN: input modified directly */
-const cleanMultiPoly = multipoly => {
+export const cleanMultiPoly = multipoly => {
   let i = 0
   while (i < multipoly.length) {
     const poly = multipoly[i]
@@ -99,7 +99,7 @@ const cleanMultiPoly = multipoly => {
  *  - close rings (last point should equal first)
  *
  * WARN: input modified directly */
-const cleanRing = ring => {
+export const cleanRing = ring => {
   if (ring.length === 0) return
   if (cmpPoints(ring[0], ring[ring.length - 1]) !== 0) {
     ring.push({ x: ring[0].x, y: ring[0].y }) // copy by value
@@ -132,7 +132,7 @@ const cleanRing = ring => {
 
 /* Scan the already-linked events of the segments for any
  * self-intersecting input rings (which are not supported) */
-const errorOnSelfIntersectingRings = segments => {
+export const errorOnSelfIntersectingRings = segments => {
   for (let i = 0, iMax = segments.length; i < iMax; i++) {
     const seg = segments[i]
 
@@ -161,12 +161,4 @@ const errorOnSelfIntersectingRings = segments => {
       }
     }
   }
-}
-
-module.exports = {
-  cleanMultiPoly,
-  cleanRing,
-  errorOnSelfIntersectingRings,
-  forceMultiPoly,
-  pointsAsObjects
 }

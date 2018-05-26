@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { Ring, Poly, MultiPoly } = require('../src/geom-in')
+import { Ring, Poly, MultiPoly } from '../src/geom-in'
 
 describe('Ring', () => {
   test('create exterior ring', () => {

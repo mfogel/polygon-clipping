@@ -1,11 +1,11 @@
 /* eslint-env jest */
 
-const {
+import {
   doBboxesOverlap,
   getBboxOverlap,
   getUniqueCorners,
   isInBbox
-} = require('../src/bbox')
+} from '../src/bbox'
 
 describe('is in bbox', () => {
   test('outside', () => {

@@ -1,8 +1,8 @@
 /* eslint-env jest */
 
-const cleanInput = require('../src/clean-input')
-const operation = require('../src/operation')
-const doIt = require('../src')
+import * as cleanInput from '../src/clean-input'
+import operation from '../src/operation'
+import doIt from '../src'
 
 describe('doIt calls the right stuff', () => {
   test('pointsAsObjects() called correctly', () => {

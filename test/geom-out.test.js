@@ -3,8 +3,8 @@
 // hard to unit test these structures as much of what they
 // do is operate off of the result of the sweep line sweep
 
-const Segment = require('../src/segment')
-const { Ring, Poly, MultiPoly } = require('../src/geom-out')
+import Segment from '../src/segment'
+import { Ring, Poly, MultiPoly } from '../src/geom-out'
 
 describe('ring', () => {
   describe('factory', () => {

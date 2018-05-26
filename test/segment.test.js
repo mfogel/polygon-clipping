@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Segment = require('../src/segment')
+import Segment from '../src/segment'
 
 describe('constructor', () => {
   test('correct point on left and right 1', () => {

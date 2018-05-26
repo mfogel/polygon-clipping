@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { union, intersection, xor, difference } = require('../main')
+import { union, intersection, xor, difference } from '../main'
 
 describe('end to end error situations', () => {
   describe('exterior self-intersecting rings', () => {

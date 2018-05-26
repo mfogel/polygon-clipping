@@ -1,4 +1,4 @@
-const { cmp } = require('./flp')
+import { cmp } from './flp'
 
 /**
  * A bounding box has the format:
@@ -7,7 +7,7 @@ const { cmp } = require('./flp')
  *
  */
 
-const isInBbox = (bbox, point) => {
+export const isInBbox = (bbox, point) => {
   const xmin = bbox.ll.x
   const ymin = bbox.ll.y
   const xmax = bbox.ur.x
@@ -22,7 +22,7 @@ const isInBbox = (bbox, point) => {
   )
 }
 
-const doBboxesOverlap = (b1, b2) =>
+export const doBboxesOverlap = (b1, b2) =>
   !(
     cmp(b2.ur.x, b1.ll.x) < 0 ||
     cmp(b1.ur.x, b2.ll.x) < 0 ||
@@ -33,7 +33,7 @@ const doBboxesOverlap = (b1, b2) =>
 /* Returns either null, or a bbox (aka an ordered pair of points)
  * If there is only one point of overlap, a bbox with identical points
  * will be returned */
-const getBboxOverlap = (b1, b2) => {
+export const getBboxOverlap = (b1, b2) => {
   if (!doBboxesOverlap(b1, b2)) return null
 
   // find the middle two X values
@@ -50,7 +50,7 @@ const getBboxOverlap = (b1, b2) => {
 
 /* Returns a list of unique corners.
  * Will contain one, two or four points */
-const getUniqueCorners = bbox => {
+export const getUniqueCorners = bbox => {
   const xmin = bbox.ll.x
   const ymin = bbox.ll.y
   const xmax = bbox.ur.x
@@ -66,11 +66,4 @@ const getUniqueCorners = bbox => {
     { x: xmax, y: ymin },
     { x: xmax, y: ymax }
   ]
-}
-
-module.exports = {
-  doBboxesOverlap,
-  getBboxOverlap,
-  getUniqueCorners,
-  isInBbox
 }
