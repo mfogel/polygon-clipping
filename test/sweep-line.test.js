@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const SweepLine = require('../src/sweep-line')
+import SweepLine from '../src/sweep-line'
 
 const comparator = (a, b) => {
   if (a === b) return 0

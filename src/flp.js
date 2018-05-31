@@ -10,7 +10,7 @@ if (Number.EPSILON === undefined) Number.EPSILON = Math.pow(2, -52)
 const EPSILON_SQ = Number.EPSILON * Number.EPSILON
 
 /* FLP comparator */
-const cmp = (a, b) => {
+export const cmp = (a, b) => {
   // check if they're both 0
   if (-Number.EPSILON < a && a < Number.EPSILON) {
     if (-Number.EPSILON < b && b < Number.EPSILON) {
@@ -28,7 +28,7 @@ const cmp = (a, b) => {
 }
 
 /* FLP point comparator, favors point encountered first by sweep line */
-const cmpPoints = (aPt, bPt) => {
+export const cmpPoints = (aPt, bPt) => {
   // fist compare X, then compare Y
 
   let a = aPt.x
@@ -65,9 +65,4 @@ const cmpPoints = (aPt, bPt) => {
 
   // they're the same
   return 0
-}
-
-module.exports = {
-  cmp,
-  cmpPoints
 }

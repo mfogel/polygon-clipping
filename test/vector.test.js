@@ -1,12 +1,12 @@
 /* eslint-env jest */
 
-const {
+import {
   crossProduct,
   dotProduct,
   compareVectorAngles,
   cosineOfAngle,
   sineOfAngle
-} = require('../src/vector')
+} from '../src/vector'
 
 describe('cross product', () => {
   test('general', () => {

@@ -17,4 +17,4 @@ class Operation {
 // global to register details about the operation on
 const operation = new Operation()
 
-module.exports = operation
+export default operation

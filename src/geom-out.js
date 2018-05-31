@@ -1,6 +1,6 @@
-const { compareVectorAngles } = require('./vector')
+import { compareVectorAngles } from './vector'
 
-class Ring {
+export class Ring {
   /* Given the segments from the sweep line pass, compute & return a series
    * of closed rings from all the segments marked to be part of the result */
   static factory (allSegments) {
@@ -176,7 +176,7 @@ class Ring {
   }
 }
 
-class Poly {
+export class Poly {
   constructor (exteriorRing) {
     this.exteriorRing = exteriorRing
     exteriorRing.registerPoly(this)
@@ -202,7 +202,7 @@ class Poly {
   }
 }
 
-class MultiPoly {
+export class MultiPoly {
   constructor (rings) {
     this.rings = rings
     this.polys = this._composePolys(rings)
@@ -233,5 +233,3 @@ class MultiPoly {
     return polys
   }
 }
-
-module.exports = { Ring, Poly, MultiPoly }

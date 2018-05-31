@@ -1,11 +1,11 @@
 /* eslint-env jest */
 
-const {
+import {
   cleanRing,
   cleanMultiPoly,
   forceMultiPoly,
   pointsAsObjects
-} = require('../src/clean-input')
+} from '../src/clean-input'
 
 const deepCopyArray = input => {
   if (Array.isArray(input)) return input.map(deepCopyArray)

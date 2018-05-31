@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const operation = require('../src/operation')
+import operation from '../src/operation'
 
 describe('operation', () => {
   test('retister', () => {

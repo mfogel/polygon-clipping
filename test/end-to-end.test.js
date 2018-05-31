@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-const fs = require('fs')
-const path = require('path')
-const load = require('load-json-file')
-const polygonClipping = require('../main')
+import fs from 'fs'
+import path from 'path'
+import load from 'load-json-file'
+import * as polygonClipping from '../main'
 
 /** USE ME TO RUN ONLY ONE TEST **/
 const targetOnly = ''

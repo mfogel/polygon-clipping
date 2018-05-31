@@ -1,10 +1,10 @@
-const Segment = require('./segment')
+import Segment from './segment'
 
 // Give rings unique ID's to get consistent sorting of segments
 // and sweep events when all else is identical
 let ringId = 0
 
-class Ring {
+export class Ring {
   constructor (geomRing, poly) {
     this.id = ringId++
     this.poly = poly
@@ -73,7 +73,7 @@ class Ring {
   }
 }
 
-class Poly {
+export class Poly {
   constructor (geomPoly, multiPoly) {
     this.exteriorRing = new Ring(geomPoly[0], this)
     this.interiorRings = []
@@ -113,7 +113,7 @@ class Poly {
   }
 }
 
-class MultiPoly {
+export class MultiPoly {
   constructor (geomMultiPoly) {
     this.polys = []
     for (let i = 0, iMax = geomMultiPoly.length; i < iMax; i++) {
@@ -137,5 +137,3 @@ class MultiPoly {
     return sweepEvents
   }
 }
-
-module.exports = { Ring, Poly, MultiPoly }

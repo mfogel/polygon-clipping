@@ -2,13 +2,17 @@
   "name": "polygon-clipping",
   "version": "0.6.1",
   "description": "Apply boolean Polygon clipping operations (intersection, union, difference, xor) to your Polygons & MultiPolygons.",
-  "main": "main.js",
+  "main": "dist/polygon-clipping.js",
+  "module": "main.js",
   "scripts": {
-    "build:docs": "cross-env NODE_ENV=production webpack --progress --hide-modules",
-    "dev": "cross-env webpack-dev-server --mode development --open --hot",
+    "build:docs": "cross-env NODE_ENV=production webpack --config webpack.config.docs.js --progress --hide-modules",
+    "build:lib": "webpack --config webpack.config.lib.js --mode development",
+    "build:min": "webpack --config webpack.config.lib.js --mode production --output-filename polygon-clipping.min.js",
+    "dev": "cross-env webpack-dev-server --config webpack.config.docs.js --mode development --open --hot",
     "test": "jest",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
-    "bench": "node bench/bench.js"
+    "bench": "node bench/bench.js",
+    "prepublish": "npm run build:docs && npm run build:lib && npm run build:min"
   },
   "jest": {
     "collectCoverage": true,
@@ -30,6 +34,7 @@
   "license": "MIT",
   "devDependencies": {
     "@turf/union": "^4.6.0",
+    "babel-jest": "^23.0.0",
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.6.1",
     "benchmark": "^2.1.4",

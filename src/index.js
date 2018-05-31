@@ -1,12 +1,12 @@
-const Queue = require('qheap')
-const cleanInput = require('./clean-input.js')
-const geomIn = require('./geom-in')
-const geomOut = require('./geom-out')
-const operation = require('./operation')
-const SweepEvent = require('./sweep-event')
-const SweepLine = require('./sweep-line')
+import Queue from 'qheap'
+import * as cleanInput from './clean-input.js'
+import * as geomIn from './geom-in'
+import * as geomOut from './geom-out'
+import operation from './operation'
+import SweepEvent from './sweep-event'
+import SweepLine from './sweep-line'
 
-const doIt = (operationType, geom, moreGeoms) => {
+export default function doIt (operationType, geom, moreGeoms) {
   /* Make a copy of the input geometry with points as objects, for perf */
   const geoms = [cleanInput.pointsAsObjects(geom)]
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
@@ -53,5 +53,3 @@ const doIt = (operationType, geom, moreGeoms) => {
   const result = new geomOut.MultiPoly(ringsOut)
   return result.getGeom()
 }
-
-module.exports = doIt

@@ -1,7 +1,7 @@
-const { cmp } = require('./flp')
-const { cosineOfAngle, sineOfAngle } = require('./vector')
+import { cmp } from './flp'
+import { cosineOfAngle, sineOfAngle } from './vector'
 
-class SweepEvent {
+export default class SweepEvent {
   static compareBefore (a, b) {
     // favor event with a point that the sweep line hits first
     const cmpX = cmp(a.point.x, b.point.x)
@@ -109,5 +109,3 @@ class SweepEvent {
     return this.segment.getOtherSE(this)
   }
 }
-
-module.exports = SweepEvent

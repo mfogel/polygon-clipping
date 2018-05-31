@@ -1,10 +1,10 @@
-const operation = require('./operation')
-const SweepEvent = require('./sweep-event')
-const { isInBbox, getBboxOverlap, getUniqueCorners } = require('./bbox')
-const { cmp, cmpPoints } = require('./flp')
-const { crossProduct, compareVectorAngles } = require('./vector')
+import operation from './operation'
+import SweepEvent from './sweep-event'
+import { isInBbox, getBboxOverlap, getUniqueCorners } from './bbox'
+import { cmp, cmpPoints } from './flp'
+import { crossProduct, compareVectorAngles } from './vector'
 
-class Segment {
+export default class Segment {
   static compare (a, b) {
     if (a === b) return 0
 
@@ -560,5 +560,3 @@ class Segment {
     this._cache = {}
   }
 }
-
-module.exports = Segment

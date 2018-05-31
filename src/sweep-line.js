@@ -1,6 +1,6 @@
-const SplayTree = require('splaytree')
-const { cmpPoints } = require('./flp')
-const Segment = require('./segment')
+import SplayTree from 'splaytree'
+import { cmpPoints } from './flp'
+import Segment from './segment'
 
 /**
  * NOTE:  We must be careful not to change any segments while
@@ -13,7 +13,7 @@ const Segment = require('./segment')
  *        it sometimes does.)
  */
 
-class SweepLine {
+export default class SweepLine {
   constructor (comparator = Segment.compare) {
     this.tree = new SplayTree(comparator)
     this.segments = []
@@ -131,5 +131,3 @@ class SweepLine {
     return newEvents
   }
 }
-
-module.exports = SweepLine

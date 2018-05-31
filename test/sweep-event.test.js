@@ -1,7 +1,7 @@
 /* eslint-env jest */
 
-const Segment = require('../src/segment')
-const SweepEvent = require('../src/sweep-event')
+import Segment from '../src/segment'
+import SweepEvent from '../src/sweep-event'
 
 describe('sweep event compareBefore', () => {
   test('favor earlier x in point', () => {
