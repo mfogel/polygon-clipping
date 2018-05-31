@@ -5,9 +5,9 @@
   "main": "dist/polygon-clipping.js",
   "module": "main.js",
   "scripts": {
-    "build:docs": "cross-env NODE_ENV=production webpack --config docs/webpack.config.js --progress --hide-modules",
-    "build:lib": "webpack --mode development",
-    "build:min": "webpack --mode production --output-filename polygon-clipping.min.js",
+    "build:docs": "cross-env NODE_ENV=production webpack --config docs/webpack.config.js --mode production --progress --hide-modules",
+    "build:lib": "webpack --mode development --progress --hide-modules",
+    "build:min": "webpack --mode production --output-filename polygon-clipping.min.js --progress --hide-modules",
     "dev": "cross-env webpack-dev-server --config docs/webpack.config.js --mode development --open --hot",
     "test": "jest",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
