@@ -5,6 +5,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'polygon-clipping.js',
+    globalObject: 'typeof self !== \'undefined\' ? self : this',
     library: 'polygon-clipping',
     libraryTarget: 'umd'
   },

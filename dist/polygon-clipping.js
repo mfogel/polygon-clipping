@@ -7,7 +7,7 @@
 		exports["polygon-clipping"] = factory();
 	else
 		root["polygon-clipping"] = factory();
-})(window, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

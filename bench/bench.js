@@ -2,7 +2,7 @@ const load = require('load-json-file')
 const Benchmark = require('benchmark')
 const jstsUnion = require('@turf/union')
 const w8r = require('martinez-polygon-clipping')
-const mfogel = require('../main')
+const mfogel = require('../dist/polygon-clipping.js')
 
 /**
  * Benchmark results ( c9b02e5 )
