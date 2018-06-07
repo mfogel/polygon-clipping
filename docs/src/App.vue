@@ -16,7 +16,6 @@
         <h4>Performance</h4>
         <p>polygon-clipping {{performance}} m/s  </br>
         martinez {{martinezPerf}} m/s  </br>
-        jsts {{jstsPerf}} m/s  </br>
         </p>
 
       </div>
@@ -30,7 +29,6 @@ var martinez = require("martinez-polygon-clipping");
 
 var operation = pc.intersection;
 var martinezOp = martinez.intersection;
-var turfOperation = turf.intersect;
 var inData = null;
 var inLayer = null;
 var outLayer = null;
@@ -51,8 +49,7 @@ export default {
       operations: ["Intersection", "Union", "Difference", "XOR"],
       selectedOperation: "Intersection",
       performance: "",
-      martinezPerf: "",
-      jstsPerf: ""
+      martinezPerf: ""
     };
   },
   methods: {
@@ -75,22 +72,18 @@ export default {
       if (this.selectedOperation === "Union") {
         operation = pc.union;
         martinezOp = martinez.union;
-        turfOperation = turf.union;
       }
       if (this.selectedOperation === "Intersection") {
         operation = pc.intersection;
         martinezOp = martinez.intersection;
-        turfOperation = turf.intersect;
       }
       if (this.selectedOperation === "XOR") {
         operation = pc.xor;
         martinezOp = martinez.xor;
-        turfOperation = null;
       }
       if (this.selectedOperation === "Difference") {
         operation = pc.difference;
         martinezOp = martinez.diff;
-        turfOperation = turf.difference;
       }
 
       this.runOperation();
@@ -116,14 +109,6 @@ export default {
         inData.features[1].geometry.coordinates
       );
       this.martinezPerf = (performance.now() - m0).toFixed(2);
-
-      if (turfOperation !== null) {
-        var j0 = performance.now();
-        turfOperation(inData.features[0], inData.features[1]);
-        this.jstsPerf = (performance.now() - j0).toFixed(2);
-      } else {
-        this.jstsPerf = "N/A";
-      }
     }
   },
   mounted() {
