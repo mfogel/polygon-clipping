@@ -1,6 +1,5 @@
 const load = require('load-json-file')
 const Benchmark = require('benchmark')
-const jstsUnion = require('@turf/union')
 const w8r = require('martinez-polygon-clipping')
 const mfogel = require('../dist/polygon-clipping.js')
 
@@ -55,9 +54,6 @@ new Benchmark.Suite('Hole_Hole', options)
       holeHole.features[1].geometry.coordinates
     )
   })
-  .add('JSTS', () => {
-    jstsUnion(holeHole.features[0], holeHole.features[1])
-  })
   .run()
 
 const asia = load.sync('./bench/fixtures/asia.geojson')
@@ -75,7 +71,6 @@ new Benchmark.Suite('Asia union', options)
       unionPoly.geometry.coordinates
     )
   })
-  .add('JSTS', () => jstsUnion(asia.features[0], unionPoly))
   .run()
 
 const states = load.sync('./bench/fixtures/states_source.geojson')
@@ -91,8 +86,5 @@ new Benchmark.Suite('States clip', options)
       states.features[0].geometry.coordinates,
       states.features[1].geometry.coordinates
     )
-  })
-  .add('JSTS', () => {
-    jstsUnion(states.features[0], states.features[1])
   })
   .run()
