@@ -1,5 +1,5 @@
 {
-  "extends": ["plugin:vue-libs/recommended"],
+  "extends": ["plugin:vue/recommended"],
   "globals": {
     "turf": true,
     "performance": true,
