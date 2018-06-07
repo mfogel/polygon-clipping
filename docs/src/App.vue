@@ -14,8 +14,9 @@
         </div>
 
         <h4>Performance</h4>
-        <p>polygon-clipping {{performance}} m/s  </br>
-        martinez {{martinezPerf}} m/s  </br>
+        <p>
+          polygon-clipping {{performance}} m/s</br>
+          martinez {{martinezPerf}} m/s
         </p>
 
       </div>
@@ -38,9 +39,9 @@ import asia from "../../test/fixtures/asia-with-poly.geojson";
 import parallel from "../../test/end-to-end/almost-parrallel-segments/args.geojson";
 import cheese from "../../test/end-to-end/saw-and-cheese/args.geojson";
 
-const fc = JSON.parse(asia);
-const fc2 = JSON.parse(parallel);
-const fc3 = JSON.parse(cheese);
+const asiaGJ = JSON.parse(asia);
+const parallelGJ = JSON.parse(parallel);
+const cheeseGJ = JSON.parse(cheese);
 
 export default {
   name: "app",
@@ -56,9 +57,9 @@ export default {
     setInput(e) {
       inLayer.clearLayers();
       outLayer.clearLayers();
-      if (e.target.value === "Asia") inData = fc;
-      if (e.target.value === "Almost Parallel Segments") inData = fc2;
-      if (e.target.value === "Saw & Cheese") inData = fc3;
+      if (e.target.value === "Asia") inData = asiaGJ;
+      if (e.target.value === "Almost Parallel Segments") inData = parallelGJ;
+      if (e.target.value === "Saw & Cheese") inData = cheeseGJ;
       inLayer.addData(inData);
       map.fitBounds(inLayer.getBounds(), {
         padding: [20, 20]
@@ -112,7 +113,7 @@ export default {
     }
   },
   mounted() {
-    inData = fc;
+    inData = asiaGJ;
     map = window.map = L.map("map", {
       minZoom: 1,
       maxZoom: 20,
@@ -121,7 +122,7 @@ export default {
       crs: L.CRS.Simple
     });
 
-    inLayer = L.geoJson(fc).addTo(map);
+    inLayer = L.geoJson(asiaGJ).addTo(map);
 
     map.fitBounds(inLayer.getBounds(), {
       padding: [20, 20]
@@ -163,6 +164,7 @@ body,
 h4 {
   margin-bottom: 5px;
 }
+
 p {
   margin-top: 5px;
 }
