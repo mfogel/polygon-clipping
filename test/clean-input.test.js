@@ -268,6 +268,22 @@ describe('pointsAsObjects()', () => {
     expect(pointsAsObjects(input)).toEqual(expected)
   })
 
+  test('empty multipoly', () => {
+    const input = []
+    const expected = []
+    expect(pointsAsObjects(input)).toEqual(expected)
+  })
+
+  test('empty of empties', () => {
+    const input = [[]]
+    expect(() => pointsAsObjects(input)).toThrow()
+  })
+
+  test('empty of empties of empties', () => {
+    const input = [[[]]]
+    expect(() => pointsAsObjects(input)).toThrow()
+  })
+
   test('too shallow', () => {
     const input = [[0, 0], [1, 0], [0, 1], [0, 0]]
     expect(() => pointsAsObjects(input)).toThrow()
@@ -286,5 +302,15 @@ describe('pointsAsObjects()', () => {
   test('too deep', () => {
     const input = [[[[[0, 0], [1, 0], [0, 1], [0, 0]]]]]
     expect(() => pointsAsObjects(input)).toThrow()
+  })
+
+  test('more than two coordinates multipolygon', () => {
+    const input = [[[[[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]]]]]
+    expect(() => pointsAsObjects(input)).toThrow('more than two coordinates')
+  })
+
+  test('more than two coordinates polygon', () => {
+    const input = [[[[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]]]]
+    expect(() => pointsAsObjects(input)).toThrow('more than two coordinates')
   })
 })

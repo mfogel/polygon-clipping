@@ -10,24 +10,39 @@ export const pointsAsObjects = geom => {
     throw new Error('Input is not a Polygon or MultiPolygon')
   }
   for (let i = 0, iMax = geom.length; i < iMax; i++) {
-    if (!Array.isArray(geom[i])) {
+    if (!Array.isArray(geom[i]) || geom[i].length == 0) {
       throw new Error('Input is not a Polygon or MultiPolygon')
     }
     output.push([])
     for (let j = 0, jMax = geom[i].length; j < jMax; j++) {
-      if (!Array.isArray(geom[i][j])) {
+      if (!Array.isArray(geom[i][j]) || geom[i][j].length == 0) {
         throw new Error('Input is not a Polygon or MultiPolygon')
       }
-      if (geom[i][j].length === 2) {
-        output[i].push({ x: geom[i][j][0], y: geom[i][j][1] })
-        continue
-      }
-      output[i].push([])
-      for (let k = 0, kMax = geom[i][j].length; k < kMax; k++) {
-        if (!Array.isArray(geom[i][j][k]) || geom[i][j][k].length !== 2) {
+      if (Array.isArray(geom[i][j][0])) { // multipolygon
+        output[i].push([])
+        for (let k = 0, kMax = geom[i][j].length; k < kMax; k++) {
+          if (!Array.isArray(geom[i][j][k]) || geom[i][j][k].length < 2) {
+            throw new Error('Input is not a Polygon or MultiPolygon')
+          }
+          if (geom[i][j][k].length > 2) {
+            throw new Error(
+              'Input has more than two coordinates. ' +
+              'Only 2-dimensional polygons supported.'
+            )
+          }
+          output[i][j].push({ x: geom[i][j][k][0], y: geom[i][j][k][1] })
+        }
+      } else { // polygon
+        if (geom[i][j].length < 2) {
           throw new Error('Input is not a Polygon or MultiPolygon')
         }
-        output[i][j].push({ x: geom[i][j][k][0], y: geom[i][j][k][1] })
+        if (geom[i][j].length > 2) {
+          throw new Error(
+            'Input has more than two coordinates. ' +
+            'Only 2-dimensional polygons supported.'
+          )
+        }
+        output[i].push({ x: geom[i][j][0], y: geom[i][j][1] })
       }
     }
   }
