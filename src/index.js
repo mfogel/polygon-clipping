@@ -7,10 +7,14 @@ import SweepEvent from './sweep-event'
 import SweepLine from './sweep-line'
 
 export default function doIt (operationType, geom, moreGeoms) {
+
+  const sbbox = [Infinity, Infinity, -Infinity, -Infinity];
+  const cbbox = [Infinity, Infinity, -Infinity, -Infinity];
+
   /* Make a copy of the input geometry with points as objects, for perf */
-  const geoms = [cleanInput.pointsAsObjects(geom)]
+  const geoms = [cleanInput.pointsAsObjects(geom, sbbox)]
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
+    geoms.push(cleanInput.pointsAsObjects(moreGeoms[i], cbbox))
   }
 
   /* Clean inputs */
@@ -36,10 +40,22 @@ export default function doIt (operationType, geom, moreGeoms) {
     }
   }
 
+
+  const rightbound = Math.min(sbbox[2], cbbox[2]);
+
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
   while (queue.length) {
-    const newEvents = sweepLine.process(queue.remove())
+    const event = queue.remove()
+
+    // optimization by bboxes for intersection and difference goes here
+    if ((operationType === 0 && event.point.x > rightbound) ||
+        (operationType === 3 && event.point.x > sbbox[2])) {
+      break;
+    }
+
+    const newEvents = sweepLine.process(event)
+
     for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
       queue.insert(newEvents[i])
     }
