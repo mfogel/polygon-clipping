@@ -3,12 +3,20 @@ import { cosineOfAngle, sineOfAngle } from './vector'
 
 export default class SweepEvent {
   static compareBefore (a, b) {
-    // favor event with a point that the sweep line hits first
-    const cmpX = cmp(a.point.x, b.point.x)
-    if (cmpX !== 0) return cmpX < 0
 
-    const cmpY = cmp(a.point.y, b.point.y)
-    if (cmpY !== 0) return cmpY < 0
+    // if the events are already linked, then we know the points are equal
+    if (a.linkedEvents !== b.linkedEvents) {
+
+      // favor event with a point that the sweep line hits first
+      const cmpX = cmp(a.point.x, b.point.x)
+      if (cmpX !== 0) return cmpX < 0
+
+      const cmpY = cmp(a.point.y, b.point.y)
+      if (cmpY !== 0) return cmpY < 0
+    }
+
+    // points are equal, so go ahead and link these events
+    a.link(b)
 
     // favor right events over left
     if (a.isLeft !== b.isLeft) return !a.isLeft
@@ -42,10 +50,12 @@ export default class SweepEvent {
 
   link (other) {
     const otherLE = other.linkedEvents
+    if (otherLE === this.linkedEvents) return
     for (let i = 0, iMax = otherLE.length; i < iMax; i++) {
       const evt = otherLE[i]
       this.linkedEvents.push(evt)
       evt.linkedEvents = this.linkedEvents
+      evt.point = this.point
     }
   }
 

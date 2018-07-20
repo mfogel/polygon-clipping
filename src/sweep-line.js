@@ -17,7 +17,6 @@ export default class SweepLine {
   constructor (comparator = Segment.compare) {
     this.tree = new SplayTree(comparator)
     this.segments = []
-    this.prevEvent = null
   }
 
   process (event) {
@@ -106,11 +105,6 @@ export default class SweepLine {
 
       this.tree.remove(segment)
     }
-
-    if (this.prevEvent && cmpPoints(this.prevEvent.point, event.point) === 0) {
-      this.prevEvent.link(event)
-    }
-    this.prevEvent = event
 
     return newEvents
   }
