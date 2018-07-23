@@ -112,7 +112,7 @@ export default {
 
       if (turfOperation !== null) {
         var j0 = performance.now()
-        turfOperation(inData.features[0], inData.features[1])
+        // turfOperation(inData.features[0], inData.features[1])
         this.jstsPerf = (performance.now() - j0).toFixed(2)
       } else {
         this.jstsPerf = 'N/A'

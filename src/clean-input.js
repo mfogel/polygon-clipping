@@ -64,26 +64,27 @@ export const pointsAsObjects = (geom, bbox) => {
 }
 
 /* WARN: input modified directly */
-export const forceMultiPoly = geom => {
+export const forceMultiPoly = (geom, geoms) => {
   if (Array.isArray(geom)) {
     if (geom.length === 0) return // allow empty multipolys
-
     if (Array.isArray(geom[0])) {
       if (Array.isArray(geom[0][0])) {
         if (
-          typeof geom[0][0][0].x === 'number' &&
-          typeof geom[0][0][0].y === 'number'
+          typeof geom[0][0][0][0] === 'number' &&
+          typeof geom[0][0][0][0] === 'number'
         ) {
+          geoms.push(geom)
           // multipolygon
           return
         }
       }
       if (
-        typeof geom[0][0].x === 'number' &&
-        typeof geom[0][0].y === 'number'
+        typeof geom[0][0][0] === 'number' &&
+        typeof geom[0][0][0] === 'number'
       ) {
         // polygon
         geom.unshift(geom.splice(0))
+        geoms.push(geom)
         return
       }
     }
