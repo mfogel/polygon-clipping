@@ -19,40 +19,40 @@ describe('sweep event compareBefore', () => {
   })
 
   test('then favor right events over left', () => {
-    const s1 = new Segment({ x: 3, y: 2 }, { x: 5, y: 4 }).rightSE
-    const s2 = new Segment({ x: 5, y: 4 }, { x: 6, y: 5 }).leftSE
+    const s1 = Segment.fromRing({ x: 3, y: 2 }, { x: 5, y: 4 }).rightSE
+    const s2 = Segment.fromRing({ x: 5, y: 4 }, { x: 6, y: 5 }).leftSE
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor lower segment', () => {
-    const s1 = new Segment({ x: 0, y: 0 }, { x: 4, y: 4 }).leftSE
-    const s2 = new Segment({ x: 0, y: 0 }, { x: 5, y: 6 }).leftSE
+    const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }).leftSE
+    const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 6 }).leftSE
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('then favor lower ring id', () => {
-    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
-    const s2 = new Segment({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 2 }).leftSE
+    const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 2 }).leftSE
     expect(SweepEvent.compareBefore(s1, s2)).toBe(true)
     expect(SweepEvent.compareBefore(s2, s1)).toBe(false)
   })
 
   test('identical equal', () => {
-    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
     expect(SweepEvent.compareBefore(s1, s1)).toBe(false)
   })
 
   test('totally equal but not identical', () => {
-    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
-    const s2 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
     expect(() => SweepEvent.compareBefore(s1, s2)).toThrow()
   })
 
   test('length does not matter', () => {
-    const s1 = new Segment({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
-    const s2 = new Segment({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 }).leftSE
+    const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 1 }).leftSE
+    const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 }).leftSE
     expect(() => SweepEvent.compareBefore(s1, s2)).toThrow()
   })
 })
@@ -123,11 +123,11 @@ describe('sweep event get leftmost comparator', () => {
     const event = new SweepEvent({ x: 1, y: 0 })
     const comparator = event.getLeftmostComparator(prevEvent)
 
-    const e1 = new Segment({ x: 1, y: 0 }, { x: 0, y: 1 }).rightSE
-    const e2 = new Segment({ x: 1, y: 0 }, { x: 1, y: 1 }).leftSE
-    const e3 = new Segment({ x: 1, y: 0 }, { x: 2, y: 0 }).leftSE
-    const e4 = new Segment({ x: 1, y: 0 }, { x: 1, y: -1 }).rightSE
-    const e5 = new Segment({ x: 1, y: 0 }, { x: 0, y: -1 }).rightSE
+    const e1 = Segment.fromRing({ x: 1, y: 0 }, { x: 0, y: 1 }).rightSE
+    const e2 = Segment.fromRing({ x: 1, y: 0 }, { x: 1, y: 1 }).leftSE
+    const e3 = Segment.fromRing({ x: 1, y: 0 }, { x: 2, y: 0 }).leftSE
+    const e4 = Segment.fromRing({ x: 1, y: 0 }, { x: 1, y: -1 }).rightSE
+    const e5 = Segment.fromRing({ x: 1, y: 0 }, { x: 0, y: -1 }).rightSE
 
     expect(comparator(e1, e2)).toBe(-1)
     expect(comparator(e2, e3)).toBe(-1)
@@ -151,10 +151,10 @@ describe('sweep event get leftmost comparator', () => {
     const event = new SweepEvent({ x: 0, y: 0 })
     const comparator = event.getLeftmostComparator(prevEvent)
 
-    const e1 = new Segment({ x: 0, y: 0 }, { x: 0, y: 1 }).leftSE
-    const e2 = new Segment({ x: 0, y: 0 }, { x: 1, y: 0 }).leftSE
-    const e3 = new Segment({ x: 0, y: 0 }, { x: 0, y: -1 }).rightSE
-    const e4 = new Segment({ x: 0, y: 0 }, { x: -1, y: 0 }).rightSE
+    const e1 = Segment.fromRing({ x: 0, y: 0 }, { x: 0, y: 1 }).leftSE
+    const e2 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }).leftSE
+    const e3 = Segment.fromRing({ x: 0, y: 0 }, { x: 0, y: -1 }).rightSE
+    const e4 = Segment.fromRing({ x: 0, y: 0 }, { x: -1, y: 0 }).rightSE
 
     expect(comparator(e1, e2)).toBe(1)
     expect(comparator(e1, e3)).toBe(1)

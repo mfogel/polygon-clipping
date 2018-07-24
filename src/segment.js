@@ -67,37 +67,38 @@ export default class Segment {
     )
   }
 
-  constructor (point1, point2, ring) {
-    this.ringIn = ring
+  constructor (ringIn, flowL2R) {
+    this.ringIn = ringIn
+    this.flowL2R = flowL2R
+    this.leftSE = null
+    this.rightSE = null
     this.ringOut = null
+    this._clearCache()
+  }
 
+  static fromRing(point1, point2, ring) {
     const ptCmp = cmpPoints(point1, point2)
     let lp
     let rp
+    let flowL2R
     if (ptCmp < 0) {
       lp = point1
       rp = point2
-      this.flowL2R = true
+      flowL2R = true
     } else if (ptCmp > 0) {
       lp = point2
       rp = point1
-      this.flowL2R = false
+      flowL2R = false
     } else {
       throw new Error(
         `Tried to create degenerate segment at [${point1.x}, ${point1.y}]`
       )
     }
 
-    this.leftSE = new SweepEvent(lp, this)
-    this.rightSE = new SweepEvent(rp, this)
+    const seg = new Segment(ring, flowL2R)
+    seg.leftSE = new SweepEvent(lp, seg)
+    seg.rightSE = new SweepEvent(rp, seg)
 
-    // cache of dynamically computed properies
-    this._clearCache()
-  }
-
-  clone () {
-    const seg = new Segment(this.leftSE.point, this.rightSE.point, this.ringIn)
-    seg.flowL2R = this.flowL2R
     return seg
   }
 
@@ -245,7 +246,7 @@ export default class Segment {
     }
 
     const point = points.shift()
-    const newSeg = this.clone()
+    const newSeg = new Segment(this.ringIn, this.flowL2R)
     newSeg.leftSE = new SweepEvent(point, newSeg)
     newSeg.rightSE = this.rightSE
     this.rightSE.segment = newSeg
