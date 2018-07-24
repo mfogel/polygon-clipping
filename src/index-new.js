@@ -1,6 +1,6 @@
 import Queue from 'qheap'
-import * as cleanInput from './clean-input.js'
-import * as geomIn from './geom-in_new.js'
+import * as cleanInput from './clean-input-new.js'
+import * as geomIn from './geom-in-new.js'
 import * as geomOut from './geom-out'
 import operation from './operation'
 import SweepEvent from './sweep-event'
