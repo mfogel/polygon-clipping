@@ -56,7 +56,6 @@
     "webpack-dev-server": "^3.1.4"
   },
   "dependencies": {
-    "qheap": "^1.4.0",
     "splaytree": "^2.0.2",
     "tinyqueue": "^1.2.3"
   }
