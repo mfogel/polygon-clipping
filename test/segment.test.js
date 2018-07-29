@@ -159,6 +159,35 @@ describe('segment register ring', () => {
   })
 })
 
+describe('registerCoincident', () => {
+  test('basic case', () => {
+    const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 1})
+    const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 2})
+    seg1.registerCoincident(seg2)
+    expect(seg1.coincidents === seg2.coincidents)
+  })
+
+  test('coincidents cascade', () => {
+    const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 1})
+    const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 2})
+    const seg3 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 3})
+    seg1.registerCoincident(seg2)
+    seg2.registerCoincident(seg3)
+    expect(seg1.coincidents === seg3.coincidents)
+  })
+
+  test('winner at the front of coincidents', () => {
+    const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 1})
+    const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 2})
+    const seg3 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 3})
+    const seg4 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, {id: 4})
+    seg2.registerCoincident(seg3)
+    seg3.registerCoincident(seg1)
+    seg3.registerCoincident(seg4)
+    expect(seg1.coincidents[0] === seg1)
+  })
+})
+
 describe('is an endpoint', () => {
   const p1 = { x: 0, y: -1 }
   const p2 = { x: 1, y: 0 }

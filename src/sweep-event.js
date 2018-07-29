@@ -15,7 +15,8 @@ export default class SweepEvent {
       if (cmpY !== 0) return cmpY < 0
     }
 
-    // points are equal, so go ahead and link these events
+    // Points are equal, so go ahead and link these events.
+    // This will cascade and possibly mark segments coincident.
     a.link(b)
 
     // favor right events over left
@@ -56,6 +57,9 @@ export default class SweepEvent {
       this.linkedEvents.push(evt)
       evt.linkedEvents = this.linkedEvents
       evt.point = this.point
+      if (this.otherSE.linkedEvents === evt.otherSE.linkedEvents) {
+        this.segment.registerCoincident(evt.segment)
+      }
     }
   }
 

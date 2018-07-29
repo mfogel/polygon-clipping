@@ -55,6 +55,13 @@ describe('sweep event compareBefore', () => {
     const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 }).leftSE
     expect(() => SweepEvent.compareBefore(s1, s2)).toThrow()
   })
+
+  test('events are linked as side effect', () => {
+    const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }).leftSE
+    const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 6 }).leftSE
+    SweepEvent.compare(s1, s2)
+    expect(s1.linkedEvents === s2.linkedEvents)
+  })
 })
 
 describe('sweep event link', () => {

@@ -73,6 +73,7 @@ export default class Segment {
     this.leftSE = null
     this.rightSE = null
     this.ringOut = null
+    this.coincidents = [this]
     this._clearCache()
   }
 
@@ -271,6 +272,18 @@ export default class Segment {
     this.ringOut = ring
   }
 
+  registerCoincident (other) {
+    if (this.coincidents == other.coincidents) return // already coincident
+    const otherCoincidents = other.coincidents
+    for (let i = 0, iMax = otherCoincidents.length; i < iMax; i++) {
+      const seg = otherCoincidents[i]
+      this.coincidents.push(seg)
+      seg.coincidents = this.coincidents
+    }
+    // put the 'winner' at the front. arbitrary: winner has lowest ringId
+    this.coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
+  }
+
   /* The first segment previous segment chain that is in the result */
   get prevInResult () {
     const key = 'prevInResult'
@@ -282,38 +295,6 @@ export default class Segment {
     let prev = this.prev
     while (prev && !prev.isInResult) prev = prev.prev
     return prev
-  }
-
-  /* The segments, including ourselves, for which we overlap perfectly */
-  get coincidents () {
-    const key = 'coincidents'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _coincidents () {
-    // a coincident will have both left and right sweepEvents linked with us
-    const coincidents = []
-    const leftLinkedEvents = this.leftSE.linkedEvents
-    const rightLinkedEvents = this.rightSE.linkedEvents
-    for (let i = 0, iMax = leftLinkedEvents.length; i < iMax; i++) {
-      const leftSE = leftLinkedEvents[i]
-      if (!leftSE.isLeft) continue
-      if (leftSE.segment.rightSE.linkedEvents !== rightLinkedEvents) continue
-      coincidents.push(leftSE.segment)
-    }
-
-    if (coincidents.length > 0) {
-      // put the 'winner' at the front
-      // arbitary - winner is the one with lowest ringId
-      coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
-
-      // set this in all our coincident's caches so they don't have to calc it
-      for (let i = 0, iMax = coincidents.length; i < iMax; i++) {
-        coincidents[i]._cache['coincidents'] = coincidents
-      }
-    }
-    return coincidents
   }
 
   get prevNotCoincident () {
