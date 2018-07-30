@@ -1,4 +1,4 @@
-import doIt from './src/index.js'
+import doIt from './src/index-new.js'
 import operation from './src/operation'
 
 export const union = (geom, ...moreGeoms) => {

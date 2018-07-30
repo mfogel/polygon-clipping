@@ -9,14 +9,16 @@ describe('doIt calls the right stuff', () => {
     const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
     const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
     const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
-
+    const bbox = [Infinity, Infinity, Infinity, Infinity]
+    const bbox2 = [Infinity, Infinity, Infinity, Infinity]
     cleanInput.pointsAsObjects = jest.fn(cleanInput.pointsAsObjects)
     doIt(operation.types.UNION, mp1, [mp2, mp3])
 
     expect(cleanInput.pointsAsObjects).toHaveBeenCalledTimes(3)
-    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp1)
-    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp2)
-    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp3)
+    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp1, bbox)
+
+    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp2, bbox2)
+    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp3, bbox2)
   })
 
   test('forceMultiPoly() called correctly', () => {

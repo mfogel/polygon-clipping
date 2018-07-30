@@ -26,7 +26,7 @@
 
 <script>
 
-var pc = require('../../main')
+var pc = require('../../main-new')
 var martinez = require('martinez-polygon-clipping')
 
 var operation = pc.intersection
@@ -101,22 +101,22 @@ export default {
       var outData = operation(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
       this.performance = (performance.now() - t0).toFixed(2)
 
-      outLayer.addData({
-        'type': 'MultiPolygon',
-        'coordinates': outData
-      }).addTo(map)
+      // outLayer.addData({
+      //   'type': 'MultiPolygon',
+      //   'coordinates': outData
+      // }).addTo(map)
 
-      var m0 = performance.now()
-      martinezOp(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
-      this.martinezPerf = (performance.now() - m0).toFixed(2)
+      // var m0 = performance.now()
+      // martinezOp(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
+      // this.martinezPerf = (performance.now() - m0).toFixed(2)
 
-      if (turfOperation !== null) {
-        var j0 = performance.now()
-        turfOperation(inData.features[0], inData.features[1])
-        this.jstsPerf = (performance.now() - j0).toFixed(2)
-      } else {
-        this.jstsPerf = 'N/A'
-      }
+      // if (turfOperation !== null) {
+      //   var j0 = performance.now()
+      //   // turfOperation(inData.features[0], inData.features[1])
+      //   this.jstsPerf = (performance.now() - j0).toFixed(2)
+      // } else {
+      //   this.jstsPerf = 'N/A'
+      // }
     }
   },
   mounted () {

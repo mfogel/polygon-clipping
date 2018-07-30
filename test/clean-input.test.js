@@ -257,7 +257,7 @@ describe('pointsAsObjects()', () => {
     const expected = [
       [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
     ]
-    expect(pointsAsObjects(input)).toEqual(expected)
+    expect(pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toEqual(expected)
   })
 
   test('basic multipoly', () => {
@@ -265,52 +265,52 @@ describe('pointsAsObjects()', () => {
     const expected = [
       [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
     ]
-    expect(pointsAsObjects(input)).toEqual(expected)
+    expect(pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toEqual(expected)
   })
 
   test('empty multipoly', () => {
     const input = []
     const expected = []
-    expect(pointsAsObjects(input)).toEqual(expected)
+    expect(pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toEqual(expected)
   })
 
   test('empty of empties', () => {
     const input = [[]]
-    expect(() => pointsAsObjects(input)).toThrow()
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow()
   })
 
   test('empty of empties of empties', () => {
     const input = [[[]]]
-    expect(() => pointsAsObjects(input)).toThrow()
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow()
   })
 
   test('too shallow', () => {
     const input = [[0, 0], [1, 0], [0, 1], [0, 0]]
-    expect(() => pointsAsObjects(input)).toThrow()
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow()
   })
 
   test('way too shallow', () => {
     const input = [0, 0]
-    expect(() => pointsAsObjects(input)).toThrow()
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow()
   })
 
   test('wrong type', () => {
     const input = 0
-    expect(() => pointsAsObjects(input)).toThrow()
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow()
   })
 
   test('too deep', () => {
     const input = [[[[[0, 0], [1, 0], [0, 1], [0, 0]]]]]
-    expect(() => pointsAsObjects(input)).toThrow()
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow()
   })
 
   test('more than two coordinates multipolygon', () => {
     const input = [[[[[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]]]]]
-    expect(() => pointsAsObjects(input)).toThrow('more than two coordinates')
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow('more than two coordinates')
   })
 
   test('more than two coordinates polygon', () => {
     const input = [[[[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]]]]
-    expect(() => pointsAsObjects(input)).toThrow('more than two coordinates')
+    expect(() => pointsAsObjects(input, [Infinity, Infinity, Infinity, Infinity])).toThrow('more than two coordinates')
   })
 })

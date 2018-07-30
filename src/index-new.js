@@ -1,47 +1,51 @@
 import Queue from 'qheap'
-import * as cleanInput from './clean-input.js'
-import * as geomIn from './geom-in'
+import * as cleanInput from './clean-input-new.js'
+import * as geomIn from './geom-in-new.js'
 import * as geomOut from './geom-out'
 import operation from './operation'
 import SweepEvent from './sweep-event'
 import SweepLine from './sweep-line'
 
 export default function doIt (operationType, geom, moreGeoms) {
-
+  console.time('start')
   const sbbox = [Infinity, Infinity, -Infinity, -Infinity];
   const cbbox = [Infinity, Infinity, -Infinity, -Infinity];
 
-  /* Make a copy of the input geometry with points as objects, for perf */
-  const geoms = [cleanInput.pointsAsObjects(geom, sbbox)]
+  // Ensure all input features are multipolys
+  const geoms = []
+  cleanInput.forceMultiPoly(geom, geoms)
   for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    geoms.push(cleanInput.pointsAsObjects(moreGeoms[i], cbbox))
+    cleanInput.forceMultiPoly(moreGeoms[i], geoms)
   }
 
-  /* Clean inputs */
-  for (let i = 0, iMax = geoms.length; i < iMax; i++) {
-    cleanInput.forceMultiPoly(geoms[i])
-    cleanInput.cleanMultiPoly(geoms[i])
-  }
+  // /* Clean inputs */
+  // for (let i = 0, iMax = geoms.length; i < iMax; i++) {
+  //   cleanInput.cleanMultiPoly(geoms[i])
+  // }
+  const queue = new Queue({ comparBefore: SweepEvent.compareBefore })
 
   /* Convert inputs to MultiPoly objects, mark subject & register operation */
   const multipolys = []
   for (let i = 0, iMax = geoms.length; i < iMax; i++) {
-    multipolys.push(new geomIn.MultiPoly(geoms[i]))
+    let bbox = i === 0 ? sbbox : cbbox
+    multipolys.push(new geomIn.MultiPoly(geoms[i], bbox, queue))
   }
+  console.timeEnd('start')
   multipolys[0].markAsSubject()
   operation.register(operationType, multipolys.length)
-
-  /* Put segment endpoints in a priority queue */
-  const queue = new Queue({ comparBefore: SweepEvent.compareBefore })
-  for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
-    const sweepEvents = multipolys[i].getSweepEvents()
-    for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
-      queue.insert(sweepEvents[j])
-    }
-  }
-
+  console.time('process')
 
   const rightbound = Math.min(sbbox[2], cbbox[2]);
+
+  // /* Put segment endpoints in a priority queue */
+  // for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
+  //   const sweepEvents = multipolys[i].getSweepEvents()
+  //   for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
+  //     queue.insert(sweepEvents[j])
+  //   }
+  // }
+
+
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
@@ -63,9 +67,12 @@ export default function doIt (operationType, geom, moreGeoms) {
 
   /* Error on self-crossing input rings */
   cleanInput.errorOnSelfIntersectingRings(sweepLine.segments)
+  console.timeEnd('process')
 
+  console.time("finish")
   /* Collect and compile segments we're keeping into a multipolygon */
   const ringsOut = geomOut.Ring.factory(sweepLine.segments)
   const result = new geomOut.MultiPoly(ringsOut)
+  console.timeEnd('finish')
   return result.getGeom()
 }
