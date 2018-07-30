@@ -7,7 +7,7 @@ import SweepEvent from './sweep-event'
 import SweepLine from './sweep-line'
 
 export default function doIt (operationType, geom, moreGeoms) {
-
+  console.time('start')
   const sbbox = [Infinity, Infinity, -Infinity, -Infinity];
   const cbbox = [Infinity, Infinity, -Infinity, -Infinity];
 
@@ -30,9 +30,10 @@ export default function doIt (operationType, geom, moreGeoms) {
     let bbox = i === 0 ? sbbox : cbbox
     multipolys.push(new geomIn.MultiPoly(geoms[i], bbox, queue))
   }
-
+  console.timeEnd('start')
   multipolys[0].markAsSubject()
   operation.register(operationType, multipolys.length)
+  console.time('process')
 
   const rightbound = Math.min(sbbox[2], cbbox[2]);
 
@@ -66,9 +67,12 @@ export default function doIt (operationType, geom, moreGeoms) {
 
   /* Error on self-crossing input rings */
   cleanInput.errorOnSelfIntersectingRings(sweepLine.segments)
+  console.timeEnd('process')
 
+  console.time("finish")
   /* Collect and compile segments we're keeping into a multipolygon */
   const ringsOut = geomOut.Ring.factory(sweepLine.segments)
   const result = new geomOut.MultiPoly(ringsOut)
+  console.timeEnd('finish')
   return result.getGeom()
 }

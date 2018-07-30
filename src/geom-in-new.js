@@ -17,7 +17,11 @@ function isPointUncessary (prevPt, pt, nextPt) {
   compareVectorAngles(pt, prevPt, nextPt) === 0
 }
 
-
+function doCoordsMatch (coords1, coords2) {
+  if (coords1[0] !== coords2[0]) return false
+  if (coords1[1] !== coords2[1]) return false
+  return true
+}
 
 export class Ring {
   constructor (geomRing, poly, bbox, queue) {
@@ -26,13 +30,15 @@ export class Ring {
     this.segments = []
 
     // Ensure ring is closed
-    if (cmpPoints(geomRing[0], geomRing[geomRing.length - 1]) !== 0) {
-      ring.push([geomRing[0], geomRing[1]])
+    if (!doCoordsMatch(geomRing[0], geomRing[geomRing.length - 1])) {
+      geomRing.push([geomRing[0], geomRing[1]])
     }
 
     let i = 1
-    while (i < geomRing.length - 1) {
-      // if (isPointUncessary(geomRing[i - 1], geomRing[i], geomRing[i + 1])) {
+    const rl = geomRing.length
+
+    for (i; i < rl; i++) {
+          // if (isPointUncessary(geomRing[i - 1], geomRing[i], geomRing[i + 1])) {
       //   geomRing.splice(i, 1)
       // } else {
 
@@ -49,16 +55,15 @@ export class Ring {
        queue.insert(seg.leftSE)
        queue.insert(seg.rightSE)
 
-        i++
       // }
     }
-    const seg = new Segment(
-      { x: geomRing[0][0], y: geomRing[0][1] }, 
-      { x: geomRing[geomRing.length - 2][0], y: geomRing[geomRing.length - 2][1] }, 
-      this)
-    this.segments.push(seg)
-    queue.insert(seg.leftSE)
-    queue.insert(seg.rightSE)
+    // const seg = new Segment(
+    //   { x: geomRing[0][0], y: geomRing[0][1] }, 
+    //   { x: geomRing[geomRing.length - 2][0], y: geomRing[geomRing.length - 2][1] }, 
+    //   this)
+    // this.segments.push(seg)
+    // queue.insert(seg.leftSE)
+    // queue.insert(seg.rightSE)
   }
 
   getSweepEvents () {
@@ -127,7 +132,8 @@ export class Poly {
     this.exteriorRing = new Ring(geomPoly[0], this, bbox, queue)
     this.interiorRings = []
 
-    for (let i = 1, iMax = geomPoly.length; i < iMax; i++) {
+    const gpl = geomPoly.length
+    for (let i = 1, iMax = gpl; i < iMax; i++) {
       if (geomPoly[i].length < 4 && geomPoly[i].length > 0) geomPoly.splice(i, 1)
       else this.interiorRings.push(new Ring(geomPoly[i], this, bbox, queue))
     }
@@ -168,7 +174,8 @@ export class Poly {
 export class MultiPoly {
   constructor (geomMultiPoly, bbox, queue) {
     this.polys = []
-    for (let i = 0, iMax = geomMultiPoly.length; i < iMax; i++) {
+    const gpl = geomMultiPoly.length
+    for (let i = 0, iMax = gpl; i < iMax; i++) {
       this.polys.push(new Poly(geomMultiPoly[i], this, bbox, queue))
     }
     this.isSubject = false
