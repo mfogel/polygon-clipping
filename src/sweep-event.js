@@ -14,11 +14,11 @@ export default class SweepEvent {
 
       const cmpY = cmp(a.point.y, b.point.y)
       if (cmpY !== 0) return cmpY
-    }
 
-    // Points are equal, so go ahead and link these events.
-    // This will cascade and possibly mark segments coincident.
-    a.link(b)
+      // Points are equal, so go ahead and link these events.
+      // This will cascade and possibly mark segments coincident.
+      a.link(b)
+    }
 
     // favor right events over left
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
@@ -52,7 +52,9 @@ export default class SweepEvent {
 
   link (other) {
     const otherLE = other.linkedEvents
-    if (otherLE === this.linkedEvents) return
+    if (otherLE === this.linkedEvents) {
+      throw new Error(`Tried to link already linked events`)
+    }
     for (let i = 0, iMax = otherLE.length; i < iMax; i++) {
       const evt = otherLE[i]
       this.linkedEvents.push(evt)
