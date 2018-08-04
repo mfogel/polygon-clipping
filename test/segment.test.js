@@ -242,15 +242,70 @@ describe('comparison with point', () => {
   })
 
   test('barely above', () => {
-    const s1 = Segment.fromRing({ x: 0, y: 1 }, { x: 3, y: 1 })
+    const s1 = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 1 })
     const pt = { x: 2, y: 1 - Number.EPSILON }
     expect(s1.comparePoint(pt)).toBe(-1)
   })
 
   test('barely below', () => {
-    const s1 = Segment.fromRing({ x: 0, y: 1 }, { x: 3, y: 1 })
-    const pt = { x: 2, y: 1 + Number.EPSILON }
+    const s1 = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 1 })
+    const pt = { x: 2, y: 1 + Number.EPSILON * 3 / 2 }
     expect(s1.comparePoint(pt)).toBe(1)
+  })
+})
+
+/**
+ * These tests ensures that these two methods produce consistent results.
+ *
+ * Deciding whether a point is on an infinitely thin line is a tricky question
+ * in a floating point world. Previously, these two methods were coming to
+ * different conclusions for the these points.
+ */
+describe('consistency between isPointOn() and getIntersections()', () => {
+  test('t-intersection on endpoint', () => {
+    const pt = {x: -104.0626, y: 75.4279525872937}
+    const s1 = Segment.fromRing({x: -104.117212, y: 75.4383502}, {x: -104.0624, y: 75.4279145091691})
+    const s2 = Segment.fromRing(pt, {x: -104.0625, y: 75.44})
+
+    const inters1 = s1.getIntersections(s2)
+    expect(inters1.length).toBe(1)
+    expect(inters1[0].x).toBe(pt.x)
+    expect(inters1[0].y).toBe(pt.y)
+
+    const inters2 = s2.getIntersections(s1)
+    expect(inters2.length).toBe(1)
+    expect(inters2[0].x).toBe(pt.x)
+    expect(inters2[0].y).toBe(pt.y)
+
+    expect(s1.isPointOn(pt)).toBe(true)
+    expect(s2.isPointOn(pt)).toBe(true)
+  })
+
+  test('two intersections on endpoints, overlapping parrallel segments', () => {
+    const pt1 = {x: -104.0624, y: 75.4279145091691}
+    const pt2 = {x: -104.0626, y: 75.4279525872937}
+    const s1 = Segment.fromRing({x: -104.117212, y: 75.4383502}, pt1)
+    const s2 = Segment.fromRing(pt2, {x: -104.0529352, y: 75.4261125})
+
+    const inters1 = s1.getIntersections(s2)
+    expect(inters1.length).toBe(2)
+    expect(inters1[0].x).toBe(pt2.x)
+    expect(inters1[0].y).toBe(pt2.y)
+    expect(inters1[1].x).toBe(pt1.x)
+    expect(inters1[1].y).toBe(pt1.y)
+
+    const inters2 = s2.getIntersections(s1)
+    expect(inters2.length).toBe(2)
+    expect(inters2[0].x).toBe(pt2.x)
+    expect(inters2[0].y).toBe(pt2.y)
+    expect(inters2[1].x).toBe(pt1.x)
+    expect(inters2[1].y).toBe(pt1.y)
+
+    expect(s1.isPointOn(pt1)).toBe(true)
+    expect(s1.isPointOn(pt2)).toBe(true)
+
+    expect(s2.isPointOn(pt1)).toBe(true)
+    expect(s2.isPointOn(pt2)).toBe(true)
   })
 })
 
