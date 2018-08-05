@@ -11,7 +11,7 @@ export class Ring {
     this.segments = []
 
     for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
-      this.segments.push(new Segment(geomRing[i - 1], geomRing[i], this))
+      this.segments.push(Segment.fromRing(geomRing[i - 1], geomRing[i], this))
     }
   }
 

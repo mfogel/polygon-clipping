@@ -1,4 +1,4 @@
-import Queue from 'qheap'
+import SplayTree from 'splaytree'
 import * as cleanInput from './clean-input.js'
 import * as geomIn from './geom-in'
 import * as geomOut from './geom-out'
@@ -28,7 +28,7 @@ export default function doIt (operationType, geom, moreGeoms) {
   operation.register(operationType, multipolys.length)
 
   /* Put segment endpoints in a priority queue */
-  const queue = new Queue({ comparBefore: SweepEvent.compareBefore })
+  const queue = new SplayTree(SweepEvent.compare)
   for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
     const sweepEvents = multipolys[i].getSweepEvents()
     for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
@@ -38,8 +38,9 @@ export default function doIt (operationType, geom, moreGeoms) {
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
-  while (queue.length) {
-    const newEvents = sweepLine.process(queue.remove())
+  let node
+  while (node = queue.pop()) {
+    const newEvents = sweepLine.process(node.key)
     for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
       queue.insert(newEvents[i])
     }

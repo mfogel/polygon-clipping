@@ -17,7 +17,6 @@ export default class SweepLine {
   constructor (comparator = Segment.compare) {
     this.tree = new SplayTree(comparator)
     this.segments = []
-    this.prevEvent = null
   }
 
   process (event) {
@@ -71,9 +70,12 @@ export default class SweepLine {
         this.tree.remove(segment)
 
         if (mySplitters.length > 0) {
-          const newEventsFromSplit = segment.split(mySplitters)
-          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-            newEvents.push(newEventsFromSplit[i])
+          // split ourselves, and all our coincidents.
+          for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
+            const newEventsFromSplit = segment.coincidents[i].split(mySplitters)
+            for (let j = 0, jMax = newEventsFromSplit.length; j < jMax; j++) {
+              newEvents.push(newEventsFromSplit[j])
+            }
           }
         }
 
@@ -107,11 +109,6 @@ export default class SweepLine {
       this.tree.remove(segment)
     }
 
-    if (this.prevEvent && cmpPoints(this.prevEvent.point, event.point) === 0) {
-      this.prevEvent.link(event)
-    }
-    this.prevEvent = event
-
     return newEvents
   }
 
@@ -122,12 +119,19 @@ export default class SweepLine {
       if (!segment.isAnEndpoint(pt)) splitters.push(pt)
     }
 
-    let newEvents
+    let newEvents = []
     if (splitters.length > 0) {
-      this.tree.remove(segment)
-      newEvents = segment.split(splitters)
-      this.tree.insert(segment)
-    } else newEvents = []
+      // split the segment and all of its coincidents
+      for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
+        const thisSeg = segment.coincidents[i]
+        this.tree.remove(thisSeg)
+        const theseNewEvents = thisSeg.split(splitters)
+        for (let j = 0, jMax = theseNewEvents.length; j < jMax; j++) {
+          newEvents.push(theseNewEvents[j])
+        }
+        this.tree.insert(thisSeg)
+      }
+    }
     return newEvents
   }
 }

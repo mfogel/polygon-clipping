@@ -2,31 +2,41 @@ import { cmp } from './flp'
 import { cosineOfAngle, sineOfAngle } from './vector'
 
 export default class SweepEvent {
-  static compareBefore (a, b) {
-    // favor event with a point that the sweep line hits first
-    const cmpX = cmp(a.point.x, b.point.x)
-    if (cmpX !== 0) return cmpX < 0
 
-    const cmpY = cmp(a.point.y, b.point.y)
-    if (cmpY !== 0) return cmpY < 0
+  static compare (a, b) {
+
+    // if the events are already linked, then we know the points are equal
+    if (a.linkedEvents !== b.linkedEvents) {
+
+      // favor event with a point that the sweep line hits first
+      const cmpX = cmp(a.point.x, b.point.x)
+      if (cmpX !== 0) return cmpX
+
+      const cmpY = cmp(a.point.y, b.point.y)
+      if (cmpY !== 0) return cmpY
+
+      // Points are equal, so go ahead and link these events.
+      // This will cascade and possibly mark segments coincident.
+      a.link(b)
+    }
 
     // favor right events over left
-    if (a.isLeft !== b.isLeft) return !a.isLeft
+    if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
 
     // favor events where the line segment is lower
     const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
-    if (pointSegCmp !== 0) return pointSegCmp > 0
+    if (pointSegCmp !== 0) return pointSegCmp > 0 ? -1 : 1
 
     // as a tie-breaker, favor lower segment creation id
     const aId = a.segment.ringIn.id
     const bId = b.segment.ringIn.id
-    if (aId !== bId) return aId < bId
+    if (aId !== bId) return aId < bId ? -1 : 1
 
     // NOTE:  We don't sort on segment length because that changes
     //        as segments are divided.
 
     // they appear to be the same point... are they?
-    if (a === b) return false
+    if (a === b) return 0
 
     throw new Error(
       `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]... ` +
@@ -42,10 +52,17 @@ export default class SweepEvent {
 
   link (other) {
     const otherLE = other.linkedEvents
+    if (otherLE === this.linkedEvents) {
+      throw new Error(`Tried to link already linked events`)
+    }
     for (let i = 0, iMax = otherLE.length; i < iMax; i++) {
       const evt = otherLE[i]
       this.linkedEvents.push(evt)
       evt.linkedEvents = this.linkedEvents
+      evt.point = this.point
+      if (this.otherSE.linkedEvents === evt.otherSE.linkedEvents) {
+        this.segment.registerCoincident(evt.segment)
+      }
     }
   }
 

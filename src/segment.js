@@ -2,7 +2,7 @@ import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, getBboxOverlap, getUniqueCorners } from './bbox'
 import { cmp, cmpPoints } from './flp'
-import { crossProduct, compareVectorAngles } from './vector'
+import { crossProduct, compareVectorAngles, intersection, perpendicular } from './vector'
 
 export default class Segment {
   static compare (a, b) {
@@ -67,37 +67,39 @@ export default class Segment {
     )
   }
 
-  constructor (point1, point2, ring) {
-    this.ringIn = ring
+  constructor (ringIn, flowL2R) {
+    this.ringIn = ringIn
+    this.flowL2R = flowL2R
+    this.leftSE = null
+    this.rightSE = null
     this.ringOut = null
+    this.coincidents = [this]
+    this._clearCache()
+  }
 
+  static fromRing(point1, point2, ring) {
     const ptCmp = cmpPoints(point1, point2)
     let lp
     let rp
+    let flowL2R
     if (ptCmp < 0) {
       lp = point1
       rp = point2
-      this.flowL2R = true
+      flowL2R = true
     } else if (ptCmp > 0) {
       lp = point2
       rp = point1
-      this.flowL2R = false
+      flowL2R = false
     } else {
       throw new Error(
         `Tried to create degenerate segment at [${point1.x}, ${point1.y}]`
       )
     }
 
-    this.leftSE = new SweepEvent(lp, this)
-    this.rightSE = new SweepEvent(rp, this)
+    const seg = new Segment(ring, flowL2R)
+    seg.leftSE = new SweepEvent(lp, seg)
+    seg.rightSE = new SweepEvent(rp, seg)
 
-    // cache of dynamically computed properies
-    this._clearCache()
-  }
-
-  clone () {
-    const seg = new Segment(this.leftSE.point, this.rightSE.point, this.ringIn)
-    seg.flowL2R = this.flowL2R
     return seg
   }
 
@@ -150,7 +152,13 @@ export default class Segment {
    *   -1: point is above segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    return compareVectorAngles(point, this.leftSE.point, this.rightSE.point)
+    const v1 = this.vector
+    const v2 = perpendicular(v1)
+    const interPt = intersection(this.leftSE.point, v1, point, v2)
+
+    const cmpY = cmp(point.y, interPt.y)
+    if (cmpY !== 0) return cmpY
+    return cmp(interPt.x, point.x)
   }
 
   /**
@@ -190,32 +198,10 @@ export default class Segment {
     }
     if (intersections.length > 0) return intersections
 
-    // General case for non-overlapping segments.
-    // This algorithm is based on Schneider and Eberly.
-    // http://www.cimec.org.ar/~ncalvo/Schneider_Eberly.pdf - pg 244
-    const al = this.leftSE.point
-    const bl = other.leftSE.point
-    const va = this.vector
-    const vb = other.vector
-    const ve = { x: bl.x - al.x, y: bl.y - al.y }
-    const kross = crossProduct(va, vb)
-
-    // not on line segment a
-    const s = crossProduct(ve, vb) / kross
-    if (cmp(s, 0) < 0 || cmp(1, s) < 0) return []
-
-    const t = crossProduct(ve, va) / kross
-    if (cmp(t, 0) < 0 || cmp(1, t) < 0) return []
-
-    // intersection is in a midpoint of both lines, let's average them and
-    // bound the result by org bbox (otherwise leftSE and rightSE could swap)
-    let x = (al.x + s * va.x + bl.x + t * vb.x) / 2
-    let y = (al.y + s * va.y + bl.y + t * vb.y) / 2
-    if (x < bboxOverlap.ll.x) x = bboxOverlap.ll.x
-    if (x > bboxOverlap.ur.x) x = bboxOverlap.ur.x
-    if (y < bboxOverlap.ll.y) y = bboxOverlap.ll.y
-    if (y > bboxOverlap.ur.y) y = bboxOverlap.ur.y
-    return [{ x: x, y: y }]
+    // general case of one intersection between non-overlapping segments
+    const pt = intersection(this.leftSE.point, this.vector, other.leftSE.point, other.vector)
+    if (pt !== null && isInBbox(bboxOverlap, pt)) return [pt]
+    return []
   }
 
   /**
@@ -245,7 +231,7 @@ export default class Segment {
     }
 
     const point = points.shift()
-    const newSeg = this.clone()
+    const newSeg = new Segment(this.ringIn, this.flowL2R)
     newSeg.leftSE = new SweepEvent(point, newSeg)
     newSeg.rightSE = this.rightSE
     this.rightSE.segment = newSeg
@@ -270,6 +256,18 @@ export default class Segment {
     this.ringOut = ring
   }
 
+  registerCoincident (other) {
+    if (this.coincidents == other.coincidents) return // already coincident
+    const otherCoincidents = other.coincidents
+    for (let i = 0, iMax = otherCoincidents.length; i < iMax; i++) {
+      const seg = otherCoincidents[i]
+      this.coincidents.push(seg)
+      seg.coincidents = this.coincidents
+    }
+    // put the 'winner' at the front. arbitrary: winner has lowest ringId
+    this.coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
+  }
+
   /* The first segment previous segment chain that is in the result */
   get prevInResult () {
     const key = 'prevInResult'
@@ -281,38 +279,6 @@ export default class Segment {
     let prev = this.prev
     while (prev && !prev.isInResult) prev = prev.prev
     return prev
-  }
-
-  /* The segments, including ourselves, for which we overlap perfectly */
-  get coincidents () {
-    const key = 'coincidents'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _coincidents () {
-    // a coincident will have both left and right sweepEvents linked with us
-    const coincidents = []
-    const leftLinkedEvents = this.leftSE.linkedEvents
-    const rightLinkedEvents = this.rightSE.linkedEvents
-    for (let i = 0, iMax = leftLinkedEvents.length; i < iMax; i++) {
-      const leftSE = leftLinkedEvents[i]
-      if (!leftSE.isLeft) continue
-      if (leftSE.segment.rightSE.linkedEvents !== rightLinkedEvents) continue
-      coincidents.push(leftSE.segment)
-    }
-
-    if (coincidents.length > 0) {
-      // put the 'winner' at the front
-      // arbitary - winner is the one with lowest ringId
-      coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
-
-      // set this in all our coincident's caches so they don't have to calc it
-      for (let i = 0, iMax = coincidents.length; i < iMax; i++) {
-        coincidents[i]._cache['coincidents'] = coincidents
-      }
-    }
-    return coincidents
   }
 
   get prevNotCoincident () {
