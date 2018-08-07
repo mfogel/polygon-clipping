@@ -1,4 +1,4 @@
-import { cmp } from './flp'
+import { cmp, cmpPoints } from './flp'
 import { cosineOfAngle, sineOfAngle } from './vector'
 
 export default class SweepEvent {
@@ -22,6 +22,11 @@ export default class SweepEvent {
 
     // favor right events over left
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
+
+    // favor vertical segments for left events, and non-vertical for right
+    // https://github.com/mfogel/polygon-clipping/issues/29
+    if (a.segment.isVertical && ! b.segment.isVertical) return a.isLeft ? 1 : -1
+    if (! a.segment.isVertical && b.segment.isVertical) return a.isLeft ? -1 : 1
 
     // favor events where the line segment is lower
     const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
@@ -120,6 +125,13 @@ export default class SweepEvent {
 
   get isRight () {
     return this === this.segment.rightSE
+  }
+
+  get isOrientationCorrect () {
+    const ptCmp = cmpPoints(this.point, this.otherSE.point)
+    if (ptCmp < 0) return this.isLeft
+    if (ptCmp > 0) return this.isRight
+    throw new Error("Degenerate segment encountered")
   }
 
   get otherSE () {

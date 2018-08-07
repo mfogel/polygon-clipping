@@ -25,6 +25,20 @@ describe('sweep event compare', () => {
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
+  test('then favor non-vertical segments for left events', () => {
+    const s1 = Segment.fromRing({ x: 3, y: 2 }, { x: 3, y: 4 }).leftSE
+    const s2 = Segment.fromRing({ x: 3, y: 2 }, { x: 5, y: 4 }).leftSE
+    expect(SweepEvent.compare(s1, s2)).toBe(1)
+    expect(SweepEvent.compare(s2, s1)).toBe(-1)
+  })
+
+  test('then favor vertical segments for right events', () => {
+    const s1 = Segment.fromRing({ x: 3, y: 2 }, { x: 3, y: 4 }).rightSE
+    const s2 = Segment.fromRing({ x: 1, y: 2 }, { x: 3, y: 4 }).rightSE
+    expect(SweepEvent.compare(s1, s2)).toBe(-1)
+    expect(SweepEvent.compare(s2, s1)).toBe(1)
+  })
+
   test('then favor lower segment', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }).leftSE
     const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 6 }).leftSE
@@ -72,7 +86,7 @@ describe('sweep event link', () => {
     expect(se2.getAvailableLinkedEvents()).toEqual([])
   })
 
-  test('link already linked event', () => {
+  test('link events already linked with others', () => {
     const se1 = Segment.fromRing({x: 1, y: 2}, {x: 3, y: 4}, {}).leftSE
     const se2 = Segment.fromRing({x: 1, y: 2}, {x: 3, y: 4}, {}).leftSE
     const se3 = Segment.fromRing({x: 1, y: 2}, {x: 3, y: 4}, {}).leftSE
@@ -86,6 +100,14 @@ describe('sweep event link', () => {
     expect(se1.linkedEvents).toBe(se2.linkedEvents)
     expect(se1.linkedEvents).toBe(se3.linkedEvents)
     expect(se1.linkedEvents).toBe(se4.linkedEvents)
+  })
+
+  test('same event twice', () => {
+    const se1 = Segment.fromRing({x: 1, y: 2}, {x: 3, y: 4}, {}).leftSE
+    const se2 = Segment.fromRing({x: 1, y: 2}, {x: 3, y: 4}, {}).leftSE
+    se2.link(se1)
+    expect(() => se2.link(se1)).toThrow()
+    expect(() => se1.link(se2)).toThrow()
   })
 
   test('unavailable linked events do not show up', () => {
@@ -189,5 +211,28 @@ describe('sweep event get leftmost comparator', () => {
     expect(comparator(e4, e1)).toBe(-1)
     expect(comparator(e4, e2)).toBe(1)
     expect(comparator(e4, e3)).toBe(1)
+  })
+})
+
+describe('isOrientationCorrect()', () => {
+  test('yes', () => {
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    expect(seg.leftSE.isOrientationCorrect).toBe(true)
+    expect(seg.rightSE.isOrientationCorrect).toBe(true)
+  })
+
+  test('no', () => {
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    seg.leftSE.point.x = 42
+    expect(seg.leftSE.isOrientationCorrect).toBe(false)
+    expect(seg.rightSE.isOrientationCorrect).toBe(false)
+  })
+
+  test('degenerate segment', () => {
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    seg.leftSE.point.x = 1
+    seg.leftSE.point.y = 1
+    expect(() => seg.leftSE.isOrientationCorrect).toThrow()
+    expect(() => seg.rightSE.isOrientationCorrect).toThrow()
   })
 })

@@ -82,11 +82,11 @@ export default class SweepLine {
         // Make sure sweep line ordering is totally consistent for later
         // use with the segment 'prev' pointers - re-do the current event.
         newEvents.push(event)
-        return newEvents
+      } else {
+        this.segments.push(segment)
+        segment.registerPrev(prevSeg)
       }
 
-      this.segments.push(segment)
-      segment.registerPrev(prevSeg)
     } else {
       // event.isRight
 
@@ -107,6 +107,14 @@ export default class SweepLine {
       }
 
       this.tree.remove(segment)
+    }
+
+
+    // sometimes, becaues of rounding errors, we need to resort events in the queue
+    // https://github.com/mfogel/polygon-clipping/issues/29
+    for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
+      const evt = newEvents[i]
+      if (! evt.isOrientationCorrect) evt.segment.swapEvents()
     }
 
     return newEvents

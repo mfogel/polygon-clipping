@@ -51,17 +51,21 @@ export default class Segment {
 
       // if our left endpoints match, consider the segment
       // that angles more downward to be earlier
-      if (cmpLX === 0 && cmp(a.leftSE.point.y, b.leftSE.point.y) === 0) {
-        return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
+      const cmpLY = cmp(aly, bly)
+      if (cmpLY === 0) {
+        // special case verticals due to rounding errors
+        // part of https://github.com/mfogel/polygon-clipping/issues/29
+        if (a.isVertical !== b.isVertical) return a.isVertical
+        else return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
       }
 
       // left endpoints are in the same vertical line but don't overlap exactly,
       // lower means ealier
-      return cmp(aly, bly)
+      return cmpLY
     }
 
     throw new Error(
-      `Segment comparison (from [${a.leftSE.point.x}, ${a.leftSR.point.y}])` +
+      `Segment comparison (from [${a.leftSE.point.x}, ${a.leftSE.point.y}])` +
         ` -> to [${a.rightSE.point.x}, ${a.rightSE.point.y}]) failed... ` +
         ` segments equal but not identical?`
     )
@@ -127,6 +131,12 @@ export default class Segment {
   /* In the original ringIn, which event came second */
   get flowIntoSE () {
     return this.flowL2R ? this.rightSE : this.leftSE
+  }
+
+  swapEvents () {
+    const tmp = this.leftSE
+    this.leftSE = this.rightSE
+    this.rightSE = tmp
   }
 
   getOtherSE (se) {
