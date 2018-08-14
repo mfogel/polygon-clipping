@@ -408,6 +408,19 @@ export default class Segment {
     return rings
   }
 
+  getRingsEnteringAndExiting () {
+    const ringsEntering = []
+    const ringsExiting = []
+
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
+      const segment = this.coincidents[i]
+      if (segment.sweepLineEntersRing) ringsEntering.push(segment.ringIn)
+      else ringsExiting.push(segment.ringIn)
+    }   
+
+    return [ringsEntering, ringsExiting]
+  }
+
   /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
   get isValidEdgeForPoly () {
     const key = 'isValidEdgeForPoly'
@@ -419,12 +432,13 @@ export default class Segment {
     // SLER: sweep line entering orientation
     let sameSLER
     let diffSLER
+    const rings = this.getRingsEnteringAndExiting()
     if (this.sweepLineEntersRing) {
-      sameSLER = this.getRingsEntering()
-      diffSLER = this.getRingsExiting()
+      sameSLER = rings[0]
+      diffSLER = rings[1]
     } else {
-      diffSLER = this.getRingsEntering()
-      sameSLER = this.getRingsExiting()
+      diffSLER = rings[0]
+      sameSLER = rings[1]
     }
     return this.ringIn.isValid(sameSLER, diffSLER, this.ringsInsideOf)
   }
@@ -469,6 +483,22 @@ export default class Segment {
     return mps
   }
 
+  /* Combine the above two functions for efficient looping */
+  getMultiPolysSLPEntersAndExits (multiPolysInsideOf) {
+    const mpsEnters = multiPolysInsideOf.slice(0)
+    const mpsExits = multiPolysInsideOf.slice(0)
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
+      const seg = this.coincidents[i]
+      const mp = seg.ringIn.poly.multiPoly
+      if (seg.sweepLineEntersPoly) {
+          if (!mpsEnters.includes(mp)) mpsEnters.push(mp)
+      } else if (seg.sweepLineExitsPoly) {
+          if (!mpsExits.includes(mp)) mpsExits.push(mp)        
+      }
+    }
+    return [mpsEnters, mpsExits]
+  }
+
   /* Is this segment part of the final result? */
   get isInResult () {
     const key = 'isInResult'
@@ -481,8 +511,9 @@ export default class Segment {
     if (this !== this.coincidents[0]) return false
 
     const multiPolysInsideOf = this.getMultiPolysInsideOf()
-    const multiPolysSLPEnters = this.getMultiPolysSLPEnters(multiPolysInsideOf)
-    const multiPolysSLPExits = this.getMultiPolysSLPExits(multiPolysInsideOf)
+    const getMPS = this.getMultiPolysSLPEntersAndExits(multiPolysInsideOf)
+    const multiPolysSLPEnters = getMPS[0]
+    const multiPolysSLPExits = getMPS[1]
 
     switch (operation.type) {
       case operation.types.UNION:

@@ -72,6 +72,8 @@ export default class SweepEvent {
   }
 
   getAvailableLinkedEvents () {
+    if (this.linkedEvents.length === 1) return []
+    
     const events = []
     for (let i = 0, iMax = this.linkedEvents.length; i < iMax; i++) {
       const evt = this.linkedEvents[i]
