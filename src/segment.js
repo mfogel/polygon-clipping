@@ -227,9 +227,11 @@ export default class Segment {
   split (points) {
     // sort them and unique-ify them
     points.sort(cmpPoints)
-    points = points.filter(
-      (pt, i, pts) => i === 0 || cmpPoints(pts[i - 1], pt) !== 0
-    )
+    const newPts = []
+    for (var i = 0; i < points.length; i++) {
+      if (i === 0 || cmpPoints(points[i - 1], points[i]) !== 0) newPts.push(points[i])
+    }
+    points = newPts
 
     for (let i = 0, iMax = points.length; i < iMax; i++) {
       const pt = points[i]

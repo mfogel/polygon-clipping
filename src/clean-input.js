@@ -154,9 +154,10 @@ export const errorOnSelfIntersectingRings = segments => {
     const evt = seg.flowIntoSE
 
     if (evt.linkedEvents.length > 2) {
-      const evtsThisRing = evt.linkedEvents.filter(
-        other => other.segment.ringIn === seg.ringIn
-      )
+      const evtsThisRing = []
+      for (let i = 0; i < evt.linkedEvents.length; i++) {
+        if (evt.linkedEvents[i].segment.ringIn === seg.ringIn) evtsThisRing.push(evt.linkedEvents[i])
+      }
       if (evtsThisRing.length > 2) {
         evtsThisRing.sort(evt.getLeftmostComparator(evt.otherSE))
         const leftMostEvt = evtsThisRing[1] // skip ourself
