@@ -144,36 +144,3 @@ export const cleanRing = ring => {
   // drop it
   while (ring.length < 4 && ring.length > 0) ring.pop()
 }
-
-/* Scan the already-linked events of the segments for any
- * self-intersecting input rings (which are not supported) */
-export const errorOnSelfIntersectingRings = segments => {
-  for (let i = 0, iMax = segments.length; i < iMax; i++) {
-    const seg = segments[i]
-
-    const evt = seg.flowIntoSE
-
-    if (evt.linkedEvents.length > 2) {
-      const evtsThisRing = evt.linkedEvents.filter(
-        other => other.segment.ringIn === seg.ringIn
-      )
-      if (evtsThisRing.length > 2) {
-        evtsThisRing.sort(evt.getLeftmostComparator(evt.otherSE))
-        const leftMostEvt = evtsThisRing[1] // skip ourself
-        const rightMostEvt = evtsThisRing[evtsThisRing.length - 1]
-
-        // both the segment on our immediate left and right will flow
-        // 'out' in intersection point was a touch and not a crossing
-        if (
-          leftMostEvt.segment.flowIntoSE === leftMostEvt ||
-          rightMostEvt.segment.flowIntoSE === rightMostEvt
-        ) {
-          throw new Error(
-            `Self-intersecting, crossing input ring found at ` +
-              `[${evt.point.x}, ${evt.point.y}]`
-          )
-        }
-      }
-    }
-  }
-}

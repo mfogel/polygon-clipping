@@ -66,17 +66,4 @@ describe('doIt calls the right stuff', () => {
     expect(cleanInput.cleanMultiPoly).toHaveBeenCalledWith(mp2Ob)
     expect(cleanInput.cleanMultiPoly).toHaveBeenCalledWith(mp3Ob)
   })
-
-  test('errorOnSelfIntersectingRings() called', () => {
-    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
-    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
-    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
-
-    cleanInput.errorOnSelfIntersectingRings = jest.fn(
-      cleanInput.errorOnSelfIntersectingRings
-    )
-    doIt(operation.types.UNION, mp1, [mp2, mp3])
-
-    expect(cleanInput.errorOnSelfIntersectingRings).toHaveBeenCalledTimes(1)
-  })
 })

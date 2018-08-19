@@ -43,10 +43,10 @@ Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon.
 Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.6), with the following notes/modifications:
 * rings of the polygon are not required to be self-closing
 * rings may contain repeated points (which are ignored)
+* rings may be self-touching and/or self-crossing. Self-crossing rings will be interpreted using the [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
 * winding order of rings of Polygon does not matter
 * interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
 * interior rings may touch or overlap each other
-* rings may touch themselves, but may **not** cross themselves. If a self-crossing ring is found, an exception will be thrown. To clean up self-crossing rings, you may want to use the [non-zero rule](https://en.wikipedia.org/wiki/Nonzero-rule) or the [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
 
 #### MultiPolygon
 
@@ -80,6 +80,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ### vNext (in development)
 
+ * Allow self-crossing rings using [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule) ([#30](https://github.com/mfogel/polygon-clipping/issues/30))
  * Fix bug with nearly vertical segments being split ([#29](https://github.com/mfogel/polygon-clipping/issues/29))
  * Fix bug with coincident segments being split slightly differently ([#22](https://github.com/mfogel/polygon-clipping/issues/22))
 
