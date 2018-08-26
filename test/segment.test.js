@@ -5,10 +5,8 @@ import Segment from '../src/segment'
 describe('constructor', () => {
   test('general', () => {
     const ringIn = {}
-    const flowL2R = {}
-    const seg = new Segment(ringIn, flowL2R)
+    const seg = new Segment(ringIn)
     expect(seg.ringIn).toEqual(ringIn)
-    expect(seg.flowL2R).toEqual(flowL2R)
     expect(seg.leftSE).toBeNull()
     expect(seg.rightSE).toBeNull()
     expect(seg.ringOut).toBeNull()
@@ -23,7 +21,6 @@ describe('fromRing', () => {
     const seg = Segment.fromRing(p1, p2)
     expect(seg.leftSE.point).toEqual(p1)
     expect(seg.rightSE.point).toEqual(p2)
-    expect(seg.flowL2R).toBeTruthy()
   })
 
   test('correct point on left and right 1', () => {
@@ -32,7 +29,6 @@ describe('fromRing', () => {
     const seg = Segment.fromRing(p1, p2)
     expect(seg.leftSE.point).toEqual(p2)
     expect(seg.rightSE.point).toEqual(p1)
-    expect(seg.flowL2R).toBeFalsy()
   })
 
   test('attempt create segment with same poitns', () => {

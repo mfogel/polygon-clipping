@@ -71,9 +71,8 @@ export default class Segment {
     )
   }
 
-  constructor (ringIn, flowL2R) {
+  constructor (ringIn) {
     this.ringIn = ringIn
-    this.flowL2R = flowL2R
     this.leftSE = null
     this.rightSE = null
     this.ringOut = null
@@ -85,22 +84,19 @@ export default class Segment {
     const ptCmp = cmpPoints(point1, point2)
     let lp
     let rp
-    let flowL2R
     if (ptCmp < 0) {
       lp = point1
       rp = point2
-      flowL2R = true
     } else if (ptCmp > 0) {
       lp = point2
       rp = point1
-      flowL2R = false
     } else {
       throw new Error(
         `Tried to create degenerate segment at [${point1.x}, ${point1.y}]`
       )
     }
 
-    const seg = new Segment(ring, flowL2R)
+    const seg = new Segment(ring)
     seg.leftSE = new SweepEvent(lp, seg)
     seg.rightSE = new SweepEvent(rp, seg)
 
@@ -126,11 +122,6 @@ export default class Segment {
 
   get isVertical () {
     return cmp(this.leftSE.point.x, this.rightSE.point.x) === 0
-  }
-
-  /* In the original ringIn, which event came second */
-  get flowIntoSE () {
-    return this.flowL2R ? this.rightSE : this.leftSE
   }
 
   swapEvents () {
@@ -243,7 +234,7 @@ export default class Segment {
     }
 
     const point = points.shift()
-    const newSeg = new Segment(this.ringIn, this.flowL2R)
+    const newSeg = new Segment(this.ringIn)
     newSeg.leftSE = new SweepEvent(point, newSeg)
     newSeg.rightSE = this.rightSE
     this.rightSE.segment = newSeg

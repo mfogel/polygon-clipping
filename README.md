@@ -36,35 +36,28 @@ polygonClipping.difference(<subjectGeom>, ...<clipGeoms>)
 
 ### Input
 
-Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon.
-
-#### Polygon
-
-Follows the [GeoJSON Polygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.6), with the following notes/modifications:
-* rings of the polygon are not required to be self-closing
-* rings may contain repeated points (which are ignored)
-* winding order of rings of Polygon does not matter
-* interior rings may extend outside exterior rings (portion of interior ring outside exterior ring is dropped)
-* interior rings may touch or overlap each other
-* rings may touch themselves, but may **not** cross themselves. If a self-crossing ring is found, an exception will be thrown. To clean up self-crossing rings, you may want to use the [non-zero rule](https://en.wikipedia.org/wiki/Nonzero-rule) or the [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
-
-#### MultiPolygon
-
-Follows the [GeoJSON MultiPolygon spec](https://tools.ietf.org/html/rfc7946#section-3.1.7), with the following notes/modifications:
-* may contain touching or overlapping Polygons
+Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon. The [GeoJSON spec](https://tools.ietf.org/html/rfc7946#section-3.1) is followed, with the following notes/modifications:
+* MultiPolygons may contain touching or overlapping Polygons.
+* rings are not required to be self-closing.
+* rings may contain repeated points, which are ignored.
+* rings may be self-touching and/or self-crossing. Self-crossing rings will be interpreted using the [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
+* winding order of rings does not matter.
+* inner rings may extend outside their outer ring. The portion of inner rings outside their outer ring is dropped.
+* inner rings may touch or overlap each other.
 
 ### Output
 
-Always a MultiPolygon containing one or more non-overlapping, non-edge-sharing Polygons. The Polygons will follow the GeoJSON spec, meaning:
-* the outer ring will be wound counter-clockwise, and inner rings clockwise.
-* inner rings will not extend outside the outer ring, nor share an edge with the outer ring
-* inner rings will not overlap, nor share an edge with each other
-* rings will be self-closing
-* rings will not contain repeated points
-* rings will not contain superfluous points (intermediate points along a straight line)
-* rings will not be self-touching nor self-crossing
+For non-empty results, output will always be a MultiPolygon containing one or more non-overlapping, non-edge-sharing Polygons. The [GeoJSON spec](https://tools.ietf.org/html/rfc7946#section-3.1) is followed, with the following notes/modifications:
+* outer rings will be wound counter-clockwise, and inner rings clockwise.
+* inner rings will not extend outside their outer ring.
+* rings will not overlap, nor share an edge with each other.
+* rings will be self-closing.
+* rings will not contain repeated points.
+* rings will not contain superfluous points (intermediate points along a straight line).
+* rings will not be self-touching nor self-crossing.
+* rings *may* touch each other, but *may not* cross each other.
 
-In the event that the result of the operation is the empty set, the output will be an empty array: `[]`.
+In the event that the result of the operation is the empty set, output will be a MultiPolygon with no Polygons: `[]`.
 
 ## Correctness
 
@@ -80,6 +73,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ### vNext (in development)
 
+ * Allow self-crossing rings using [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule) ([#30](https://github.com/mfogel/polygon-clipping/issues/30))
  * Fix bug with nearly vertical segments being split ([#29](https://github.com/mfogel/polygon-clipping/issues/29))
  * Fix bug with coincident segments being split slightly differently ([#22](https://github.com/mfogel/polygon-clipping/issues/22))
 

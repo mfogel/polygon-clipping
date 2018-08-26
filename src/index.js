@@ -46,9 +46,6 @@ export default function doIt (operationType, geom, moreGeoms) {
     }
   }
 
-  /* Error on self-crossing input rings */
-  cleanInput.errorOnSelfIntersectingRings(sweepLine.segments)
-
   /* Collect and compile segments we're keeping into a multipolygon */
   const ringsOut = geomOut.Ring.factory(sweepLine.segments)
   const result = new geomOut.MultiPoly(ringsOut)
