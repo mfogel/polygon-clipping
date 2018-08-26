@@ -457,34 +457,6 @@ export default class Segment {
     return mps
   }
 
-  /* The multipolys on one side of us */
-  getMultiPolysSLPEnters (multiPolysInsideOf) {
-    // start with the multipolys we're fully inside
-    const mps = multiPolysInsideOf.slice()
-    // add the multipolys we have the sweep line entering
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const seg = this.coincidents[i]
-      if (!seg.sweepLineEntersPoly) continue
-      const mp = seg.ringIn.poly.multiPoly
-      if (!mps.includes(mp)) mps.push(mp)
-    }
-    return mps
-  }
-
-  /* The multipolys on the other side of us */
-  getMultiPolysSLPExits (multiPolysInsideOf) {
-    // start with the multipolys we're fully inside
-    const mps = multiPolysInsideOf.slice()
-    // add the multipolys we have the sweep line entering
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const seg = this.coincidents[i]
-      if (!seg.sweepLineExitsPoly) continue
-      const mp = seg.ringIn.poly.multiPoly
-      if (!mps.includes(mp)) mps.push(mp)
-    }
-    return mps
-  }
-
   /* Combine the above two functions for efficient looping */
   getMultiPolysSLPEntersAndExits (multiPolysInsideOf) {
     const mpsEnters = multiPolysInsideOf.slice(0)
