@@ -73,6 +73,7 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ### vNext (in development)
 
+ * Export a default es6 module ([#33](https://github.com/mfogel/polygon-clipping/issues/33))
  * Allow self-crossing rings using [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule) ([#30](https://github.com/mfogel/polygon-clipping/issues/30))
  * Fix bug with nearly vertical segments being split ([#29](https://github.com/mfogel/polygon-clipping/issues/29))
  * Fix bug with coincident segments being split slightly differently ([#22](https://github.com/mfogel/polygon-clipping/issues/22))
