@@ -218,9 +218,11 @@ export default class Segment {
   split (points) {
     // sort them and unique-ify them
     points.sort(cmpPoints)
-    points = points.filter(
-      (pt, i, pts) => i === 0 || cmpPoints(pts[i - 1], pt) !== 0
-    )
+    const newPts = []
+    for (var i = 0; i < points.length; i++) {
+      if (i === 0 || cmpPoints(points[i - 1], points[i]) !== 0) newPts.push(points[i])
+    }
+    points = newPts
 
     for (let i = 0, iMax = points.length; i < iMax; i++) {
       const pt = points[i]
@@ -399,6 +401,19 @@ export default class Segment {
     return rings
   }
 
+  getRingsEnteringAndExiting () {
+    const ringsEntering = []
+    const ringsExiting = []
+
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
+      const segment = this.coincidents[i]
+      if (segment.sweepLineEntersRing) ringsEntering.push(segment.ringIn)
+      else ringsExiting.push(segment.ringIn)
+    }   
+
+    return [ringsEntering, ringsExiting]
+  }
+
   /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
   get isValidEdgeForPoly () {
     const key = 'isValidEdgeForPoly'
@@ -410,12 +425,13 @@ export default class Segment {
     // SLER: sweep line entering orientation
     let sameSLER
     let diffSLER
+    const rings = this.getRingsEnteringAndExiting()
     if (this.sweepLineEntersRing) {
-      sameSLER = this.getRingsEntering()
-      diffSLER = this.getRingsExiting()
+      sameSLER = rings[0]
+      diffSLER = rings[1]
     } else {
-      diffSLER = this.getRingsEntering()
-      sameSLER = this.getRingsExiting()
+      diffSLER = rings[0]
+      sameSLER = rings[1]
     }
     return this.ringIn.isValid(sameSLER, diffSLER, this.ringsInsideOf)
   }
@@ -432,32 +448,20 @@ export default class Segment {
     return mps
   }
 
-  /* The multipolys on one side of us */
-  getMultiPolysSLPEnters (multiPolysInsideOf) {
-    // start with the multipolys we're fully inside
-    const mps = multiPolysInsideOf.slice()
-    // add the multipolys we have the sweep line entering
+  /* Combine the above two functions for efficient looping */
+  getMultiPolysSLPEntersAndExits (multiPolysInsideOf) {
+    const mpsEnters = multiPolysInsideOf.slice(0)
+    const mpsExits = multiPolysInsideOf.slice(0)
     for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const seg = this.coincidents[i]
-      if (!seg.sweepLineEntersPoly) continue
       const mp = seg.ringIn.poly.multiPoly
-      if (!mps.includes(mp)) mps.push(mp)
+      if (seg.sweepLineEntersPoly) {
+          if (!mpsEnters.includes(mp)) mpsEnters.push(mp)
+      } else if (seg.sweepLineExitsPoly) {
+          if (!mpsExits.includes(mp)) mpsExits.push(mp)        
+      }
     }
-    return mps
-  }
-
-  /* The multipolys on the other side of us */
-  getMultiPolysSLPExits (multiPolysInsideOf) {
-    // start with the multipolys we're fully inside
-    const mps = multiPolysInsideOf.slice()
-    // add the multipolys we have the sweep line entering
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const seg = this.coincidents[i]
-      if (!seg.sweepLineExitsPoly) continue
-      const mp = seg.ringIn.poly.multiPoly
-      if (!mps.includes(mp)) mps.push(mp)
-    }
-    return mps
+    return [mpsEnters, mpsExits]
   }
 
   /* Is this segment part of the final result? */
@@ -472,8 +476,9 @@ export default class Segment {
     if (this !== this.coincidents[0]) return false
 
     const multiPolysInsideOf = this.getMultiPolysInsideOf()
-    const multiPolysSLPEnters = this.getMultiPolysSLPEnters(multiPolysInsideOf)
-    const multiPolysSLPExits = this.getMultiPolysSLPExits(multiPolysInsideOf)
+    const getMPS = this.getMultiPolysSLPEntersAndExits(multiPolysInsideOf)
+    const multiPolysSLPEnters = getMPS[0]
+    const multiPolysSLPExits = getMPS[1]
 
     switch (operation.type) {
       case operation.types.UNION:
