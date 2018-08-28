@@ -4,7 +4,7 @@ import Segment from './segment'
 // and sweep events when all else is identical
 let ringId = 0
 
-export class Ring {
+export class RingIn {
   constructor (geomRing, poly) {
     this.id = ringId++
     this.poly = poly
@@ -73,12 +73,12 @@ export class Ring {
   }
 }
 
-export class Poly {
+export class PolyIn {
   constructor (geomPoly, multiPoly) {
-    this.exteriorRing = new Ring(geomPoly[0], this)
+    this.exteriorRing = new RingIn(geomPoly[0], this)
     this.interiorRings = []
     for (let i = 1, iMax = geomPoly.length; i < iMax; i++) {
-      this.interiorRings.push(new Ring(geomPoly[i], this))
+      this.interiorRings.push(new RingIn(geomPoly[i], this))
     }
     this.multiPoly = multiPoly
   }
@@ -113,11 +113,11 @@ export class Poly {
   }
 }
 
-export class MultiPoly {
+export class MultiPolyIn {
   constructor (geomMultiPoly) {
     this.polys = []
     for (let i = 0, iMax = geomMultiPoly.length; i < iMax; i++) {
-      this.polys.push(new Poly(geomMultiPoly[i], this))
+      this.polys.push(new PolyIn(geomMultiPoly[i], this))
     }
     this.isSubject = false
   }

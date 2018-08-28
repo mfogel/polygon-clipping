@@ -22,7 +22,7 @@ export default function doIt (operationType, geom, moreGeoms) {
   /* Convert inputs to MultiPoly objects, mark subject & register operation */
   const multipolys = []
   for (let i = 0, iMax = geoms.length; i < iMax; i++) {
-    multipolys.push(new geomIn.MultiPoly(geoms[i]))
+    multipolys.push(new geomIn.MultiPolyIn(geoms[i]))
   }
   multipolys[0].markAsSubject()
   operation.register(operationType, multipolys.length)
@@ -48,6 +48,6 @@ export default function doIt (operationType, geom, moreGeoms) {
 
   /* Collect and compile segments we're keeping into a multipolygon */
   const ringsOut = geomOut.Ring.factory(sweepLine.segments)
-  const result = new geomOut.MultiPoly(ringsOut)
+  const result = new geomOut.MultiPolyOut(ringsOut)
   return result.getGeom()
 }
