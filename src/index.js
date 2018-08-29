@@ -47,7 +47,7 @@ export default function doIt (operationType, geom, moreGeoms) {
   }
 
   /* Collect and compile segments we're keeping into a multipolygon */
-  const ringsOut = geomOut.Ring.factory(sweepLine.segments)
+  const ringsOut = geomOut.RingOut.factory(sweepLine.segments)
   const result = new geomOut.MultiPolyOut(ringsOut)
   return result.getGeom()
 }

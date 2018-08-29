@@ -4,7 +4,7 @@
 // do is operate off of the result of the sweep line sweep
 
 import Segment from '../src/segment'
-import { Ring, Poly, MultiPoly } from '../src/geom-out'
+import { RingOut, PolyOut, MultiPolyOut } from '../src/geom-out'
 
 describe('ring', () => {
   describe('factory', () => {
@@ -21,7 +21,7 @@ describe('ring', () => {
       seg2._cache['isInResult'] = true
       seg3._cache['isInResult'] = true
 
-      const rings = Ring.factory([seg1, seg2, seg3])
+      const rings = RingOut.factory([seg1, seg2, seg3])
 
       expect(rings.length).toBe(1)
       expect(rings[0].getGeom()).toEqual([[0, 0], [1, 1], [0, 1], [0, 0]])
@@ -53,7 +53,7 @@ describe('ring', () => {
       seg5._cache['isInResult'] = true
       seg6._cache['isInResult'] = true
 
-      const rings = Ring.factory([seg1, seg2, seg3, seg4, seg5, seg6])
+      const rings = RingOut.factory([seg1, seg2, seg3, seg4, seg5, seg6])
 
       expect(rings.length).toBe(2)
       expect(rings[0].getGeom()).toEqual([[0, 0], [1, 1], [0, 2], [0, 0]])
@@ -89,7 +89,7 @@ describe('ring', () => {
       seg6._cache['isInResult'] = true
       seg7._cache['isInResult'] = true
 
-      const rings = Ring.factory([seg1, seg2, seg3, seg4, seg5, seg6, seg7])
+      const rings = RingOut.factory([seg1, seg2, seg3, seg4, seg5, seg6, seg7])
 
       expect(rings.length).toBe(2)
       expect(rings[0].getGeom()).toEqual([[3, 0], [2, 1], [2, -1], [3, 0]])
@@ -129,7 +129,7 @@ describe('ring', () => {
       seg8._cache['isInResult'] = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8]
-      const rings = Ring.factory(segs)
+      const rings = RingOut.factory(segs)
 
       expect(rings.length).toBe(2)
       expect(rings[0].getGeom()).toEqual([[4, 1], [1, 0], [4, -1], [4, 1]])
@@ -184,7 +184,7 @@ describe('ring', () => {
       seg10._cache['isInResult'] = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10]
-      const rings = Ring.factory(segs)
+      const rings = RingOut.factory(segs)
 
       expect(rings.length).toBe(3)
       expect(rings[0].getGeom()).toEqual([[3, 0], [2, 1], [2, -1], [3, 0]])
@@ -231,7 +231,7 @@ describe('ring', () => {
       seg9._cache['isInResult'] = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9]
-      const rings = Ring.factory(segs)
+      const rings = RingOut.factory(segs)
 
       expect(rings.length).toBe(3)
       expect(rings[0].getGeom()).toEqual([[0, 0], [1, -2], [1, 2], [0, 0]])
@@ -278,7 +278,7 @@ describe('ring', () => {
       seg9._cache['isInResult'] = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9]
-      const rings = Ring.factory(segs)
+      const rings = RingOut.factory(segs)
 
       expect(rings.length).toBe(3)
       expect(rings[0].getGeom()).toEqual([[5, -5], [2, -1], [1, -1], [5, -5]])
@@ -299,7 +299,7 @@ describe('ring', () => {
       seg2._cache['isInResult'] = true
       seg3._cache['isInResult'] = false // broken ring
 
-      expect(() => Ring.factory([seg1, seg2, seg3])).toThrow()
+      expect(() => RingOut.factory([seg1, seg2, seg3])).toThrow()
     })
   })
 
@@ -316,7 +316,7 @@ describe('ring', () => {
     seg2._cache['isInResult'] = true
     seg3._cache['isInResult'] = true
 
-    const ring = Ring.factory([seg1, seg2, seg3])[0]
+    const ring = RingOut.factory([seg1, seg2, seg3])[0]
 
     expect(ring.enclosingRing).toBeNull()
     expect(ring.isExteriorRing).toBeTruthy()
@@ -336,7 +336,7 @@ describe('ring', () => {
     seg2._cache['isInResult'] = true
     seg3._cache['isInResult'] = true
 
-    const ring = Ring.factory([seg1, seg2, seg3])[0]
+    const ring = RingOut.factory([seg1, seg2, seg3])[0]
     ring._cache = { isExteriorRing: false }
 
     expect(ring.isExteriorRing).toBeFalsy()
@@ -359,7 +359,7 @@ describe('ring', () => {
     seg3._cache['isInResult'] = true
     seg4._cache['isInResult'] = true
 
-    const ring = Ring.factory([seg1, seg2, seg3, seg4])[0]
+    const ring = RingOut.factory([seg1, seg2, seg3, seg4])[0]
 
     expect(ring.getGeom()).toEqual([[0, 0], [2, 2], [0, 2], [0, 0]])
   })
@@ -380,7 +380,7 @@ describe('ring', () => {
     seg3._cache['isInResult'] = true
     seg4._cache['isInResult'] = true
 
-    const ring = Ring.factory([seg1, seg2, seg3, seg4])[0]
+    const ring = RingOut.factory([seg1, seg2, seg3, seg4])[0]
 
     expect(ring.getGeom()).toEqual(null)
   })
@@ -392,7 +392,7 @@ describe('poly', () => {
     const ring2 = { registerPoly: jest.fn(), getGeom: () => 2 }
     const ring3 = { registerPoly: jest.fn(), getGeom: () => 3 }
 
-    const poly = new Poly(ring1)
+    const poly = new PolyOut(ring1)
     poly.addInterior(ring2)
     poly.addInterior(ring3)
 
@@ -405,7 +405,7 @@ describe('poly', () => {
 
   test('has all colinear exterior ring', () => {
     const ring1 = { registerPoly: jest.fn(), getGeom: () => null }
-    const poly = new Poly(ring1)
+    const poly = new PolyOut(ring1)
 
     expect(ring1.registerPoly).toHaveBeenCalledWith(poly)
 
@@ -417,7 +417,7 @@ describe('poly', () => {
     const ring2 = { registerPoly: jest.fn(), getGeom: () => null }
     const ring3 = { registerPoly: jest.fn(), getGeom: () => 3 }
 
-    const poly = new Poly(ring1)
+    const poly = new PolyOut(ring1)
     poly.addInterior(ring2)
     poly.addInterior(ring3)
 
@@ -431,7 +431,7 @@ describe('poly', () => {
 
 describe('multipoly', () => {
   test('basic', () => {
-    const multipoly = new MultiPoly([])
+    const multipoly = new MultiPolyOut([])
     const poly1 = { getGeom: () => 0 }
     const poly2 = { getGeom: () => 1 }
     multipoly.polys = [poly1, poly2]
@@ -440,7 +440,7 @@ describe('multipoly', () => {
   })
 
   test('has poly with all colinear exterior ring', () => {
-    const multipoly = new MultiPoly([])
+    const multipoly = new MultiPolyOut([])
     const poly1 = { getGeom: () => null }
     const poly2 = { getGeom: () => 1 }
     multipoly.polys = [poly1, poly2]

@@ -1,8 +1,8 @@
 /* eslint-env jest */
 
-import { Ring, Poly, MultiPoly } from '../src/geom-in'
+import { RingIn, PolyIn, MultiPolyIn } from '../src/geom-in'
 
-describe('Ring', () => {
+describe('RingIn', () => {
   test('create exterior ring', () => {
     const [pt1, pt2, pt3, pt4] = [
       { x: 0, y: 0 },
@@ -11,7 +11,7 @@ describe('Ring', () => {
       { x: 0, y: 0 }
     ]
     const poly = {}
-    const ring = new Ring([pt1, pt2, pt3, pt4], poly)
+    const ring = new RingIn([pt1, pt2, pt3, pt4], poly)
     poly.exteriorRing = ring
 
     expect(ring.poly).toBe(poly)
@@ -29,19 +29,19 @@ describe('Ring', () => {
   })
 
   test('create an interior ring', () => {
-    const ring = new Ring([], {})
+    const ring = new RingIn([], {})
     expect(ring.isExterior).toBeFalsy()
     expect(ring.isInterior).toBeTruthy()
   })
 
   test('ring Id increments', () => {
-    const ring1 = new Ring([])
-    const ring2 = new Ring([])
+    const ring1 = new RingIn([])
+    const ring2 = new RingIn([])
     expect(ring2.id - ring1.id).toBe(1)
   })
 
   describe('is valid? ', () => {
-    const poly = new Poly([[], [], []])
+    const poly = new PolyIn([[], [], []])
     const exteriorRing = poly.exteriorRing
     const interiorRing1 = poly.interiorRings[0]
     const interiorRing2 = poly.interiorRings[1]
@@ -156,10 +156,10 @@ describe('Ring', () => {
   })
 })
 
-describe('Poly', () => {
+describe('PolyIn', () => {
   test('creation', () => {
     const multiPoly = {}
-    const poly = new Poly(
+    const poly = new PolyIn(
       [
         [{ x: 0, y: 0 }, { x: 1, y: 1 }],
         [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 4 }],
@@ -177,7 +177,7 @@ describe('Poly', () => {
   })
 
   describe('is inside? ', () => {
-    const poly = new Poly([[], [], []])
+    const poly = new PolyIn([[], [], []])
     const exteriorRing = poly.exteriorRing
     const interiorRing1 = poly.interiorRings[0]
     const interiorRing2 = poly.interiorRings[1]
@@ -254,9 +254,9 @@ describe('Poly', () => {
   })
 })
 
-describe('MultiPoly', () => {
+describe('MultiPolyIn', () => {
   test('creation', () => {
-    const multipoly = new MultiPoly([
+    const multipoly = new MultiPolyIn([
       [[{ x: 0, y: 0 }, { x: 1, y: 1 }]],
       [
         [{ x: 0, y: 0 }, { x: 1, y: 1 }],
