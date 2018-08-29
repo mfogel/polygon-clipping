@@ -1,6 +1,6 @@
 import { compareVectorAngles } from './vector'
 
-export class Ring {
+export class RingOut {
   /* Given the segments from the sweep line pass, compute & return a series
    * of closed rings from all the segments marked to be part of the result */
   static factory (allSegments) {
@@ -61,7 +61,7 @@ export class Ring {
             const intersectionLE = intersectionLEs.splice(indexLE)[0]
             const ringEvents = events.splice(intersectionLE.index)
             ringEvents.unshift(ringEvents[0].otherSE)
-            ringsOut.push(new Ring(ringEvents.reverse()))
+            ringsOut.push(new RingOut(ringEvents.reverse()))
             continue
           }
           /* register the intersection */
@@ -76,7 +76,7 @@ export class Ring {
         }
       }
 
-      ringsOut.push(new Ring(events))
+      ringsOut.push(new RingOut(events))
     }
     return ringsOut
   }
@@ -176,7 +176,7 @@ export class Ring {
   }
 }
 
-export class Poly {
+export class PolyOut {
   constructor (exteriorRing) {
     this.exteriorRing = exteriorRing
     exteriorRing.registerPoly(this)
@@ -202,7 +202,7 @@ export class Poly {
   }
 }
 
-export class MultiPoly {
+export class MultiPolyOut {
   constructor (rings) {
     this.rings = rings
     this.polys = this._composePolys(rings)
@@ -224,9 +224,9 @@ export class MultiPoly {
     for (let i = 0, iMax = rings.length; i < iMax; i++) {
       const ring = rings[i]
       if (ring.poly) continue
-      if (ring.isExteriorRing) polys.push(new Poly(ring))
+      if (ring.isExteriorRing) polys.push(new PolyOut(ring))
       else {
-        if (!ring.enclosingRing.poly) polys.push(new Poly(ring.enclosingRing))
+        if (!ring.enclosingRing.poly) polys.push(new PolyOut(ring.enclosingRing))
         ring.enclosingRing.poly.addInterior(ring)
       }
     }
