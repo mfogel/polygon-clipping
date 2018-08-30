@@ -71,14 +71,14 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
-### vNext (in development)
+### v0.8 (2018-08-30)
 
  * Export a default es6 module ([#33](https://github.com/mfogel/polygon-clipping/issues/33))
  * Allow self-crossing rings using [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule) ([#30](https://github.com/mfogel/polygon-clipping/issues/30))
  * Fix bug with nearly vertical segments being split ([#29](https://github.com/mfogel/polygon-clipping/issues/29))
  * Fix bug with coincident segments being split slightly differently ([#22](https://github.com/mfogel/polygon-clipping/issues/22))
 
-### v0.7.0 (2018-06-06)
+### v0.7 (2018-06-06)
 
  * Fix bug with overlapping segments ([#19](https://github.com/mfogel/polygon-clipping/issues/19))
  * Set up es6 imports ([#18](https://github.com/mfogel/polygon-clipping/issues/18))
