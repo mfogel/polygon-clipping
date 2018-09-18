@@ -49,10 +49,11 @@ export default class SweepEvent {
     )
   }
 
-  constructor (point, segment) {
-    this.point = point
-    this.segment = segment
-    this.linkedEvents = [this]
+  static makeTwins(point) {
+    const se1 = new SweepEvent
+    const se2 = new SweepEvent
+    se1.point = se2.point = point
+    return se1.linkedEvents = se2.linkedEvents = [se1, se2]
   }
 
   link (other) {

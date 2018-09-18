@@ -1,4 +1,5 @@
 import Segment from './segment'
+import SweepEvent from './sweep-event.js'
 
 // Give rings unique ID's to get consistent sorting of segments
 // and sweep events when all else is identical
@@ -10,9 +11,15 @@ export class RingIn {
     this.poly = poly
     this.segments = []
 
+    const endTwinsSE = SweepEvent.makeTwins(geomRing[0])
+    let prevSE = endTwinsSE[0]
+    let twinsSE
     for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
-      this.segments.push(Segment.fromRing(geomRing[i - 1], geomRing[i], this))
+      twinsSE = SweepEvent.makeTwins(geomRing[i])
+      this.segments.push(Segment.fromRing(prevSE, twinsSE[0], this))
+      prevSE = twinsSE[1]
     }
+    this.segments.push(Segment.fromRing(prevSE, endTwinsSE[1], this))
   }
 
   getSweepEvents () {

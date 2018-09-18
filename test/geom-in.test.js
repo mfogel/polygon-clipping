@@ -4,14 +4,13 @@ import { RingIn, PolyIn, MultiPolyIn } from '../src/geom-in'
 
 describe('RingIn', () => {
   test('create exterior ring', () => {
-    const [pt1, pt2, pt3, pt4] = [
+    const [pt1, pt2, pt3] = [
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 1, y: 1 },
-      { x: 0, y: 0 }
     ]
     const poly = {}
-    const ring = new RingIn([pt1, pt2, pt3, pt4], poly)
+    const ring = new RingIn([pt1, pt2, pt3], poly)
     poly.exteriorRing = ring
 
     expect(ring.poly).toBe(poly)
@@ -24,24 +23,28 @@ describe('RingIn', () => {
     expect(ring.segments[0].rightSE.point).toEqual(pt2)
     expect(ring.segments[1].leftSE.point).toEqual(pt2)
     expect(ring.segments[1].rightSE.point).toEqual(pt3)
-    expect(ring.segments[2].leftSE.point).toEqual(pt4)
+    expect(ring.segments[2].leftSE.point).toEqual(pt1)
     expect(ring.segments[2].rightSE.point).toEqual(pt3)
   })
 
   test('create an interior ring', () => {
-    const ring = new RingIn([], {})
+    const ring = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}], {})
     expect(ring.isExterior).toBeFalsy()
     expect(ring.isInterior).toBeTruthy()
   })
 
   test('ring Id increments', () => {
-    const ring1 = new RingIn([])
-    const ring2 = new RingIn([])
+    const ring1 = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}])
+    const ring2 = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}])
     expect(ring2.id - ring1.id).toBe(1)
   })
 
   describe('is valid? ', () => {
-    const poly = new PolyIn([[], [], []])
+    const poly = new PolyIn([
+      [{x: 0, y: 0}, {x: 0, y: 4}, {x: 4, y: 9}],
+      [{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}],
+      [{x: 2, y: 2}, {x: 3, y: 3}, {x: 3, y: 2}],
+    ])
     const exteriorRing = poly.exteriorRing
     const interiorRing1 = poly.interiorRings[0]
     const interiorRing2 = poly.interiorRings[1]
@@ -159,25 +162,28 @@ describe('RingIn', () => {
 describe('PolyIn', () => {
   test('creation', () => {
     const multiPoly = {}
-    const poly = new PolyIn(
-      [
-        [{ x: 0, y: 0 }, { x: 1, y: 1 }],
-        [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 4 }],
-        [{ x: 4, y: 4 }, { x: 5, y: 5 }, { x: 6, y: 6 }, { x: 7, y: 7 }]
+    const poly = new PolyIn([
+        [{x: 0, y: 0}, {x: 10, y: 0}, {x: 10, y: 10}, {x: 0, y: 10}],
+        [{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}],
+        [{x: 2, y: 2}, {x: 2, y: 3}, {x: 3, y: 3}, {x: 3, y: 2}],
       ],
-      multiPoly
+      multiPoly,
     )
 
     expect(poly.multiPoly).toBe(multiPoly)
-    expect(poly.exteriorRing.segments.length).toBe(1)
+    expect(poly.exteriorRing.segments.length).toBe(4)
     expect(poly.interiorRings.length).toBe(2)
-    expect(poly.interiorRings[0].segments.length).toBe(2)
-    expect(poly.interiorRings[1].segments.length).toBe(3)
-    expect(poly.getSweepEvents().length).toBe(12)
+    expect(poly.interiorRings[0].segments.length).toBe(3)
+    expect(poly.interiorRings[1].segments.length).toBe(4)
+    expect(poly.getSweepEvents().length).toBe(22)
   })
 
   describe('is inside? ', () => {
-    const poly = new PolyIn([[], [], []])
+    const poly = new PolyIn([
+      [{x: 0, y: 0}, {x: 10, y: 0}, {x: 10, y: 10}, {x: 0, y: 10}],
+      [{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}],
+      [{x: 2, y: 2}, {x: 2, y: 3}, {x: 3, y: 3}, {x: 3, y: 2}],
+    ])
     const exteriorRing = poly.exteriorRing
     const interiorRing1 = poly.interiorRings[0]
     const interiorRing2 = poly.interiorRings[1]
@@ -257,14 +263,14 @@ describe('PolyIn', () => {
 describe('MultiPolyIn', () => {
   test('creation', () => {
     const multipoly = new MultiPolyIn([
-      [[{ x: 0, y: 0 }, { x: 1, y: 1 }]],
+      [[{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }]],
       [
-        [{ x: 0, y: 0 }, { x: 1, y: 1 }],
-        [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 4 }]
+        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 10 }],
+        [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 3, y: 2 }]
       ]
     ])
 
     expect(multipoly.polys.length).toBe(2)
-    expect(multipoly.getSweepEvents().length).toBe(8)
+    expect(multipoly.getSweepEvents().length).toBe(18)
   })
 })

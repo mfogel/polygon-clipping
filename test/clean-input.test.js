@@ -88,16 +88,16 @@ describe('cleanMultiPoly()', () => {
         [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
       ]
     ]
-    cleanMultiPoly(openRings)
-    expect(openRings).toEqual(closedRings)
+    cleanMultiPoly(closedRings)
+    expect(closedRings).toEqual(openRings)
   })
 
   test('already standardized input unchanged', () => {
     const allGood = [
-      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]],
+      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]],
       [
-        [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 0 }],
-        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
+        [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]
       ]
     ]
     const stillAllGood = deepCopyArray(allGood)
@@ -115,12 +115,12 @@ describe('cleanMultiPoly()', () => {
   test('interior degenerate rings removed', () => {
     const mpIn = [
       [
-        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }, { x: 0, y: 0 }],
-        [{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 0 }]
+        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 1 }]
       ]
     ]
     const mpExpected = [
-      [[{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }, { x: 0, y: 0 }]]
+      [[{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }]]
     ]
     cleanMultiPoly(mpIn)
     expect(mpIn).toEqual(mpExpected)
@@ -129,8 +129,8 @@ describe('cleanMultiPoly()', () => {
   test('exterior degenerate ring removes polygon', () => {
     const mpIn = [
       [
-        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 0 }],
-        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]
+        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 0 }],
+        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]
       ]
     ]
     cleanMultiPoly(mpIn)
@@ -156,19 +156,17 @@ describe('cleanRing()', () => {
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 0, y: 1 },
-      { x: 0, y: 0 }
     ]
     const stillAllGood = [
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 0, y: 1 },
-      { x: 0, y: 0 }
     ]
     cleanRing(allGood)
     expect(allGood).toEqual(stillAllGood)
   })
 
-  test('adds closing elements to rings', () => {
+  test('removes closing elements from rings', () => {
     const openRing = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]
     const closedRing = [
       { x: 0, y: 0 },
@@ -176,8 +174,8 @@ describe('cleanRing()', () => {
       { x: 0, y: 1 },
       { x: 0, y: 0 }
     ]
-    cleanRing(openRing)
-    expect(openRing).toEqual(closedRing)
+    cleanRing(closedRing)
+    expect(closedRing).toEqual(openRing)
   })
 
   test('removes duplicate points', () => {
@@ -188,13 +186,11 @@ describe('cleanRing()', () => {
       { x: 1, y: 0 },
       { x: 0, y: 1 },
       { x: 0, y: 1 },
-      { x: 0, y: 0 }
     ]
     const ringGood = [
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 0, y: 1 },
-      { x: 0, y: 0 }
     ]
     cleanRing(ringBad)
     expect(ringBad).toEqual(ringGood)
@@ -208,31 +204,43 @@ describe('cleanRing()', () => {
       { x: 1, y: 0 },
       { x: 0, y: 2 },
       { x: 0, y: 1 },
-      { x: 0, y: 0 }
     ]
     const ringGood = [
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 0, y: 2 },
-      { x: 0, y: 0 }
     ]
     cleanRing(ringBad)
     expect(ringBad).toEqual(ringGood)
   })
 
-  test('removes first/last when colinear', () => {
+  test('removes first when colinear', () => {
     const ringBad = [
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 0, y: 1 },
       { x: -1, y: 0 },
-      { x: 0, y: 0 }
     ]
     const ringGood = [
       { x: 1, y: 0 },
       { x: 0, y: 1 },
       { x: -1, y: 0 },
-      { x: 1, y: 0 }
+    ]
+    cleanRing(ringBad)
+    expect(ringBad).toEqual(ringGood)
+  })
+
+  test('removes last when colinear', () => {
+    const ringBad = [
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: -1, y: 0 },
+      { x: 0, y: 0 },
+    ]
+    const ringGood = [
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: -1, y: 0 },
     ]
     cleanRing(ringBad)
     expect(ringBad).toEqual(ringGood)

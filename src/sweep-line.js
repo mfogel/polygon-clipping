@@ -70,12 +70,10 @@ export default class SweepLine {
         this.tree.remove(segment)
 
         if (mySplitters.length > 0) {
-          // split ourselves, and all our coincidents.
-          for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
-            const newEventsFromSplit = segment.coincidents[i].split(mySplitters)
-            for (let j = 0, jMax = newEventsFromSplit.length; j < jMax; j++) {
-              newEvents.push(newEventsFromSplit[j])
-            }
+          // split ourselves
+          const newEventsFromSplit = segment.split(mySplitters)
+          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
+            newEvents.push(newEventsFromSplit[i])
           }
         }
 
@@ -129,15 +127,15 @@ export default class SweepLine {
 
     let newEvents = []
     if (splitters.length > 0) {
-      // split the segment and all of its coincidents
+      // Sometimes, because of rounding errors, splitting segments can cause their
+      // ordering to change, making them un-findable in the sweep line tree.
+      // To avoid this, we remove and re-insert the segments while splitting.
       for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
-        const thisSeg = segment.coincidents[i]
-        this.tree.remove(thisSeg)
-        const theseNewEvents = thisSeg.split(splitters)
-        for (let j = 0, jMax = theseNewEvents.length; j < jMax; j++) {
-          newEvents.push(theseNewEvents[j])
-        }
-        this.tree.insert(thisSeg)
+        this.tree.remove(segment.coincidents[i])
+      }
+      newEvents = segment.split(splitters)
+      for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
+        this.tree.insert(segment.coincidents[i])
       }
     }
     return newEvents

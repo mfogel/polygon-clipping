@@ -24,15 +24,9 @@ describe('doIt calls the right stuff', () => {
     const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
     const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-    const mp1Ob = [
-      [[{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 0 }]]
-    ]
-    const mp2Ob = [
-      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
-    ]
-    const mp3Ob = [
-      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
-    ]
+    const mp1Ob = [[[{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }]]]
+    const mp2Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
+    const mp3Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
 
     cleanInput.forceMultiPoly = jest.fn(cleanInput.forceMultiPoly)
     doIt(operation.types.UNION, mp1, [mp2, mp3])
@@ -48,15 +42,9 @@ describe('doIt calls the right stuff', () => {
     const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
     const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-    const mp1Ob = [
-      [[{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 0 }]]
-    ]
-    const mp2Ob = [
-      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
-    ]
-    const mp3Ob = [
-      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]
-    ]
+    const mp1Ob = [[[{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }]]]
+    const mp2Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
+    const mp3Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
 
     cleanInput.cleanMultiPoly = jest.fn(cleanInput.cleanMultiPoly)
     doIt(operation.types.UNION, mp1, [mp2, mp3])

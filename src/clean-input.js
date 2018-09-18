@@ -111,36 +111,29 @@ export const cleanMultiPoly = multipoly => {
  *  - remove duplicate points
  *  - remove colinear points
  *  - remove rings with no area (less than 3 distinct points)
- *  - close rings (last point should equal first)
+ *  - un-close rings (last point should not repeat first)
  *
  * WARN: input modified directly */
 export const cleanRing = ring => {
   if (ring.length === 0) return
-  if (cmpPoints(ring[0], ring[ring.length - 1]) !== 0) {
-    ring.push({ x: ring[0].x, y: ring[0].y }) // copy by value
-  }
+  if (cmpPoints(ring[0], ring[ring.length - 1]) === 0) ring.pop()
 
   const isPointUncessary = (prevPt, pt, nextPt) =>
     cmpPoints(prevPt, pt) === 0 ||
     cmpPoints(pt, nextPt) === 0 ||
     compareVectorAngles(pt, prevPt, nextPt) === 0
 
-  let i = 1
-  while (i < ring.length - 1) {
-    if (isPointUncessary(ring[i - 1], ring[i], ring[i + 1])) ring.splice(i, 1)
+  let i = 0
+  let prevPt, nextPt
+  while (i < ring.length) {
+    prevPt = (i === 0 ? ring[ring.length - 1] : ring[i - 1])
+    nextPt = (i === ring.length - 1 ? ring[0] : ring[i + 1])
+    if (isPointUncessary(prevPt, ring[i], nextPt)) ring.splice(i, 1)
     else i++
-  }
-
-  // check the first/last point as well
-  while (ring.length > 2) {
-    if (!isPointUncessary(ring[ring.length - 2], ring[0], ring[1])) break
-    ring.splice(0, 1)
-    ring.splice(ring.length - 1, 1)
-    ring.push(ring[0])
   }
 
   // if our ring has less than 3 distinct points now (so is degenerate)
   // shrink it down to the empty array to communicate to our caller to
   // drop it
-  while (ring.length < 4 && ring.length > 0) ring.pop()
+  while (ring.length < 3 && ring.length > 0) ring.pop()
 }

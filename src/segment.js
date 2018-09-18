@@ -80,26 +80,22 @@ export default class Segment {
     this._clearCache()
   }
 
-  static fromRing(point1, point2, ring) {
-    const ptCmp = cmpPoints(point1, point2)
-    let lp
-    let rp
+  static fromRing(se1, se2, ring) {
+    const seg = new Segment(ring)
+    const ptCmp = cmpPoints(se1.point, se2.point)
     if (ptCmp < 0) {
-      lp = point1
-      rp = point2
+      seg.leftSE = se1
+      seg.rightSE = se2
     } else if (ptCmp > 0) {
-      lp = point2
-      rp = point1
+      seg.leftSE = se2
+      seg.rightSE = se1
     } else {
       throw new Error(
-        `Tried to create degenerate segment at [${point1.x}, ${point1.y}]`
+        `Tried to create degenerate segment at [${se1.point.x}, ${se2.point.y}]`
       )
     }
-
-    const seg = new Segment(ring)
-    seg.leftSE = new SweepEvent(lp, seg)
-    seg.rightSE = new SweepEvent(rp, seg)
-
+    seg.leftSE.segment = seg
+    seg.rightSE.segment = seg
     return seg
   }
 
@@ -206,11 +202,13 @@ export default class Segment {
   }
 
   /**
-   * Split the given segment into multiple segments on the given points.
-   *  * The existing segment will retain it's leftSE and a new rightSE will be
+   * Split the given segment and all of its coincidents into multiple segments
+   * on the given points.
+   *  * Each existing segment will retain its leftSE and a new rightSE will be
    *    generated for it.
    *  * A new segment will be generated which will adopt the original segment's
    *    rightSE, and a new leftSE will be generated for it.
+   *  * New segments will be marked coincident as needed.
    *  * If there are more than two points given to split on, new segments
    *    in the middle will be generated with new leftSE and rightSE's.
    *  * An array of the newly generated SweepEvents will be returned.
@@ -234,15 +232,29 @@ export default class Segment {
     }
 
     const point = points.shift()
-    const newSeg = new Segment(this.ringIn)
-    newSeg.leftSE = new SweepEvent(point, newSeg)
-    newSeg.rightSE = this.rightSE
-    this.rightSE.segment = newSeg
-    this.rightSE = new SweepEvent(point, this)
-    const newEvents = [this.rightSE, newSeg.leftSE]
+    const newSegments = []
+    const newEvents = []
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
+      const thisSeg = this.coincidents[i]
+      const newSeg = new Segment(thisSeg.ringIn)
+      const twinsSE = SweepEvent.makeTwins(point)
+      newSeg.leftSE = twinsSE[0]
+      newSeg.leftSE.segment = newSeg
+      newSeg.rightSE = thisSeg.rightSE
+      thisSeg.rightSE.segment = newSeg
+      thisSeg.rightSE = twinsSE[1]
+      thisSeg.rightSE.segment = thisSeg
+      newSegments.push(newSeg)
+      newEvents.push(thisSeg.rightSE)
+      newEvents.push(newSeg.leftSE)
+    }
+
+    for (let i = 1, iMax = newSegments.length; i < iMax; i++) {
+      newSegments[i].registerCoincident(newSegments[i-1])
+    }
 
     if (points.length > 0) {
-      const moreNewEvents = newSeg.split(points)
+      const moreNewEvents = newSegments[0].split(points)
       for (let i = 0, iMax = moreNewEvents.length; i < iMax; i++) {
         newEvents.push(moreNewEvents[i])
       }
