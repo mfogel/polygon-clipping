@@ -31,10 +31,10 @@ describe('doIt calls the right stuff', () => {
     cleanInput.forceMultiPoly = jest.fn(cleanInput.forceMultiPoly)
     doIt(operation.types.UNION, mp1, [mp2, mp3])
 
-    expect(cleanInput.forceMultiPoly).toHaveBeenCalledTimes(3)
-    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp1Ob)
-    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp2Ob)
-    expect(cleanInput.forceMultiPoly).toHaveBeenCalledWith(mp3Ob)
+    expect(cleanInput.forceMultiPoly.mock.calls.length === 3)
+    expect(cleanInput.forceMultiPoly.mock.calls[0]).toMatchObject([mp1Ob])
+    expect(cleanInput.forceMultiPoly.mock.calls[1]).toMatchObject([mp2Ob])
+    expect(cleanInput.forceMultiPoly.mock.calls[2]).toMatchObject([mp3Ob])
   })
 
   test('cleanMultiPoly() called correctly', () => {
@@ -49,9 +49,9 @@ describe('doIt calls the right stuff', () => {
     cleanInput.cleanMultiPoly = jest.fn(cleanInput.cleanMultiPoly)
     doIt(operation.types.UNION, mp1, [mp2, mp3])
 
-    expect(cleanInput.cleanMultiPoly).toHaveBeenCalledTimes(3)
-    expect(cleanInput.cleanMultiPoly).toHaveBeenCalledWith(mp1Ob)
-    expect(cleanInput.cleanMultiPoly).toHaveBeenCalledWith(mp2Ob)
-    expect(cleanInput.cleanMultiPoly).toHaveBeenCalledWith(mp3Ob)
+    expect(cleanInput.cleanMultiPoly.mock.calls.length === 3)
+    expect(cleanInput.cleanMultiPoly.mock.calls[0]).toMatchObject([mp1Ob])
+    expect(cleanInput.cleanMultiPoly.mock.calls[1]).toMatchObject([mp2Ob])
+    expect(cleanInput.cleanMultiPoly.mock.calls[2]).toMatchObject([mp3Ob])
   })
 })

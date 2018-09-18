@@ -71,32 +71,32 @@ export default class Segment {
     )
   }
 
-  constructor (ringIn) {
+  constructor (leftSE, rightSE, ringIn) {
+    this.leftSE = leftSE
+    if (leftSE !== null) leftSE.segment = this
+    this.rightSE = rightSE
+    if (rightSE !== null) rightSE.segment = this
     this.ringIn = ringIn
-    this.leftSE = null
-    this.rightSE = null
     this.ringOut = null
     this.coincidents = [this]
     this._clearCache()
   }
 
-  static fromRing(se1, se2, ring) {
-    const seg = new Segment(ring)
-    const ptCmp = cmpPoints(se1.point, se2.point)
+  static fromRing(point1, point2, ring) {
+    let leftSE, rightSE
+    const ptCmp = cmpPoints(point1, point2)
     if (ptCmp < 0) {
-      seg.leftSE = se1
-      seg.rightSE = se2
+      leftSE = new SweepEvent(point1)
+      rightSE = new SweepEvent(point2)
     } else if (ptCmp > 0) {
-      seg.leftSE = se2
-      seg.rightSE = se1
+      leftSE = new SweepEvent(point2)
+      rightSE = new SweepEvent(point1)
     } else {
       throw new Error(
-        `Tried to create degenerate segment at [${se1.point.x}, ${se2.point.y}]`
+        `Tried to create degenerate segment at [${point1.x}, ${point2.y}]`
       )
     }
-    seg.leftSE.segment = seg
-    seg.rightSE.segment = seg
-    return seg
+    return new Segment(leftSE, rightSE, ring)
   }
 
   get bbox () {
@@ -236,17 +236,13 @@ export default class Segment {
     const newEvents = []
     for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const thisSeg = this.coincidents[i]
-      const newSeg = new Segment(thisSeg.ringIn)
-      const twinsSE = SweepEvent.makeTwins(point)
-      newSeg.leftSE = twinsSE[0]
-      newSeg.leftSE.segment = newSeg
-      newSeg.rightSE = thisSeg.rightSE
-      thisSeg.rightSE.segment = newSeg
-      thisSeg.rightSE = twinsSE[1]
+      const newLeftSE = new SweepEvent(point)
+      const newRightSE = new SweepEvent(point)
+      newSegments.push(new Segment(newLeftSE, thisSeg.rightSE, thisSeg.ringIn))
+      thisSeg.rightSE = newRightSE
       thisSeg.rightSE.segment = thisSeg
-      newSegments.push(newSeg)
-      newEvents.push(thisSeg.rightSE)
-      newEvents.push(newSeg.leftSE)
+      newEvents.push(newRightSE)
+      newEvents.push(newLeftSE)
     }
 
     for (let i = 1, iMax = newSegments.length; i < iMax; i++) {

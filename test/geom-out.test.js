@@ -10,13 +10,13 @@ import { RingOut, PolyOut, MultiPolyOut } from '../src/geom-out'
 describe('ring', () => {
   describe('factory', () => {
     test('simple triangle', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 1, y: 1 })
-      const t3 = SweepEvent.makeTwins({ x: 0, y: 1 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 1, y: 1 }
+      const p3 = { x: 0, y: 1 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p1)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -29,27 +29,21 @@ describe('ring', () => {
     })
 
     test('bow tie', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 1, y: 1 })
-      const t3 = SweepEvent.makeTwins({ x: 0, y: 2 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 1, y: 1 }
+      const p3 = { x: 0, y: 2 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p1)
 
-      const t4 = SweepEvent.makeTwins({ x: 2, y: 0 })
-      const t5 = SweepEvent.makeTwins({ x: 1, y: 1 })
-      const t6 = SweepEvent.makeTwins({ x: 2, y: 2 })
+      const p4 = { x: 2, y: 0 }
+      const p5 = p2
+      const p6 = { x: 2, y: 2 }
 
-      const seg4 = Segment.fromRing(t4[1], t5[0])
-      const seg5 = Segment.fromRing(t5[1], t6[0])
-      const seg6 = Segment.fromRing(t6[1], t4[0])
-
-      const linkedEvents = [t2[0], t2[1], t5[0], t5[1]]
-      t2[0].linkedEvents = linkedEvents
-      t2[1].linkedEvents = linkedEvents
-      t5[0].linkedEvents = linkedEvents
-      t5[1].linkedEvents = linkedEvents
+      const seg4 = Segment.fromRing(p4, p5)
+      const seg5 = Segment.fromRing(p5, p6)
+      const seg6 = Segment.fromRing(p6, p4)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -66,29 +60,23 @@ describe('ring', () => {
     })
 
     test('ringed ring', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 3, y: -3 })
-      const t3 = SweepEvent.makeTwins({ x: 3, y: 0 })
-      const t4 = SweepEvent.makeTwins({ x: 3, y: 3 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 3, y: -3 }
+      const p3 = { x: 3, y: 0 }
+      const p4 = { x: 3, y: 3 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t4[0])
-      const seg4 = Segment.fromRing(t4[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p4)
+      const seg4 = Segment.fromRing(p4, p1)
 
-      const t5 = SweepEvent.makeTwins({ x: 2, y: -1 })
-      const t6 = SweepEvent.makeTwins({ x: 3, y: 0 })
-      const t7 = SweepEvent.makeTwins({ x: 2, y: 1 })
+      const p5 = { x: 2, y: -1 }
+      const p6 = p3
+      const p7 = { x: 2, y: 1 }
 
-      const seg5 = Segment.fromRing(t5[1], t6[0])
-      const seg6 = Segment.fromRing(t6[1], t7[0])
-      const seg7 = Segment.fromRing(t7[1], t5[0])
-
-      const linkedEvents = [t3[0], t3[1], t6[0], t6[1]]
-      t3[0].linkedEvents = linkedEvents
-      t3[1].linkedEvents = linkedEvents
-      t6[0].linkedEvents = linkedEvents
-      t6[1].linkedEvents = linkedEvents
+      const seg5 = Segment.fromRing(p5, p6)
+      const seg6 = Segment.fromRing(p6, p7)
+      const seg7 = Segment.fromRing(p7, p5)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -106,31 +94,25 @@ describe('ring', () => {
     })
 
     test('ringed ring interior ring starting point extraneous', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 5, y: -5 })
-      const t3 = SweepEvent.makeTwins({ x: 4, y: 0 })
-      const t4 = SweepEvent.makeTwins({ x: 5, y: 5 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 5, y: -5 }
+      const p3 = { x: 4, y: 0 }
+      const p4 = { x: 5, y: 5 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t4[0])
-      const seg4 = Segment.fromRing(t4[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p4)
+      const seg4 = Segment.fromRing(p4, p1)
 
-      const t5 = SweepEvent.makeTwins({ x: 1, y: 0 })
-      const t6 = SweepEvent.makeTwins({ x: 4, y: 1 })
-      const t7 = SweepEvent.makeTwins({ x: 4, y: 0 })
-      const t8 = SweepEvent.makeTwins({ x: 4, y: -1 })
+      const p5 = { x: 1, y: 0 }
+      const p6 = { x: 4, y: 1 }
+      const p7 = p3
+      const p8 = { x: 4, y: -1 }
 
-      const seg5 = Segment.fromRing(t5[1], t6[0])
-      const seg6 = Segment.fromRing(t6[1], t7[0])
-      const seg7 = Segment.fromRing(t7[1], t8[0])
-      const seg8 = Segment.fromRing(t8[1], t5[0])
-
-      const linkedEvents = [t3[0], t3[1], t7[0], t7[1]]
-      t3[0].linkedEvents = linkedEvents
-      t3[1].linkedEvents = linkedEvents
-      t7[0].linkedEvents = linkedEvents
-      t7[1].linkedEvents = linkedEvents
+      const seg5 = Segment.fromRing(p5, p6)
+      const seg6 = Segment.fromRing(p6, p7)
+      const seg7 = Segment.fromRing(p7, p8)
+      const seg8 = Segment.fromRing(p8, p5)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -156,39 +138,31 @@ describe('ring', () => {
     })
 
     test('ringed ring and bow tie at same point', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 3, y: -3 })
-      const t3 = SweepEvent.makeTwins({ x: 3, y: 0 })
-      const t4 = SweepEvent.makeTwins({ x: 3, y: 3 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 3, y: -3 }
+      const p3 = { x: 3, y: 0 }
+      const p4 = { x: 3, y: 3 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t4[0])
-      const seg4 = Segment.fromRing(t4[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p4)
+      const seg4 = Segment.fromRing(p4, p1)
 
-      const t5 = SweepEvent.makeTwins({ x: 2, y: -1 })
-      const t6 = SweepEvent.makeTwins({ x: 3, y: 0 })
-      const t7 = SweepEvent.makeTwins({ x: 2, y: 1 })
+      const p5 = { x: 2, y: -1 }
+      const p6 = p3
+      const p7 = { x: 2, y: 1 }
 
-      const seg5 = Segment.fromRing(t5[1], t6[0])
-      const seg6 = Segment.fromRing(t6[1], t7[0])
-      const seg7 = Segment.fromRing(t7[1], t5[0])
+      const seg5 = Segment.fromRing(p5, p6)
+      const seg6 = Segment.fromRing(p6, p7)
+      const seg7 = Segment.fromRing(p7, p5)
 
-      const t8 = SweepEvent.makeTwins({ x: 3, y: 0 })
-      const t9 = SweepEvent.makeTwins({ x: 4, y: -1 })
-      const t10 = SweepEvent.makeTwins({ x: 4, y: 1 })
+      const p8 = p3
+      const p9 = { x: 4, y: -1 }
+      const p10 = { x: 4, y: 1 }
 
-      const seg8 = Segment.fromRing(t8[1], t9[0])
-      const seg9 = Segment.fromRing(t9[1], t10[0])
-      const seg10 = Segment.fromRing(t10[1], t8[0])
-
-      const linkedEvents = [t3[0], t3[1], t6[0], t6[1], t8[0], t8[1]]
-      t3[0].linkedEvents = linkedEvents
-      t3[1].linkedEvents = linkedEvents
-      t6[0].linkedEvents = linkedEvents
-      t6[1].linkedEvents = linkedEvents
-      t8[0].linkedEvents = linkedEvents
-      t8[1].linkedEvents = linkedEvents
+      const seg8 = Segment.fromRing(p8, p9)
+      const seg9 = Segment.fromRing(p9, p10)
+      const seg10 = Segment.fromRing(p10, p8)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -211,44 +185,29 @@ describe('ring', () => {
     })
 
     test('double bow tie', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 1, y: -2 })
-      const t3 = SweepEvent.makeTwins({ x: 1, y: 2 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 1, y: -2 }
+      const p3 = { x: 1, y: 2 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p1)
 
-      const t4 = SweepEvent.makeTwins({ x: 1, y: -2 })
-      const t5 = SweepEvent.makeTwins({ x: 2, y: -3 })
-      const t6 = SweepEvent.makeTwins({ x: 2, y: -1 })
+      const p4 = p2
+      const p5 = { x: 2, y: -3 }
+      const p6 = { x: 2, y: -1 }
 
-      const seg4 = Segment.fromRing(t4[1], t5[0])
-      const seg5 = Segment.fromRing(t5[1], t6[0])
-      const seg6 = Segment.fromRing(t6[1], t4[0])
+      const seg4 = Segment.fromRing(p4, p5)
+      const seg5 = Segment.fromRing(p5, p6)
+      const seg6 = Segment.fromRing(p6, p4)
 
-      const t7 = SweepEvent.makeTwins({ x: 1, y: 2 })
-      const t8 = SweepEvent.makeTwins({ x: 2, y: 1 })
-      const t9 = SweepEvent.makeTwins({ x: 2, y: 3 })
+      const p7 = p3
+      const p8 = { x: 2, y: 1 }
+      const p9 = { x: 2, y: 3 }
 
-      const seg7 = Segment.fromRing(t7[1], t8[0])
-      const seg8 = Segment.fromRing(t8[1], t9[0])
-      const seg9 = Segment.fromRing(t9[1], t7[0])
-
-      seg4.leftSE.link(seg1.rightSE)
-      seg7.leftSE.link(seg2.rightSE)
-
-      const linkedEvents1 = [t2[0], t2[1], t4[0], t4[1]]
-      t2[0].linkedEvents = linkedEvents1
-      t2[1].linkedEvents = linkedEvents1
-      t4[0].linkedEvents = linkedEvents1
-      t4[1].linkedEvents = linkedEvents1
-
-      const linkedEvents2 = [t3[0], t3[1], t7[0], t7[1]]
-      t3[0].linkedEvents = linkedEvents2
-      t3[1].linkedEvents = linkedEvents2
-      t7[0].linkedEvents = linkedEvents2
-      t7[1].linkedEvents = linkedEvents2
+      const seg7 = Segment.fromRing(p7, p8)
+      const seg8 = Segment.fromRing(p8, p9)
+      const seg9 = Segment.fromRing(p9, p7)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -270,41 +229,29 @@ describe('ring', () => {
     })
 
     test('double ringed ring', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 5, y: -5 })
-      const t3 = SweepEvent.makeTwins({ x: 5, y: 5 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 5, y: -5 }
+      const p3 = { x: 5, y: 5 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p1)
 
-      const t4 = SweepEvent.makeTwins({ x: 1, y: -1 })
-      const t5 = SweepEvent.makeTwins({ x: 5, y: -5 })
-      const t6 = SweepEvent.makeTwins({ x: 2, y: -1 })
+      const p4 = { x: 1, y: -1 }
+      const p5 = p2
+      const p6 = { x: 2, y: -1 }
 
-      const seg4 = Segment.fromRing(t4[1], t5[0])
-      const seg5 = Segment.fromRing(t5[1], t6[0])
-      const seg6 = Segment.fromRing(t6[1], t4[0])
+      const seg4 = Segment.fromRing(p4, p5)
+      const seg5 = Segment.fromRing(p5, p6)
+      const seg6 = Segment.fromRing(p6, p4)
 
-      const t7 = SweepEvent.makeTwins({ x: 1, y: 1 })
-      const t8 = SweepEvent.makeTwins({ x: 5, y: 5 })
-      const t9 = SweepEvent.makeTwins({ x: 2, y: 1 })
+      const p7 = { x: 1, y: 1 }
+      const p8 = p3
+      const p9 = { x: 2, y: 1 }
 
-      const seg7 = Segment.fromRing(t7[1], t8[0])
-      const seg8 = Segment.fromRing(t8[1], t9[0])
-      const seg9 = Segment.fromRing(t9[1], t7[0])
-
-      const linkedEvents1 = [t2[0], t2[1], t5[0], t5[1]]
-      t2[0].linkedEvents = linkedEvents1
-      t2[1].linkedEvents = linkedEvents1
-      t5[0].linkedEvents = linkedEvents1
-      t5[1].linkedEvents = linkedEvents1
-
-      const linkedEvents2 = [t3[0], t3[1], t8[0], t8[1]]
-      t3[0].linkedEvents = linkedEvents2
-      t3[1].linkedEvents = linkedEvents2
-      t8[0].linkedEvents = linkedEvents2
-      t8[1].linkedEvents = linkedEvents2
+      const seg7 = Segment.fromRing(p7, p8)
+      const seg8 = Segment.fromRing(p8, p9)
+      const seg9 = Segment.fromRing(p9, p7)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -326,13 +273,13 @@ describe('ring', () => {
     })
 
     test('errors on on malformed ring', () => {
-      const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-      const t2 = SweepEvent.makeTwins({ x: 1, y: 1 })
-      const t3 = SweepEvent.makeTwins({ x: 0, y: 1 })
+      const p1 = { x: 0, y: 0 }
+      const p2 = { x: 1, y: 1 }
+      const p3 = { x: 0, y: 1 }
 
-      const seg1 = Segment.fromRing(t1[1], t2[0])
-      const seg2 = Segment.fromRing(t2[1], t3[0])
-      const seg3 = Segment.fromRing(t3[1], t1[0])
+      const seg1 = Segment.fromRing(p1, p2)
+      const seg2 = Segment.fromRing(p2, p3)
+      const seg3 = Segment.fromRing(p3, p1)
 
       seg1._cache['isInResult'] = true
       seg2._cache['isInResult'] = true
@@ -343,13 +290,13 @@ describe('ring', () => {
   })
 
   test('exterior ring', () => {
-    const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-    const t2 = SweepEvent.makeTwins({ x: 1, y: 1 })
-    const t3 = SweepEvent.makeTwins({ x: 0, y: 1 })
+    const p1 = { x: 0, y: 0 }
+    const p2 = { x: 1, y: 1 }
+    const p3 = { x: 0, y: 1 }
 
-    const seg1 = Segment.fromRing(t1[1], t2[0])
-    const seg2 = Segment.fromRing(t2[1], t3[0])
-    const seg3 = Segment.fromRing(t3[1], t1[0])
+    const seg1 = Segment.fromRing(p1, p2)
+    const seg2 = Segment.fromRing(p2, p3)
+    const seg3 = Segment.fromRing(p3, p1)
 
     seg1._cache['isInResult'] = true
     seg2._cache['isInResult'] = true
@@ -363,13 +310,13 @@ describe('ring', () => {
   })
 
   test('interior ring points reversed', () => {
-    const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-    const t2 = SweepEvent.makeTwins({ x: 1, y: 1 })
-    const t3 = SweepEvent.makeTwins({ x: 0, y: 1 })
+    const p1 = { x: 0, y: 0 }
+    const p2 = { x: 1, y: 1 }
+    const p3 = { x: 0, y: 1 }
 
-    const seg1 = Segment.fromRing(t1[1], t2[0])
-    const seg2 = Segment.fromRing(t2[1], t3[0])
-    const seg3 = Segment.fromRing(t3[1], t1[0])
+    const seg1 = Segment.fromRing(p1, p2)
+    const seg2 = Segment.fromRing(p2, p3)
+    const seg3 = Segment.fromRing(p3, p1)
 
     seg1._cache['isInResult'] = true
     seg2._cache['isInResult'] = true
@@ -383,15 +330,15 @@ describe('ring', () => {
   })
 
   test('removes colinear points successfully', () => {
-    const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-    const t2 = SweepEvent.makeTwins({ x: 1, y: 1 })
-    const t3 = SweepEvent.makeTwins({ x: 2, y: 2 })
-    const t4 = SweepEvent.makeTwins({ x: 0, y: 2 })
+    const p1 = { x: 0, y: 0 }
+    const p2 = { x: 1, y: 1 }
+    const p3 = { x: 2, y: 2 }
+    const p4 = { x: 0, y: 2 }
 
-    const seg1 = Segment.fromRing(t1[1], t2[0])
-    const seg2 = Segment.fromRing(t2[1], t3[0])
-    const seg3 = Segment.fromRing(t3[1], t4[0])
-    const seg4 = Segment.fromRing(t4[1], t1[0])
+    const seg1 = Segment.fromRing(p1, p2)
+    const seg2 = Segment.fromRing(p2, p3)
+    const seg3 = Segment.fromRing(p3, p4)
+    const seg4 = Segment.fromRing(p4, p1)
 
     seg1._cache['isInResult'] = true
     seg2._cache['isInResult'] = true
@@ -404,15 +351,15 @@ describe('ring', () => {
   })
 
   test('ring with all colinear points returns null', () => {
-    const t1 = SweepEvent.makeTwins({ x: 0, y: 0 })
-    const t2 = SweepEvent.makeTwins({ x: 1, y: 1 })
-    const t3 = SweepEvent.makeTwins({ x: 2, y: 2 })
-    const t4 = SweepEvent.makeTwins({ x: 3, y: 3 })
+    const p1 = { x: 0, y: 0 }
+    const p2 = { x: 1, y: 1 }
+    const p3 = { x: 2, y: 2 }
+    const p4 = { x: 3, y: 3 }
 
-    const seg1 = Segment.fromRing(t1[1], t2[0])
-    const seg2 = Segment.fromRing(t2[1], t3[0])
-    const seg3 = Segment.fromRing(t3[1], t4[0])
-    const seg4 = Segment.fromRing(t4[1], t1[0])
+    const seg1 = Segment.fromRing(p1, p2)
+    const seg2 = Segment.fromRing(p2, p3)
+    const seg3 = Segment.fromRing(p3, p4)
+    const seg4 = Segment.fromRing(p4, p1)
 
     seg1._cache['isInResult'] = true
     seg2._cache['isInResult'] = true

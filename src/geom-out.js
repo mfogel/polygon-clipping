@@ -15,7 +15,7 @@ export class RingOut {
       let nextEvent = segment.rightSE
       const events = [event]
 
-      const startingLE = event.linkedEvents
+      const startingPoint = event.point
       const intersectionLEs = []
 
       /* Walk the chain of linked events to form a closed ring */
@@ -25,7 +25,7 @@ export class RingOut {
         events.push(event)
 
         /* Is the ring complete? */
-        if (event.linkedEvents === startingLE) break
+        if (event.point === startingPoint) break
 
         while (true) {
           const availableLEs = event.getAvailableLinkedEvents()
@@ -37,7 +37,7 @@ export class RingOut {
             const lastPt = events[events.length - 1].point
             throw new Error(
               `Unable to complete output ring starting at [${firstPt.x},` +
-                ` ${firstPt.y}]. Last matching segment found ends at ` +
+                ` ${firstPt.y}]. Last matching segment found ends at` +
                 ` [${lastPt.x}, ${lastPt.y}].`
             )
           }
@@ -51,7 +51,7 @@ export class RingOut {
           /* We must have an intersection. Check for a completed loop */
           let indexLE = null
           for (let j = 0, jMax = intersectionLEs.length; j < jMax; j++) {
-            if (intersectionLEs[j].linkedEvents === event.linkedEvents) {
+            if (intersectionLEs[j].point === event.point) {
               indexLE = j
               break
             }
@@ -67,7 +67,7 @@ export class RingOut {
           /* register the intersection */
           intersectionLEs.push({
             index: events.length,
-            linkedEvents: event.linkedEvents
+            point: event.point,
           })
           /* Choose the left-most option to continue the walk */
           const comparator = event.getLeftmostComparator(prevEvent)

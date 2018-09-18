@@ -11,15 +11,13 @@ export class RingIn {
     this.poly = poly
     this.segments = []
 
-    const endTwinsSE = SweepEvent.makeTwins(geomRing[0])
-    let prevSE = endTwinsSE[0]
-    let twinsSE
+    let prevPoint = geomRing[0]
     for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
-      twinsSE = SweepEvent.makeTwins(geomRing[i])
-      this.segments.push(Segment.fromRing(prevSE, twinsSE[0], this))
-      prevSE = twinsSE[1]
+      let point = geomRing[i]
+      this.segments.push(Segment.fromRing(prevPoint, point, this))
+      prevPoint = point
     }
-    this.segments.push(Segment.fromRing(prevSE, endTwinsSE[1], this))
+    this.segments.push(Segment.fromRing(prevPoint, geomRing[0], this))
   }
 
   getSweepEvents () {

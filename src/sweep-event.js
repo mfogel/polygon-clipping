@@ -6,7 +6,7 @@ export default class SweepEvent {
   static compare (a, b) {
 
     // if the events are already linked, then we know the points are equal
-    if (a.linkedEvents !== b.linkedEvents) {
+    if (a.point !== b.point) {
 
       // favor event with a point that the sweep line hits first
       const cmpX = cmp(a.point.x, b.point.x)
@@ -49,35 +49,33 @@ export default class SweepEvent {
     )
   }
 
-  static makeTwins(point) {
-    const se1 = new SweepEvent
-    const se2 = new SweepEvent
-    se1.point = se2.point = point
-    return se1.linkedEvents = se2.linkedEvents = [se1, se2]
+  // Warning: input will be modified and re-used (for performance)
+  constructor (point) {
+    if (point.events === undefined) point.events = [this]
+    else point.events.push(this)
+    this.point = point
   }
 
   link (other) {
-    const otherLE = other.linkedEvents
-    if (otherLE === this.linkedEvents) {
+    if (other.point === this.point) {
       throw new Error(`Tried to link already linked events`)
     }
-    for (let i = 0, iMax = otherLE.length; i < iMax; i++) {
-      const evt = otherLE[i]
-      this.linkedEvents.push(evt)
-      evt.linkedEvents = this.linkedEvents
+    const otherEvents = other.point.events
+    for (let i = 0, iMax = otherEvents.length; i < iMax; i++) {
+      const evt = otherEvents[i]
+      this.point.events.push(evt)
       evt.point = this.point
-      if (this.otherSE.linkedEvents === evt.otherSE.linkedEvents) {
+      if (this.otherSE.point === evt.otherSE.point) {
         this.segment.registerCoincident(evt.segment)
       }
     }
   }
 
   getAvailableLinkedEvents () {
-    if (this.linkedEvents.length === 1) return []
-    
+    // point.events is always of length 2 or greater
     const events = []
-    for (let i = 0, iMax = this.linkedEvents.length; i < iMax; i++) {
-      const evt = this.linkedEvents[i]
+    for (let i = 0, iMax = this.point.events.length; i < iMax; i++) {
+      const evt = this.point.events[i]
       if (evt !== this && !evt.segment.ringOut && evt.segment.isInResult) {
         events.push(evt)
       }

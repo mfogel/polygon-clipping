@@ -5,155 +5,157 @@ import SweepEvent from '../src/sweep-event'
 
 describe('sweep event compare', () => {
   test('favor earlier x in point', () => {
-    const s1 = SweepEvent.makeTwins({ x: -5, y: 4 })[0]
-    const s2 = SweepEvent.makeTwins({ x: 5, y: 1 })[0]
+    const s1 = new SweepEvent({ x: -5, y: 4 })
+    const s2 = new SweepEvent({ x: 5, y: 1 })
     expect(SweepEvent.compare(s1, s2)).toBe(-1)
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
   test('then favor earlier y in point', () => {
-    const s1 = SweepEvent.makeTwins({ x: 5, y: -4 })[0]
-    const s2 = SweepEvent.makeTwins({ x: 5, y: 4 })[0]
+    const s1 = new SweepEvent({ x: 5, y: -4 })
+    const s2 = new SweepEvent({ x: 5, y: 4 })
     expect(SweepEvent.compare(s1, s2)).toBe(-1)
     expect(SweepEvent.compare(s2, s1)).toBe(1)
   })
 
   test('then favor right events over left', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 5, y: 4 })
-    Segment.fromRing(s1, SweepEvent.makeTwins({ x: 3, y: 2 })[0])
-    Segment.fromRing(s2, SweepEvent.makeTwins({ x: 6, y: 5 })[0])
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    const seg1 = Segment.fromRing({ x: 5, y: 4 }, { x: 3, y: 2 })
+    const seg2 = Segment.fromRing({ x: 5, y: 4 }, { x: 6, y: 5 })
+    expect(SweepEvent.compare(seg1.rightSE, seg2.leftSE)).toBe(-1)
+    expect(SweepEvent.compare(seg2.leftSE, seg1.rightSE)).toBe(1)
   })
 
   test('then favor non-vertical segments for left events', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 3, y: 2 })
-    Segment.fromRing(s1, SweepEvent.makeTwins({ x: 3, y: 4 })[0])
-    Segment.fromRing(s2, SweepEvent.makeTwins({ x: 5, y: 4 })[0])
-    expect(SweepEvent.compare(s1, s2)).toBe(1)
-    expect(SweepEvent.compare(s2, s1)).toBe(-1)
+    const seg1 = Segment.fromRing({ x: 3, y: 2 }, { x: 3, y: 4 })
+    const seg2 = Segment.fromRing({ x: 3, y: 2 }, { x: 5, y: 4 })
+    expect(SweepEvent.compare(seg1.leftSE, seg2.rightSE)).toBe(-1)
+    expect(SweepEvent.compare(seg2.rightSE, seg1.leftSE)).toBe(1)
   })
 
   test('then favor vertical segments for right events', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 3, y: 4 })
-    Segment.fromRing(s1, SweepEvent.makeTwins({ x: 3, y: 2 })[0])
-    Segment.fromRing(s2, SweepEvent.makeTwins({ x: 1, y: 2 })[0])
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    const seg1 = Segment.fromRing({ x: 3, y: 4 }, { x: 3, y: 2 })
+    const seg2 = Segment.fromRing({ x: 3, y: 4 }, { x: 1, y: 2 })
+    expect(SweepEvent.compare(seg1.leftSE, seg2.rightSE)).toBe(-1)
+    expect(SweepEvent.compare(seg2.rightSE, seg1.leftSE)).toBe(1)
   })
 
   test('then favor lower segment', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    Segment.fromRing(s1, SweepEvent.makeTwins({ x: 4, y: 4 })[0])
-    Segment.fromRing(s2, SweepEvent.makeTwins({ x: 5, y: 6 })[0])
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 })
+    const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 6 })
+    expect(SweepEvent.compare(seg1.leftSE, seg2.rightSE)).toBe(-1)
+    expect(SweepEvent.compare(seg2.rightSE, seg1.leftSE)).toBe(1)
   })
 
   test('then favor lower ring id', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    Segment.fromRing(s1, SweepEvent.makeTwins({ x: 4, y: 4 })[0], { id: 1 })
-    Segment.fromRing(s2, SweepEvent.makeTwins({ x: 5, y: 5 })[0], { id: 2 })
-    expect(SweepEvent.compare(s1, s2)).toBe(-1)
-    expect(SweepEvent.compare(s2, s1)).toBe(1)
+    const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 })
+    const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 2 })
+    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(-1)
+    expect(SweepEvent.compare(seg2.leftSE, seg1.leftSE)).toBe(1)
   })
 
   test('identical equal', () => {
-    const s1 = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    const s3 = SweepEvent.makeTwins({ x: 4, y: 4 })[0]
-    Segment.fromRing(s1, s3, { id: 1 })
+    const s1 = new SweepEvent({ x: 0, y: 0 })
+    const s3 = new SweepEvent({ x: 3, y: 3 })
+    new Segment(s1, s3, { id: 1 })
+    new Segment(s1, s3, { id: 1 })
     expect(SweepEvent.compare(s1, s1)).toBe(0)
   })
 
   test('totally equal but not identical', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    const [s3, s4] = SweepEvent.makeTwins({ x: 1, y: 1 })
-    Segment.fromRing(s1, s3, { id: 1 })
-    Segment.fromRing(s2, s4, { id: 1 })
+    const s1 = new SweepEvent({ x: 0, y: 0 })
+    const s2 = new SweepEvent({ x: 0, y: 0 })
+    const s3 = new SweepEvent({ x: 3, y: 3 })
+    new Segment(s1, s3, { id: 1 })
+    new Segment(s2, s3, { id: 1 })
     expect(() => SweepEvent.compare(s1, s2)).toThrow()
   })
 
   test('length does not matter', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    Segment.fromRing(s1, SweepEvent.makeTwins({ x: 4, y: 4 })[0], { id: 1 })
-    Segment.fromRing(s2, SweepEvent.makeTwins({ x: 5, y: 5 })[0], { id: 1 })
+    const s1 = new SweepEvent({ x: 0, y: 0 })
+    const s2 = new SweepEvent({ x: 0, y: 0 })
+    const s3 = new SweepEvent({ x: 3, y: 3 })
+    const s4 = new SweepEvent({ x: 4, y: 4 })
+    new Segment(s1, s3, { id: 1 })
+    new Segment(s2, s4, { id: 1 })
     expect(() => SweepEvent.compare(s1, s2)).toThrow()
   })
 
   test('events are linked as side effect', () => {
-    const [s1, s2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    s1.linkedEvents = [s1]
-    s2.linkedEvents = [s2]
-    Segment.fromRing(s1, SweepEvent.makeTwins({ x: 4, y: 4 })[0])
-    Segment.fromRing(s2, SweepEvent.makeTwins({ x: 5, y: 6 })[0])
+    const s1 = new SweepEvent({ x: 0, y: 0 })
+    const s2 = new SweepEvent({ x: 0, y: 0 })
+    new Segment(s1, new SweepEvent({ x: 2, y: 2 }))
+    new Segment(s2, new SweepEvent({ x: 3, y: 4}))
+    expect(s1.point !== s2.point)
     SweepEvent.compare(s1, s2)
-    expect(s1.linkedEvents === s2.linkedEvents)
+    expect(s1.point === s2.point)
   })
 })
 
-describe('makeTwins()', () => {
-  test('basic', () => {
-    const pt = { x: 0, y: 0 }
-    const twins = SweepEvent.makeTwins(pt)
-    expect(twins[0].point).toBe(pt)
-    expect(twins[1].point).toBe(pt)
-    expect(twins[0].linkedEvents).toBe(twins[1].linkedEvents)
+describe('constructor', () => {
+  test('events created from same point are already linked', () => {
+    const p1 = { x: 0, y: 0 }
+    const s1 = new SweepEvent(p1)
+    const s2 = new SweepEvent(p1)
+    expect(s1.point === p1)
+    expect(s1.point.events === s2.point.events)
   })
 })
 
 describe('sweep event link', () => {
   test('no linked events', () => {
-    const [se1, se2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    se1.linkedEvents = [se1]
-    se2.linkedEvents = [se2]
-    expect(se1.getAvailableLinkedEvents()).toEqual([])
-    expect(se2.getAvailableLinkedEvents()).toEqual([])
+    const s1 = new SweepEvent({ x: 0, y: 0 })
+    expect(s1.point.events).toEqual([s1])
+    expect(s1.getAvailableLinkedEvents()).toEqual([])
   })
 
   test('link events already linked with others', () => {
-    const [se1, se2] = SweepEvent.makeTwins({ x: 1, y: 2 })
-    const [se3, se4] = SweepEvent.makeTwins({ x: 1, y: 2 })
-    Segment.fromRing(se1, SweepEvent.makeTwins({ x: 5, y: 5 })[0])
-    Segment.fromRing(se2, SweepEvent.makeTwins({ x: 6, y: 6 })[0])
-    Segment.fromRing(se3, SweepEvent.makeTwins({ x: 7, y: 7 })[0])
-    Segment.fromRing(se4, SweepEvent.makeTwins({ x: 8, y: 8 })[0])
+    const p1 = { x: 1, y: 2 }
+    const p2 = { x: 1, y: 2 }
+    const se1 = new SweepEvent(p1)
+    const se2 = new SweepEvent(p1)
+    const se3 = new SweepEvent(p2)
+    const se4 = new SweepEvent(p2)
+    new Segment(se1, new SweepEvent({ x: 5, y: 5 }))
+    new Segment(se2, new SweepEvent({ x: 6, y: 6 }))
+    new Segment(se3, new SweepEvent({ x: 7, y: 7 }))
+    new Segment(se4, new SweepEvent({ x: 8, y: 8 }))
     se1.link(se3)
-    expect(se1.linkedEvents.length).toBe(4)
-    expect(se1.linkedEvents).toBe(se2.linkedEvents)
-    expect(se1.linkedEvents).toBe(se3.linkedEvents)
-    expect(se1.linkedEvents).toBe(se4.linkedEvents)
+    expect(se1.point.events.length).toBe(4)
+    expect(se1.point).toBe(se2.point)
+    expect(se1.point).toBe(se3.point)
+    expect(se1.point).toBe(se4.point)
   })
 
   test('same event twice', () => {
-    const [se1, se2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    expect(() => se2.link(se1)).toThrow()
-    expect(() => se1.link(se2)).toThrow()
+    const p1 = { x: 0, y: 0 }
+    const s1 = new SweepEvent(p1)
+    const s2 = new SweepEvent(p1)
+    expect(() => s2.link(s1)).toThrow()
+    expect(() => s1.link(s2)).toThrow()
   })
 
   test('unavailable linked events do not show up', () => {
-    const se = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    const [seAlreadyProcessed, seNotInResult] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    se.linkedEvents = [se, seAlreadyProcessed, seNotInResult]
-
+    const p1 = { x: 0, y: 0}
+    const se = new SweepEvent(p1)
+    const seAlreadyProcessed = new SweepEvent(p1)
+    const seNotInResult = new SweepEvent(p1)
     seAlreadyProcessed.segment = { isInResult: true, ringOut: {} }
     seNotInResult.segment = { isInResult: false, ringOut: null }
-
     expect(se.getAvailableLinkedEvents()).toEqual([])
   })
 
   test('available linked events show up', () => {
-    const se = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    const [seOkay1, seOkay2] = SweepEvent.makeTwins({ x: 0, y: 0 })
-    se.linkedEvents = [se, seOkay1, seOkay2]
-
-    seOkay1.segment = { isInResult: true, ringOut: null }
-    seOkay2.segment = { isInResult: true, ringOut: null }
-
-    expect(se.getAvailableLinkedEvents()).toEqual([seOkay1, seOkay2])
+    const p1 = { x: 0, y: 0}
+    const se = new SweepEvent(p1)
+    const seOkay = new SweepEvent(p1)
+    seOkay.segment = { isInResult: true, ringOut: null }
+    expect(se.getAvailableLinkedEvents()).toEqual([seOkay])
   })
 
   test('link goes both ways', () => {
-    const [seOkay1, seOkay2] = SweepEvent.makeTwins({ x: 0, y: 0 })
+    const p1 = { x: 0, y: 0}
+    const seOkay1 = new SweepEvent(p1)
+    const seOkay2 = new SweepEvent(p1)
     seOkay1.segment = { isInResult: true, ringOut: null }
     seOkay2.segment = { isInResult: true, ringOut: null }
     expect(seOkay1.getAvailableLinkedEvents()).toEqual([seOkay2])
@@ -163,24 +165,24 @@ describe('sweep event link', () => {
 
 describe('sweep event get leftmost comparator', () => {
   test('after a segment straight to the right', () => {
-    const prevEvent = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    const event = SweepEvent.makeTwins({ x: 1, y: 0 })[0]
+    const prevEvent = new SweepEvent({ x: 0, y: 0 })
+    const event = new SweepEvent({ x: 1, y: 0 })
     const comparator = event.getLeftmostComparator(prevEvent)
 
-    const e1 = SweepEvent.makeTwins({ x: 1, y: 0 })[0]
-    Segment.fromRing(e1, SweepEvent.makeTwins({ x: 0, y: 1 })[0])
+    const e1 = new SweepEvent({ x: 1, y: 0 })
+    new Segment(e1, new SweepEvent({ x: 0, y: 1 }))
 
-    const e2 = SweepEvent.makeTwins({ x: 1, y: 0 })[0]
-    Segment.fromRing(e2, SweepEvent.makeTwins({ x: 1, y: 1 })[0])
+    const e2 = new SweepEvent({ x: 1, y: 0 })
+    new Segment(e2, new SweepEvent({ x: 1, y: 1 }))
 
-    const e3 = SweepEvent.makeTwins({ x: 1, y: 0 })[0]
-    Segment.fromRing(e3, SweepEvent.makeTwins({ x: 2, y: 0 })[0])
+    const e3 = new SweepEvent({ x: 1, y: 0 })
+    new Segment(e3, new SweepEvent({ x: 2, y: 0 }))
 
-    const e4 = SweepEvent.makeTwins({ x: 1, y: 0 })[0]
-    Segment.fromRing(e4, SweepEvent.makeTwins({ x: 1, y: -1 })[0])
+    const e4 = new SweepEvent({ x: 1, y: 0 })
+    new Segment(e4, new SweepEvent({ x: 1, y: -1 }))
 
-    const e5 = SweepEvent.makeTwins({ x: 1, y: 0 })[0]
-    Segment.fromRing(e5, SweepEvent.makeTwins({ x: 0, y: -1 })[0])
+    const e5 = new SweepEvent({ x: 1, y: 0 })
+    new Segment(e5, new SweepEvent({ x: 0, y: -1 }))
 
     expect(comparator(e1, e2)).toBe(-1)
     expect(comparator(e2, e3)).toBe(-1)
@@ -200,21 +202,21 @@ describe('sweep event get leftmost comparator', () => {
   })
 
   test('after a down and to the left', () => {
-    const prevEvent = SweepEvent.makeTwins({ x: 1, y: 1 })[0]
-    const event = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
+    const prevEvent = new SweepEvent({ x: 1, y: 1 })
+    const event = new SweepEvent({ x: 0, y: 0 })
     const comparator = event.getLeftmostComparator(prevEvent)
 
-    const e1 = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    Segment.fromRing(e1, SweepEvent.makeTwins({ x: 0, y: 1 })[0])
+    const e1 = new SweepEvent({ x: 0, y: 0 })
+    new Segment(e1, new SweepEvent({ x: 0, y: 1 }))
 
-    const e2 = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    Segment.fromRing(e2, SweepEvent.makeTwins({ x: 1, y: 0 })[0])
+    const e2 = new SweepEvent({ x: 0, y: 0 })
+    new Segment(e2, new SweepEvent({ x: 1, y: 0 }))
 
-    const e3 = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    Segment.fromRing(e3, SweepEvent.makeTwins({ x: 0, y: -1 })[0])
+    const e3 = new SweepEvent({ x: 0, y: 0 })
+    new Segment(e3, new SweepEvent({ x: 0, y: -1 }))
 
-    const e4 = SweepEvent.makeTwins({ x: 0, y: 0 })[0]
-    Segment.fromRing(e4, SweepEvent.makeTwins({ x: -1, y: 0 })[0])
+    const e4 = new SweepEvent({ x: 0, y: 0 })
+    new Segment(e4, new SweepEvent({ x: -1, y: 0 }))
 
     expect(comparator(e1, e2)).toBe(1)
     expect(comparator(e1, e3)).toBe(1)
@@ -236,29 +238,20 @@ describe('sweep event get leftmost comparator', () => {
 
 describe('isOrientationCorrect()', () => {
   test('yes', () => {
-    const seg = Segment.fromRing(
-      SweepEvent.makeTwins({ x: 0, y: 0 })[0],
-      SweepEvent.makeTwins({ x: 1, y: 1 })[0],
-    )
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     expect(seg.leftSE.isOrientationCorrect).toBe(true)
     expect(seg.rightSE.isOrientationCorrect).toBe(true)
   })
 
   test('no', () => {
-    const seg = Segment.fromRing(
-      SweepEvent.makeTwins({ x: 0, y: 0 })[0],
-      SweepEvent.makeTwins({ x: 1, y: 1 })[0],
-    )
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     seg.leftSE.point.x = 42
     expect(seg.leftSE.isOrientationCorrect).toBe(false)
     expect(seg.rightSE.isOrientationCorrect).toBe(false)
   })
 
   test('degenerate segment', () => {
-    const seg = Segment.fromRing(
-      SweepEvent.makeTwins({ x: 0, y: 0 })[0],
-      SweepEvent.makeTwins({ x: 1, y: 1 })[0],
-    )
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     seg.leftSE.point.x = 1
     seg.leftSE.point.y = 1
     expect(() => seg.leftSE.isOrientationCorrect).toThrow()
