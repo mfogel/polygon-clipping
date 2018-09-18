@@ -29,8 +29,9 @@ export const cmp = (a, b) => {
 
 /* FLP point comparator, favors point encountered first by sweep line */
 export const cmpPoints = (aPt, bPt) => {
-  // fist compare X, then compare Y
+  if (aPt === bPt) return 0
 
+  // fist compare X, then compare Y
   let a = aPt.x
   let b = bPt.x
 

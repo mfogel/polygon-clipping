@@ -1,5 +1,4 @@
 import SplayTree from 'splaytree'
-import { cmpPoints } from './flp'
 import Segment from './segment'
 
 /**
