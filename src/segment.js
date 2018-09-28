@@ -55,7 +55,7 @@ export default class Segment {
       if (cmpLY === 0) {
         // special case verticals due to rounding errors
         // part of https://github.com/mfogel/polygon-clipping/issues/29
-        if (a.isVertical !== b.isVertical) return a.isVertical
+        if (a.isVertical !== b.isVertical) return a.isVertical ? 1 : -1
         else return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
       }
 

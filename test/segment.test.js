@@ -764,6 +764,13 @@ describe('compare segments', () => {
       expect(Segment.compare(seg1, seg2)).toBe(1)
       expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
+
+    test('one vertical, other not', () => {
+      const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 0, y: 4 })
+      const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 2 })
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
   })
 
   describe('colinear', () => {
