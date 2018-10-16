@@ -38,8 +38,12 @@ export default function doIt (operationType, geom, moreGeoms) {
 
   /* Pass the sweep line over those endpoints */
   const sweepLine = new SweepLine()
-  let node
+  let node, s = queue.size
   while (node = queue.pop()) {
+    if (s === queue.size) {
+      throw new Error('corrupt queue')
+    }
+    s = queue.size
     const newEvents = sweepLine.process(node.key)
     for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
       queue.insert(newEvents[i])
