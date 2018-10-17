@@ -2,7 +2,7 @@ import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, getBboxOverlap, getUniqueCorners } from './bbox'
 import { cmp, cmpPoints } from './flp'
-import { crossProduct, compareVectorAngles, intersection, perpendicular } from './vector'
+import { crossProduct, compareVectorAngles, intersection, perpendicular, verticalIntersection } from './vector'
 
 export default class Segment {
   static compare (a, b) {
@@ -71,14 +71,17 @@ export default class Segment {
       // consider a vertical line at the rightmore of the two left endpoints,
       // consider the segment that intersects lower with that line to be earlier
       const cmpLX = cmp(alx, blx)
-      if (cmpLX < 0) return aCmpBLeft === 1 ? -1 : 1
+      if (cmpLX < 0) {
+        if (aCmpBLeft === 1) return -1
+        if (aCmpBLeft === -1) return 1
+      }
       if (cmpLX > 0) {
         if (bCmpALeft === undefined) bCmpALeft = b.comparePoint(a.leftSE.point)
-        return bCmpALeft === 1 ? 1 : -1
+        if (bCmpALeft !== 0) return bCmpALeft
       }
 
-      // if our left endpoints match, consider the segment
-      // that angles more downward to be earlier
+      // one or both of the left endpoints intersect with the other segment,
+      // so consider the segment that angles more downward to be earlier
       const cmpLY = cmp(aly, bly)
       if (cmpLY === 0) {
         // special case verticals due to rounding errors
@@ -197,13 +200,9 @@ export default class Segment {
    *   -1: point is above segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    const v1 = this.vector()
-    const v2 = perpendicular(v1)
-    const interPt = intersection(this.leftSE.point, v1, point, v2)
-
-    const cmpY = cmp(point.y, interPt.y)
-    if (cmpY !== 0) return cmpY
-    return cmp(interPt.x, point.x)
+    const inter = verticalIntersection(this.leftSE.point, this.vector(), point.x)
+    if (inter === null) return cmp(this.leftSE.point.x, point.x)
+    return cmp(point.y, inter.y)
   }
 
   /**

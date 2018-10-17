@@ -625,6 +625,13 @@ describe('compare segments', () => {
       expect(Segment.compare(seg1, seg2)).toBe(-1)
       expect(Segment.compare(seg2, seg1)).toBe(1)
     })
+
+    test('with a vertical', () => {
+      const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 0 })
+      const seg2 = Segment.fromRing({ x: 1, y: -2 }, { x: 1, y: 2 })
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
   })
 
   describe('intersect but not share on an endpoint', () => {
@@ -645,8 +652,15 @@ describe('compare segments', () => {
     test('intersect on left from below', () => {
       const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 0 })
       const seg2 = Segment.fromRing({ x: -2, y: -2 }, { x: 2, y: 2 })
-      expect(Segment.compare(seg1, seg2)).toBe(-1)
-      expect(Segment.compare(seg2, seg1)).toBe(1)
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
+    })
+
+    test('intersect on left from vertical', () => {
+      const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 0 })
+      const seg2 = Segment.fromRing({ x: 0, y: -2 }, { x: 0, y: 2 })
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
   })
 
