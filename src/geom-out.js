@@ -1,4 +1,5 @@
 import { compareVectorAngles } from './vector'
+import SweepEvent from './sweep-event'
 
 export class RingOut {
   /* Given the segments from the sweep line pass, compute & return a series
@@ -147,8 +148,15 @@ export class RingOut {
 
   /* Returns the ring that encloses this one, if any */
   _enclosingRing () {
-    let prevSeg = this.events[0].segment.prevInResult
-    while (prevSeg && prevSeg.ringOut === this) prevSeg = prevSeg.prevInResult
+    // start with the ealier sweep line event so that the prevSeg
+    // chain doesn't lead us inside of a loop of ours
+    let leftMostEvt = this.events[0]
+    for (let i = 1, iMax = this.events.length; i < iMax; i++) {
+      const evt = this.events[i]
+      if (SweepEvent.compare(leftMostEvt, evt) > 0) leftMostEvt = evt
+    }
+
+    let prevSeg = leftMostEvt.segment.prevInResult
     let prevPrevSeg = prevSeg ? prevSeg.prevInResult : null
 
     while (true) {
