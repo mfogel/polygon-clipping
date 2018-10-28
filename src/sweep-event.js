@@ -60,13 +60,16 @@ export default class SweepEvent {
     if (other.point === this.point) {
       throw new Error(`Tried to link already linked events`)
     }
+    const numOriginalEvents = this.point.events.length
     const otherEvents = other.point.events
     for (let i = 0, iMax = otherEvents.length; i < iMax; i++) {
       const evt = otherEvents[i]
       this.point.events.push(evt)
       evt.point = this.point
-      if (this.otherSE.point === evt.otherSE.point) {
-        this.segment.registerCoincident(evt.segment)
+      for (let j = 0, jMax = numOriginalEvents; j < jMax; j++) {
+        if (this.point.events[j].otherSE.point === evt.otherSE.point) {
+          this.point.events[j].segment.registerCoincident(evt.segment)
+        }
       }
     }
   }
