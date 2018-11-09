@@ -129,12 +129,18 @@ export default class SweepLine {
       // Sometimes, because of rounding errors, splitting segments can cause their
       // ordering to change, making them un-findable in the sweep line tree.
       // To avoid this, we remove and re-insert the segments while splitting.
+      // Also, keep in mind coincidents can change while splitting. (re: #44)
+      const nodes = []
       for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
-        this.tree.remove(segment.coincidents[i])
+        let node = this.tree.find(segment.coincidents[i])
+        if (node !== null) {
+          nodes.push(node)
+          this.tree.remove(node.key)
+        }
       }
       newEvents = segment.split(splitters)
-      for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
-        this.tree.insert(segment.coincidents[i])
+      for (let i = 0, iMax = nodes.length; i < iMax; i++) {
+        this.tree.insert(nodes[i].key)
       }
     }
     return newEvents
