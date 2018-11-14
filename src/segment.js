@@ -40,6 +40,12 @@ export default class Segment {
       if (a.ringIn.id !== b.ringIn.id) {
         return a.ringIn.id < b.ringIn.id ? -1 : 1
       }
+
+      // overlapping segments from the same ring
+      // https://github.com/mfogel/polygon-clipping/issues/48
+      if (a.tiebreaker < b.tiebreaker) return -1
+      if (a.tiebreaker > b.tiebreaker) return 1
+
     } else {
       // not colinear
 
@@ -65,9 +71,8 @@ export default class Segment {
     }
 
     throw new Error(
-      `Segment comparison (from [${a.leftSE.point.x}, ${a.leftSE.point.y}])` +
-        ` -> to [${a.rightSE.point.x}, ${a.rightSE.point.y}]) failed... ` +
-        ` segments equal but not identical?`
+      `Segment comparison from [${a.leftSE.point.x}, ${a.leftSE.point.y}]` +
+      ` to [${a.rightSE.point.x}, ${a.rightSE.point.y}] failed`
     )
   }
 
@@ -97,6 +102,12 @@ export default class Segment {
       )
     }
     return new Segment(leftSE, rightSE, ring)
+  }
+
+  // used for sorting equal sweep events, segments consistently
+  get tiebreaker () {
+    if (this._tiebreaker === undefined) this._tiebreaker = Math.random()
+    return this._tiebreaker
   }
 
   get bbox () {

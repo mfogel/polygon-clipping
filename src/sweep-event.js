@@ -43,9 +43,13 @@ export default class SweepEvent {
     // they appear to be the same point... are they?
     if (a === b) return 0
 
+    // they're from overlapping segments of the same ring
+    // https://github.com/mfogel/polygon-clipping/issues/48
+    if (a.segment.tiebreaker < b.segment.tiebreaker) return -1
+    if (a.segment.tiebreaker > b.segment.tiebreaker) return 1
+
     throw new Error(
-      `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]... ` +
-        `equal but not identical?`
+      `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]`
     )
   }
 

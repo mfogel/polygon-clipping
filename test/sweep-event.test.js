@@ -61,23 +61,15 @@ describe('sweep event compare', () => {
     expect(SweepEvent.compare(s1, s1)).toBe(0)
   })
 
-  test('totally equal but not identical', () => {
+  test('totally equal but not identical events are consistent', () => {
     const s1 = new SweepEvent({ x: 0, y: 0 })
     const s2 = new SweepEvent({ x: 0, y: 0 })
     const s3 = new SweepEvent({ x: 3, y: 3 })
     new Segment(s1, s3, { id: 1 })
     new Segment(s2, s3, { id: 1 })
-    expect(() => SweepEvent.compare(s1, s2)).toThrow()
-  })
-
-  test('length does not matter', () => {
-    const s1 = new SweepEvent({ x: 0, y: 0 })
-    const s2 = new SweepEvent({ x: 0, y: 0 })
-    const s3 = new SweepEvent({ x: 3, y: 3 })
-    const s4 = new SweepEvent({ x: 4, y: 4 })
-    new Segment(s1, s3, { id: 1 })
-    new Segment(s2, s4, { id: 1 })
-    expect(() => SweepEvent.compare(s1, s2)).toThrow()
+    const result = SweepEvent.compare(s1, s2)
+    expect(SweepEvent.compare(s1, s2)).toBe(result)
+    expect(SweepEvent.compare(s2, s1)).toBe(result * -1)
   })
 
   test('events are linked as side effect', () => {

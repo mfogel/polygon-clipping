@@ -817,9 +817,11 @@ describe('compare segments', () => {
     expect(Segment.compare(seg2, seg1)).toBe(1)
   })
 
-  test('exactly equal segments (but not identical) should throw error', () => {
+  test('exactly equal segments (but not identical) are consistent', () => {
     const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 })
     const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 })
-    expect(() => Segment.compare(seg1, seg2)).toThrow()
+    const result = Segment.compare(seg1, seg2)
+    expect(Segment.compare(seg1, seg2)).toBe(result)
+    expect(Segment.compare(seg2, seg1)).toBe(result * -1)
   })
 })
