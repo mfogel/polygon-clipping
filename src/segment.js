@@ -83,8 +83,9 @@ export default class Segment {
     if (rightSE !== null) rightSE.segment = this
     this.ringIn = ringIn
     this.ringOut = null
+    this.prev = null
     this.coincidents = [this]
-    this._clearCache()
+    this._cache = {}
   }
 
   static fromRing(point1, point2, ring) {
@@ -271,7 +272,6 @@ export default class Segment {
 
   registerPrev (other) {
     this.prev = other
-    this._clearCache()
   }
 
   registerRingOut (ring) {
@@ -298,189 +298,80 @@ export default class Segment {
   }
 
   _prevInResult () {
-    let prev = this.prev
-    while (prev && !prev.isInResult) prev = prev.prev
-    return prev
+    if (this.prev === null) return null
+    if (this.prev.isInResult) return this.prev
+    return this.prev.prevInResult
   }
 
-  get prevNotCoincident () {
-    const key = 'prevNotCoincident'
+  get ringsBefore () {
+    const key = 'ringsBefore'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
-  _prevNotCoincident () {
-    // iterating backwards from next to prev
-    let next = this
-    let prev = this.prev
-    while (prev && next.coincidents === prev.coincidents) {
-      next = prev
-      prev = prev.prev
-    }
-    return prev
-  }
-
-  /* Does the sweep line, when it intersects this segment, enter the ring? */
-  get sweepLineEntersRing () {
-    const key = 'sweepLineEntersRing'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _sweepLineEntersRing () {
-    // opposite of previous segment on the same ring
-    let prev = this.prevNotCoincident
-    while (prev) {
-      for (let i = 0, iMax = prev.coincidents.length; i < iMax; i++) {
-        const seg = prev.coincidents[i]
-        if (seg.ringIn === this.ringIn) return !seg.sweepLineEntersRing
-      }
-      prev = prev.prevNotCoincident
-    }
-    return true
-  }
-
-  /* Does the sweep line, when it intersects this segment, enter the polygon? */
-  get sweepLineEntersPoly () {
-    if (!this.isValidEdgeForPoly) return false
-    return this.ringIn.isExterior === this.sweepLineEntersRing
-  }
-
-  /* Does the sweep line, when it intersects this segment, exit the polygon? */
-  get sweepLineExitsPoly () {
-    if (!this.isValidEdgeForPoly) return false
-    return this.ringIn.isExterior !== this.sweepLineEntersRing
-  }
-
-  /* Array of input rings this segment is inside of (not on boundary) */
-  get ringsInsideOf () {
-    const key = 'ringsInsideOf'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _ringsInsideOf () {
+  _ringsBefore () {
     if (!this.prev) return []
-
-    // coincidents always share the same rings. Return same array to save mem
-    if (this.coincidents === this.prev.coincidents) {
-      return this.prev.ringsInsideOf
-    }
-
-    let rings = []
-    let prevRingsInsideOf = this.prev.ringsInsideOf
-    let prevRingsEntering = this.prev.getRingsEntering()
-    let ringsExiting = this.getRingsExiting()
-
-    // rings our prev was inside of all count, except those we're exiting
-    for (let i = 0, iMax = prevRingsInsideOf.length; i < iMax; i++) {
-      const ring = prevRingsInsideOf[i]
-      if (!ringsExiting.includes(ring)) rings.push(ring)
-    }
-
-    // rings our prev was entering of all count, except those we're exiting
-    for (let i = 0, iMax = prevRingsEntering.length; i < iMax; i++) {
-      const ring = prevRingsEntering[i]
-      if (!ringsExiting.includes(ring)) rings.push(ring)
-    }
-
-    return rings
+    if (this.coincidents === this.prev.coincidents) return this.prev.ringsBefore
+    return this.prev.ringsAfter
   }
 
-  /* Array of input rings this segment is on boundary of */
-  getRingsOnEdgeOf () {
-    const rings = []
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      rings.push(this.coincidents[i].ringIn)
-    }
-    return rings
-  }
-
-  /* Array of input rings this segment is on boundary of,
-   * and for which the sweep line enters when intersecting there */
-  getRingsEntering () {
-    const rings = []
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const segment = this.coincidents[i]
-      if (!segment.sweepLineEntersRing) continue
-      rings.push(segment.ringIn)
-    }
-    return rings
-  }
-
-  /* Array of input rings this segment is on boundary of,
-   * and for which the sweep line exits when intersecting there */
-  getRingsExiting () {
-    const rings = []
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const segment = this.coincidents[i]
-      if (segment.sweepLineEntersRing) continue
-      rings.push(segment.ringIn)
-    }
-    return rings
-  }
-
-  getRingsEnteringAndExiting () {
-    const ringsEntering = []
-    const ringsExiting = []
-
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const segment = this.coincidents[i]
-      if (segment.sweepLineEntersRing) ringsEntering.push(segment.ringIn)
-      else ringsExiting.push(segment.ringIn)
-    }   
-
-    return [ringsEntering, ringsExiting]
-  }
-
-  /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
-  get isValidEdgeForPoly () {
-    const key = 'isValidEdgeForPoly'
+  get ringsAfter () {
+    const key = 'ringsAfter'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
-  _isValidEdgeForPoly () {
-    // SLER: sweep line entering orientation
-    let sameSLER
-    let diffSLER
-    const rings = this.getRingsEnteringAndExiting()
-    if (this.sweepLineEntersRing) {
-      sameSLER = rings[0]
-      diffSLER = rings[1]
-    } else {
-      diffSLER = rings[0]
-      sameSLER = rings[1]
+  _ringsAfter () {
+    const rings = this.ringsBefore.slice(0)
+    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
+      const ring = this.coincidents[i].ringIn
+      const index = rings.indexOf(ring)
+      if (index === -1) rings.push(ring)
+      else rings.splice(index, 1)
     }
-    return this.ringIn.isValid(sameSLER, diffSLER, this.ringsInsideOf)
+    return rings
   }
 
-  /* Array of multipolys this segment is inside of */
-  getMultiPolysInsideOf () {
+  get multiPolysBefore () {
+    const key = 'multiPolysBefore'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
+  }
+
+  _multiPolysBefore () {
+    if (!this.prev) return []
+    if (this.coincidents === this.prev.coincidents) return this.prev.multiPolysBefore
+    return this.prev.multiPolysAfter
+  }
+
+  get multiPolysAfter () {
+    const key = 'multiPolysAfter'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
+  }
+
+  _multiPolysAfter () {
+    // first calcualte our polysAfter
+    const polysAfter = []
+    const polysExclude = []
+    for (let i = 0, iMax = this.ringsAfter.length; i < iMax; i++) {
+      const ring = this.ringsAfter[i]
+      const poly = ring.poly
+      if (polysExclude.includes(poly)) continue
+      if (ring.isExterior) polysAfter.push(poly)
+      else {
+        if (! polysExclude.includes(poly)) polysExclude.push(poly)
+        const index = polysAfter.indexOf(ring.poly)
+        if (index !== -1) polysAfter.splice(index, 1)
+      }
+    }
+    // now calculate our multiPolysAfter
     const mps = []
-    for (let i = 0, iMax = this.ringsInsideOf.length; i < iMax; i++) {
-      const poly = this.ringsInsideOf[i].poly
-      if (mps.includes(poly.multiPoly)) continue
-      if (!poly.isInside(this.getRingsOnEdgeOf(), this.ringsInsideOf)) continue
-      mps.push(poly.multiPoly)
+    for (let i = 0, iMax = polysAfter.length; i < iMax; i++) {
+      const mp = polysAfter[i].multiPoly
+      if (!mps.includes(mp)) mps.push(mp)
     }
     return mps
-  }
-
-  /* Combine the above two functions for efficient looping */
-  getMultiPolysSLPEntersAndExits (multiPolysInsideOf) {
-    const mpsEnters = multiPolysInsideOf.slice(0)
-    const mpsExits = multiPolysInsideOf.slice(0)
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const seg = this.coincidents[i]
-      const mp = seg.ringIn.poly.multiPoly
-      if (seg.sweepLineEntersPoly) {
-          if (!mpsEnters.includes(mp)) mpsEnters.push(mp)
-      } else if (seg.sweepLineExitsPoly) {
-          if (!mpsExits.includes(mp)) mpsExits.push(mp)        
-      }
-    }
-    return [mpsEnters, mpsExits]
   }
 
   /* Is this segment part of the final result? */
@@ -494,19 +385,17 @@ export default class Segment {
     // if it's not the coincidence winner, it's not in the resul
     if (this !== this.coincidents[0]) return false
 
-    const multiPolysInsideOf = this.getMultiPolysInsideOf()
-    const getMPS = this.getMultiPolysSLPEntersAndExits(multiPolysInsideOf)
-    const multiPolysSLPEnters = getMPS[0]
-    const multiPolysSLPExits = getMPS[1]
+    const mpsBefore = this.multiPolysBefore
+    const mpsAfter = this.multiPolysAfter
 
     switch (operation.type) {
       case operation.types.UNION:
         // UNION - included iff:
         //  * On one side of us there is 0 poly interiors AND
         //  * On the other side there is 1 or more.
-        const noEnters = multiPolysSLPEnters.length === 0
-        const noExits = multiPolysSLPExits.length === 0
-        return noEnters !== noExits
+        const noBefores = mpsBefore.length === 0
+        const noAfters = mpsAfter.length === 0
+        return noBefores !== noAfters
 
       case operation.types.INTERSECTION:
         // INTERSECTION - included iff:
@@ -515,12 +404,12 @@ export default class Segment {
         //    with poly interiors
         let least
         let most
-        if (multiPolysSLPEnters.length < multiPolysSLPExits.length) {
-          least = multiPolysSLPEnters.length
-          most = multiPolysSLPExits.length
+        if (mpsBefore.length < mpsAfter.length) {
+          least = mpsBefore.length
+          most = mpsAfter.length
         } else {
-          least = multiPolysSLPExits.length
-          most = multiPolysSLPEnters.length
+          least = mpsAfter.length
+          most = mpsBefore.length
         }
         return most === operation.numMultiPolys && least < most
 
@@ -528,26 +417,18 @@ export default class Segment {
         // XOR - included iff:
         //  * the difference between the number of multipolys represented
         //    with poly interiors on our two sides is an odd number
-        const diff = Math.abs(
-          multiPolysSLPEnters.length - multiPolysSLPExits.length
-        )
+        const diff = Math.abs(mpsBefore.length - mpsAfter.length)
         return diff % 2 === 1
 
       case operation.types.DIFFERENCE:
         // DIFFERENCE included iff:
         //  * on exactly one side, we have just the subject
         const isJustSubject = mps => mps.length === 1 && mps[0].isSubject
-        return (
-          isJustSubject(multiPolysSLPEnters) !==
-          isJustSubject(multiPolysSLPExits)
-        )
+        return isJustSubject(mpsBefore) !== isJustSubject(mpsAfter)
 
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)
     }
   }
 
-  _clearCache () {
-    this._cache = {}
-  }
 }
