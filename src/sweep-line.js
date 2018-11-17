@@ -111,7 +111,7 @@ export default class SweepLine {
     // https://github.com/mfogel/polygon-clipping/issues/29
     for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
       const evt = newEvents[i]
-      if (! evt.isOrientationCorrect) evt.segment.swapEvents()
+      if (! evt.isOrientationCorrect()) evt.segment.swapEvents()
     }
 
     return newEvents

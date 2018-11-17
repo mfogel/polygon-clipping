@@ -11,7 +11,9 @@ describe('constructor', () => {
     const seg = new Segment(leftSE, rightSE, ringIn)
     expect(seg.ringIn).toBe(ringIn)
     expect(seg.leftSE).toBe(leftSE)
+    expect(seg.leftSE.otherSE).toBe(rightSE)
     expect(seg.rightSE).toBe(rightSE)
+    expect(seg.rightSE.otherSE).toBe(leftSE)
     expect(seg.ringOut).toBeNull()
     expect(seg._cache).toEqual({})
   })
@@ -48,10 +50,13 @@ describe('split', () => {
     const evts = seg.split([pt])
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
-    expect(evts[0].isRight).toBeTruthy()
+    expect(evts[0].isLeft).toBe(false)
+    expect(evts[0].otherSE.otherSE).toBe(evts[0])
+    expect(evts[1].segment.leftSE.segment).toBe(evts[1].segment)
     expect(evts[1].segment).not.toBe(seg)
     expect(evts[1].point).toEqual(pt)
-    expect(evts[1].isLeft).toBeTruthy()
+    expect(evts[1].isLeft).toBe(true)
+    expect(evts[1].otherSE.otherSE).toBe(evts[1])
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
   })
 
@@ -61,10 +66,10 @@ describe('split', () => {
     const evts = seg.split([pt])
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
-    expect(evts[0].isRight).toBeTruthy()
+    expect(evts[0].isLeft).toBe(false)
     expect(evts[1].segment).not.toBe(seg)
     expect(evts[1].point).toEqual(pt)
-    expect(evts[1].isLeft).toBeTruthy()
+    expect(evts[1].isLeft).toBe(true)
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
   })
 
@@ -84,15 +89,15 @@ describe('split', () => {
     expect(newEvts.length).toBe(6)
 
     expect(seg.leftSE).toBe(orgLeftEvt)
-    let evt = newEvts.find(e => e.point === sPt1 && e.isRight)
+    let evt = newEvts.find(e => e.point === sPt1 && ! e.isLeft)
     expect(seg.rightSE).toBe(evt)
 
     evt = newEvts.find(e => e.point === sPt1 && e.isLeft)
-    let otherEvt = newEvts.find(e => e.point === sPt2 && e.isRight)
+    let otherEvt = newEvts.find(e => e.point === sPt2 && ! e.isLeft)
     expect(evt.segment).toBe(otherEvt.segment)
 
     evt = newEvts.find(e => e.point === sPt2 && e.isLeft)
-    otherEvt = newEvts.find(e => e.point === sPt3 && e.isRight)
+    otherEvt = newEvts.find(e => e.point === sPt3 && ! e.isLeft)
     expect(evt.segment).toBe(otherEvt.segment)
 
     evt = newEvts.find(e => e.point === sPt3 && e.isLeft)
@@ -115,43 +120,23 @@ describe('split', () => {
 describe('simple properties - bbox, vector, points, isVertical', () => {
   test('general', () => {
     const seg = Segment.fromRing({ x: 1, y: 2 }, { x: 3, y: 4 })
-    expect(seg.bbox).toEqual({ ll: { x: 1, y: 2 }, ur: { x: 3, y: 4 } })
-    expect(seg.vector).toEqual({ x: 2, y: 2 })
-    expect(seg.isVertical).toBeFalsy()
+    expect(seg.bbox()).toEqual({ ll: { x: 1, y: 2 }, ur: { x: 3, y: 4 } })
+    expect(seg.vector()).toEqual({ x: 2, y: 2 })
+    expect(seg.isVertical()).toBeFalsy()
   })
 
   test('horizontal', () => {
     const seg = Segment.fromRing({ x: 1, y: 4 }, { x: 3, y: 4 })
-    expect(seg.bbox).toEqual({ ll: { x: 1, y: 4 }, ur: { x: 3, y: 4 } })
-    expect(seg.vector).toEqual({ x: 2, y: 0 })
-    expect(seg.isVertical).toBeFalsy()
+    expect(seg.bbox()).toEqual({ ll: { x: 1, y: 4 }, ur: { x: 3, y: 4 } })
+    expect(seg.vector()).toEqual({ x: 2, y: 0 })
+    expect(seg.isVertical()).toBeFalsy()
   })
 
   test('vertical', () => {
     const seg = Segment.fromRing({ x: 3, y: 2 }, { x: 3, y: 4 })
-    expect(seg.bbox).toEqual({ ll: { x: 3, y: 2 }, ur: { x: 3, y: 4 } })
-    expect(seg.vector).toEqual({ x: 0, y: 2 })
-    expect(seg.isVertical).toBeTruthy()
-  })
-})
-
-describe('segment getOtherSE', () => {
-  test('left to right', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, true)
-    expect(seg.getOtherSE(seg.leftSE)).toBe(seg.rightSE)
-    expect(seg.leftSE.otherSE).toBe(seg.rightSE)
-  })
-
-  test('right to left', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 }, true)
-    expect(seg.getOtherSE(seg.rightSE)).toBe(seg.leftSE)
-    expect(seg.rightSE.otherSE).toBe(seg.leftSE)
-  })
-
-  test('doesnt work for Sweep Events that are from other Segments', () => {
-    const seg1 = Segment.fromRing({ x: 0, y: 0}, { x: 1, y: 0 }, true)
-    const seg2 = Segment.fromRing({ x: 0, y: 0}, { x: 1, y: 0 }, true)
-    expect(() => seg1.getOtherSE(seg2.leftSE)).toThrow()
+    expect(seg.bbox()).toEqual({ ll: { x: 3, y: 2 }, ur: { x: 3, y: 4 } })
+    expect(seg.vector()).toEqual({ x: 0, y: 2 })
+    expect(seg.isVertical()).toBeTruthy()
   })
 })
 

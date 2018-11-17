@@ -25,8 +25,10 @@ export default class SweepEvent {
 
     // favor vertical segments for left events, and non-vertical for right
     // https://github.com/mfogel/polygon-clipping/issues/29
-    if (a.segment.isVertical && ! b.segment.isVertical) return a.isLeft ? 1 : -1
-    if (! a.segment.isVertical && b.segment.isVertical) return a.isLeft ? -1 : 1
+    const aVert = a.segment.isVertical()
+    const bVert = b.segment.isVertical()
+    if (aVert && ! bVert) return a.isLeft ? 1 : -1
+    if (! aVert && bVert) return a.isLeft ? -1 : 1
 
     // favor events where the line segment is lower
     const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
@@ -45,19 +47,23 @@ export default class SweepEvent {
 
     // they're from overlapping segments of the same ring
     // https://github.com/mfogel/polygon-clipping/issues/48
-    if (a.segment.tiebreaker < b.segment.tiebreaker) return -1
-    if (a.segment.tiebreaker > b.segment.tiebreaker) return 1
+    const aTie = a.segment.tiebreaker()
+    const bTie = b.segment.tiebreaker()
+    if (aTie < bTie) return -1
+    if (aTie > bTie) return 1
 
     throw new Error(
       `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]`
     )
   }
 
-  // Warning: input will be modified and re-used (for performance)
-  constructor (point) {
+  // Warning: 'point' input will be modified and re-used (for performance)
+  constructor (point, isLeft) {
     if (point.events === undefined) point.events = [this]
     else point.events.push(this)
     this.point = point
+    this.isLeft = isLeft
+    // this.segment, this.otherSE set by factory
   }
 
   link (other) {
@@ -83,7 +89,7 @@ export default class SweepEvent {
     const events = []
     for (let i = 0, iMax = this.point.events.length; i < iMax; i++) {
       const evt = this.point.events[i]
-      if (evt !== this && !evt.segment.ringOut && evt.segment.isInResult) {
+      if (evt !== this && !evt.segment.ringOut && evt.segment.isInResult()) {
         events.push(evt)
       }
     }
@@ -127,22 +133,10 @@ export default class SweepEvent {
     }
   }
 
-  get isLeft () {
-    return this === this.segment.leftSE
-  }
-
-  get isRight () {
-    return this === this.segment.rightSE
-  }
-
-  get isOrientationCorrect () {
+  isOrientationCorrect () {
     const ptCmp = cmpPoints(this.point, this.otherSE.point)
     if (ptCmp < 0) return this.isLeft
-    if (ptCmp > 0) return this.isRight
+    if (ptCmp > 0) return ! this.isLeft
     throw new Error("Degenerate segment encountered")
-  }
-
-  get otherSE () {
-    return this.segment.getOtherSE(this)
   }
 }

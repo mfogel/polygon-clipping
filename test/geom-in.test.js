@@ -10,12 +10,11 @@ describe('RingIn', () => {
       { x: 1, y: 1 },
     ]
     const poly = {}
-    const ring = new RingIn([pt1, pt2, pt3], poly)
+    const ring = new RingIn([pt1, pt2, pt3], poly, true)
     poly.exteriorRing = ring
 
     expect(ring.poly).toBe(poly)
-    expect(ring.isExterior).toBeTruthy()
-    expect(ring.isInterior).toBeFalsy()
+    expect(ring.isExterior).toBe(true)
     expect(ring.segments.length).toBe(3)
     expect(ring.getSweepEvents().length).toBe(6)
 
@@ -28,9 +27,8 @@ describe('RingIn', () => {
   })
 
   test('create an interior ring', () => {
-    const ring = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}], {})
-    expect(ring.isExterior).toBeFalsy()
-    expect(ring.isInterior).toBeTruthy()
+    const ring = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}], {}, false)
+    expect(ring.isExterior).toBe(false)
   })
 
   test('ring Id increments', () => {

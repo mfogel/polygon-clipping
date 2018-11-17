@@ -304,8 +304,8 @@ describe('ring', () => {
 
     const ring = RingOut.factory([seg1, seg2, seg3])[0]
 
-    expect(ring.enclosingRing).toBeNull()
-    expect(ring.isExteriorRing).toBeTruthy()
+    expect(ring.enclosingRing()).toBeNull()
+    expect(ring.isExteriorRing()).toBe(true)
     expect(ring.getGeom()).toEqual([[0, 0], [1, 1], [0, 1], [0, 0]])
   })
 
@@ -323,9 +323,9 @@ describe('ring', () => {
     seg3._cache['isInResult'] = true
 
     const ring = RingOut.factory([seg1, seg2, seg3])[0]
-    ring._cache = { isExteriorRing: false }
+    ring._isExteriorRing = false
 
-    expect(ring.isExteriorRing).toBeFalsy()
+    expect(ring.isExteriorRing()).toBe(false)
     expect(ring.getGeom()).toEqual([[0, 0], [0, 1], [1, 1], [0, 0]])
   })
 

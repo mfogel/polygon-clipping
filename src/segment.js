@@ -43,8 +43,10 @@ export default class Segment {
 
       // overlapping segments from the same ring
       // https://github.com/mfogel/polygon-clipping/issues/48
-      if (a.tiebreaker < b.tiebreaker) return -1
-      if (a.tiebreaker > b.tiebreaker) return 1
+      const aTie = a.tiebreaker()
+      const bTie = b.tiebreaker()
+      if (aTie < bTie) return -1
+      if (aTie > bTie) return 1
 
     } else {
       // not colinear
@@ -61,7 +63,8 @@ export default class Segment {
       if (cmpLY === 0) {
         // special case verticals due to rounding errors
         // part of https://github.com/mfogel/polygon-clipping/issues/29
-        if (a.isVertical !== b.isVertical) return a.isVertical ? 1 : -1
+        const aVert = a.isVertical()
+        if (aVert !== b.isVertical()) return aVert ? 1 : -1
         else return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
       }
 
@@ -78,9 +81,15 @@ export default class Segment {
 
   constructor (leftSE, rightSE, ringIn) {
     this.leftSE = leftSE
-    if (leftSE !== null) leftSE.segment = this
+    if (leftSE !== null) {
+      leftSE.segment = this
+      leftSE.otherSE = rightSE
+    }
     this.rightSE = rightSE
-    if (rightSE !== null) rightSE.segment = this
+    if (rightSE !== null) {
+      rightSE.segment = this
+      rightSE.otherSE = leftSE
+    }
     this.ringIn = ringIn
     this.ringOut = null
     this.prev = null
@@ -92,11 +101,11 @@ export default class Segment {
     let leftSE, rightSE
     const ptCmp = cmpPoints(point1, point2)
     if (ptCmp < 0) {
-      leftSE = new SweepEvent(point1)
-      rightSE = new SweepEvent(point2)
+      leftSE = new SweepEvent(point1, true)
+      rightSE = new SweepEvent(point2, false)
     } else if (ptCmp > 0) {
-      leftSE = new SweepEvent(point2)
-      rightSE = new SweepEvent(point1)
+      leftSE = new SweepEvent(point2, true)
+      rightSE = new SweepEvent(point1, false)
     } else {
       throw new Error(
         `Tried to create degenerate segment at [${point1.x}, ${point2.y}]`
@@ -106,12 +115,12 @@ export default class Segment {
   }
 
   // used for sorting equal sweep events, segments consistently
-  get tiebreaker () {
+  tiebreaker () {
     if (this._tiebreaker === undefined) this._tiebreaker = Math.random()
     return this._tiebreaker
   }
 
-  get bbox () {
+  bbox () {
     const y1 = this.leftSE.point.y
     const y2 = this.rightSE.point.y
     return {
@@ -121,27 +130,23 @@ export default class Segment {
   }
 
   /* A vector from the left point to the right */
-  get vector () {
+  vector () {
     return {
       x: this.rightSE.point.x - this.leftSE.point.x,
       y: this.rightSE.point.y - this.leftSE.point.y
     }
   }
 
-  get isVertical () {
+  isVertical () {
     return cmp(this.leftSE.point.x, this.rightSE.point.x) === 0
   }
 
   swapEvents () {
     const tmp = this.leftSE
     this.leftSE = this.rightSE
+    this.leftSE.isLeft = true
     this.rightSE = tmp
-  }
-
-  getOtherSE (se) {
-    if (se === this.leftSE) return this.rightSE
-    if (se === this.rightSE) return this.leftSE
-    throw new Error('may only be called by own sweep events')
+    this.rightSE.isLeft = false
   }
 
   isAnEndpoint (point) {
@@ -152,7 +157,7 @@ export default class Segment {
   }
 
   isPointOn (point) {
-    return isInBbox(this.bbox, point) && this.comparePoint(point) === 0
+    return isInBbox(this.bbox(), point) && this.comparePoint(point) === 0
   }
 
   /* Compare this segment with a point. Return value indicates
@@ -161,7 +166,7 @@ export default class Segment {
    *   -1: point is above segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    const v1 = this.vector
+    const v1 = this.vector()
     const v2 = perpendicular(v1)
     const interPt = intersection(this.leftSE.point, v1, point, v2)
 
@@ -180,7 +185,7 @@ export default class Segment {
    */
   getIntersections (other) {
     // If bboxes don't overlap, there can't be any intersections
-    const bboxOverlap = getBboxOverlap(this.bbox, other.bbox)
+    const bboxOverlap = getBboxOverlap(this.bbox(), other.bbox())
     if (bboxOverlap === null) return []
 
     // The general algorithim doesn't handle overlapping colinear segments.
@@ -208,7 +213,7 @@ export default class Segment {
     if (intersections.length > 0) return intersections
 
     // general case of one intersection between non-overlapping segments
-    const pt = intersection(this.leftSE.point, this.vector, other.leftSE.point, other.vector)
+    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
     if (pt !== null && isInBbox(bboxOverlap, pt)) return [pt]
     return []
   }
@@ -248,11 +253,13 @@ export default class Segment {
     const newEvents = []
     for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const thisSeg = this.coincidents[i]
-      const newLeftSE = new SweepEvent(point)
-      const newRightSE = new SweepEvent(point)
+      const newLeftSE = new SweepEvent(point, true)
+      const newRightSE = new SweepEvent(point, false)
       newSegments.push(new Segment(newLeftSE, thisSeg.rightSE, thisSeg.ringIn))
       thisSeg.rightSE = newRightSE
       thisSeg.rightSE.segment = thisSeg
+      thisSeg.rightSE.otherSE = thisSeg.leftSE
+      thisSeg.leftSE.otherSE = thisSeg.rightSE
       newEvents.push(newRightSE)
       newEvents.push(newLeftSE)
     }
@@ -291,7 +298,7 @@ export default class Segment {
   }
 
   /* The first segment previous segment chain that is in the result */
-  get prevInResult () {
+  prevInResult () {
     const key = 'prevInResult'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
@@ -299,11 +306,11 @@ export default class Segment {
 
   _prevInResult () {
     if (this.prev === null) return null
-    if (this.prev.isInResult) return this.prev
-    return this.prev.prevInResult
+    if (this.prev.isInResult()) return this.prev
+    return this.prev.prevInResult()
   }
 
-  get ringsBefore () {
+  ringsBefore () {
     const key = 'ringsBefore'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
@@ -311,18 +318,18 @@ export default class Segment {
 
   _ringsBefore () {
     if (!this.prev) return []
-    if (this.coincidents === this.prev.coincidents) return this.prev.ringsBefore
-    return this.prev.ringsAfter
+    if (this.coincidents === this.prev.coincidents) return this.prev.ringsBefore()
+    return this.prev.ringsAfter()
   }
 
-  get ringsAfter () {
+  ringsAfter () {
     const key = 'ringsAfter'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
   _ringsAfter () {
-    const rings = this.ringsBefore.slice(0)
+    const rings = this.ringsBefore().slice(0)
     for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
       const ring = this.coincidents[i].ringIn
       const index = rings.indexOf(ring)
@@ -332,7 +339,7 @@ export default class Segment {
     return rings
   }
 
-  get multiPolysBefore () {
+  multiPolysBefore () {
     const key = 'multiPolysBefore'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
@@ -340,11 +347,13 @@ export default class Segment {
 
   _multiPolysBefore () {
     if (!this.prev) return []
-    if (this.coincidents === this.prev.coincidents) return this.prev.multiPolysBefore
-    return this.prev.multiPolysAfter
+    if (this.coincidents === this.prev.coincidents) {
+      return this.prev.multiPolysBefore()
+    }
+    return this.prev.multiPolysAfter()
   }
 
-  get multiPolysAfter () {
+  multiPolysAfter () {
     const key = 'multiPolysAfter'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
@@ -354,8 +363,9 @@ export default class Segment {
     // first calcualte our polysAfter
     const polysAfter = []
     const polysExclude = []
-    for (let i = 0, iMax = this.ringsAfter.length; i < iMax; i++) {
-      const ring = this.ringsAfter[i]
+    const ringsAfter = this.ringsAfter()
+    for (let i = 0, iMax = ringsAfter.length; i < iMax; i++) {
+      const ring = ringsAfter[i]
       const poly = ring.poly
       if (polysExclude.includes(poly)) continue
       if (ring.isExterior) polysAfter.push(poly)
@@ -375,7 +385,7 @@ export default class Segment {
   }
 
   /* Is this segment part of the final result? */
-  get isInResult () {
+  isInResult () {
     const key = 'isInResult'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
@@ -385,8 +395,8 @@ export default class Segment {
     // if it's not the coincidence winner, it's not in the resul
     if (this !== this.coincidents[0]) return false
 
-    const mpsBefore = this.multiPolysBefore
-    const mpsAfter = this.multiPolysAfter
+    const mpsBefore = this.multiPolysBefore()
+    const mpsAfter = this.multiPolysAfter()
 
     switch (operation.type) {
       case operation.types.UNION:

@@ -6,9 +6,10 @@ import SweepEvent from './sweep-event.js'
 let ringId = 0
 
 export class RingIn {
-  constructor (geomRing, poly) {
+  constructor (geomRing, poly, isExterior) {
     this.id = ringId++
     this.poly = poly
+    this.isExterior = isExterior
     this.segments = []
 
     let prevPoint = geomRing[0]
@@ -29,22 +30,14 @@ export class RingIn {
     }
     return sweepEvents
   }
-
-  get isExterior () {
-    return this.poly.exteriorRing === this
-  }
-
-  get isInterior () {
-    return this.poly.exteriorRing !== this
-  }
 }
 
 export class PolyIn {
   constructor (geomPoly, multiPoly) {
-    this.exteriorRing = new RingIn(geomPoly[0], this)
+    this.exteriorRing = new RingIn(geomPoly[0], this, true)
     this.interiorRings = []
     for (let i = 1, iMax = geomPoly.length; i < iMax; i++) {
-      this.interiorRings.push(new RingIn(geomPoly[i], this))
+      this.interiorRings.push(new RingIn(geomPoly[i], this, false))
     }
     this.multiPoly = multiPoly
   }

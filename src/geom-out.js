@@ -9,7 +9,7 @@ export class RingOut {
 
     for (let i = 0, iMax = allSegments.length; i < iMax; i++) {
       const segment = allSegments[i]
-      if (!segment.isInResult || segment.ringOut) continue
+      if (!segment.isInResult() || segment.ringOut) continue
 
       let prevEvent = null
       let event = segment.leftSE
@@ -88,7 +88,6 @@ export class RingOut {
       events[i].segment.registerRingOut(this)
     }
     this.poly = null
-    this._clearCache()
   }
 
   registerPoly (poly) {
@@ -116,38 +115,26 @@ export class RingOut {
     if (points.length === 0) return null
 
     points.push(points[0])
-    return this.isExteriorRing ? points : points.reverse()
+    return this.isExteriorRing() ? points : points.reverse()
   }
 
-  get enclosingRing () {
-    return this._getCached('enclosingRing')
-  }
-
-  get isExteriorRing () {
-    return this._getCached('isExteriorRing')
-  }
-
-  _clearCache () {
-    this._cache = {}
-  }
-
-  _getCached (propName, calcMethod) {
-    // if this._cache[something] isn't set, fill it with this._something()
-    if (this._cache[propName] === undefined) {
-      this._cache[propName] = this[`_${propName}`].bind(this)()
+  isExteriorRing () {
+    if (this._isExteriorRing === undefined) {
+      const enclosing = this.enclosingRing()
+      this._isExteriorRing = enclosing ? ! enclosing.isExteriorRing() : true
     }
-    return this._cache[propName]
+    return this._isExteriorRing
   }
 
-  _isExteriorRing () {
-    if (!this.enclosingRing) return true
-    if (!this.enclosingRing.enclosingRing) return false
-    // an island in hole is a whole new polygon
-    return this.enclosingRing.enclosingRing.isExteriorRing
+  enclosingRing () {
+    if (this._enclosingRing === undefined) {
+      this._enclosingRing = this._calcEnclosingRing()
+    }
+    return this._enclosingRing
   }
 
   /* Returns the ring that encloses this one, if any */
-  _enclosingRing () {
+  _calcEnclosingRing () {
     // start with the ealier sweep line event so that the prevSeg
     // chain doesn't lead us inside of a loop of ours
     let leftMostEvt = this.events[0]
@@ -156,8 +143,8 @@ export class RingOut {
       if (SweepEvent.compare(leftMostEvt, evt) > 0) leftMostEvt = evt
     }
 
-    let prevSeg = leftMostEvt.segment.prevInResult
-    let prevPrevSeg = prevSeg ? prevSeg.prevInResult : null
+    let prevSeg = leftMostEvt.segment.prevInResult()
+    let prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null
 
     while (true) {
       // no segment found, thus no ring can enclose us
@@ -171,15 +158,15 @@ export class RingOut {
       // segment must either loop around us or the ring of the prev prev
       // seg, which would make us and the ring of the prev peers
       if (prevPrevSeg.ringOut !== prevSeg.ringOut) {
-        if (prevPrevSeg.ringOut.enclosingRing !== prevSeg.ringOut) {
+        if (prevPrevSeg.ringOut.enclosingRing() !== prevSeg.ringOut) {
           return prevSeg.ringOut
-        } else return prevSeg.ringOut.enclosingRing
+        } else return prevSeg.ringOut.enclosingRing()
       }
 
       // two segments are from the same ring, so this was a penisula
       // of that ring. iterate downward, keep searching
-      prevSeg = prevPrevSeg.prevInResult
-      prevPrevSeg = prevSeg ? prevSeg.prevInResult : null
+      prevSeg = prevPrevSeg.prevInResult()
+      prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null
     }
   }
 }
@@ -232,10 +219,11 @@ export class MultiPolyOut {
     for (let i = 0, iMax = rings.length; i < iMax; i++) {
       const ring = rings[i]
       if (ring.poly) continue
-      if (ring.isExteriorRing) polys.push(new PolyOut(ring))
+      if (ring.isExteriorRing()) polys.push(new PolyOut(ring))
       else {
-        if (!ring.enclosingRing.poly) polys.push(new PolyOut(ring.enclosingRing))
-        ring.enclosingRing.poly.addInterior(ring)
+        const enclosingRing = ring.enclosingRing()
+        if (!enclosingRing.poly) polys.push(new PolyOut(enclosingRing))
+        enclosingRing.poly.addInterior(ring)
       }
     }
     return polys

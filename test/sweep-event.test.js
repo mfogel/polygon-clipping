@@ -131,8 +131,8 @@ describe('sweep event link', () => {
     const se = new SweepEvent(p1)
     const seAlreadyProcessed = new SweepEvent(p1)
     const seNotInResult = new SweepEvent(p1)
-    seAlreadyProcessed.segment = { isInResult: true, ringOut: {} }
-    seNotInResult.segment = { isInResult: false, ringOut: null }
+    seAlreadyProcessed.segment = { isInResult: () => true, ringOut: {} }
+    seNotInResult.segment = { isInResult: () => false, ringOut: null }
     expect(se.getAvailableLinkedEvents()).toEqual([])
   })
 
@@ -140,7 +140,7 @@ describe('sweep event link', () => {
     const p1 = { x: 0, y: 0}
     const se = new SweepEvent(p1)
     const seOkay = new SweepEvent(p1)
-    seOkay.segment = { isInResult: true, ringOut: null }
+    seOkay.segment = { isInResult: () => true, ringOut: null }
     expect(se.getAvailableLinkedEvents()).toEqual([seOkay])
   })
 
@@ -148,8 +148,8 @@ describe('sweep event link', () => {
     const p1 = { x: 0, y: 0}
     const seOkay1 = new SweepEvent(p1)
     const seOkay2 = new SweepEvent(p1)
-    seOkay1.segment = { isInResult: true, ringOut: null }
-    seOkay2.segment = { isInResult: true, ringOut: null }
+    seOkay1.segment = { isInResult: () => true, ringOut: null }
+    seOkay2.segment = { isInResult: () => true, ringOut: null }
     expect(seOkay1.getAvailableLinkedEvents()).toEqual([seOkay2])
     expect(seOkay2.getAvailableLinkedEvents()).toEqual([seOkay1])
   })
@@ -231,22 +231,22 @@ describe('sweep event get leftmost comparator', () => {
 describe('isOrientationCorrect()', () => {
   test('yes', () => {
     const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    expect(seg.leftSE.isOrientationCorrect).toBe(true)
-    expect(seg.rightSE.isOrientationCorrect).toBe(true)
+    expect(seg.leftSE.isOrientationCorrect()).toBe(true)
+    expect(seg.rightSE.isOrientationCorrect()).toBe(true)
   })
 
   test('no', () => {
     const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     seg.leftSE.point.x = 42
-    expect(seg.leftSE.isOrientationCorrect).toBe(false)
-    expect(seg.rightSE.isOrientationCorrect).toBe(false)
+    expect(seg.leftSE.isOrientationCorrect()).toBe(false)
+    expect(seg.rightSE.isOrientationCorrect()).toBe(false)
   })
 
   test('degenerate segment', () => {
     const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     seg.leftSE.point.x = 1
     seg.leftSE.point.y = 1
-    expect(() => seg.leftSE.isOrientationCorrect).toThrow()
-    expect(() => seg.rightSE.isOrientationCorrect).toThrow()
+    expect(() => seg.leftSE.isOrientationCorrect()).toThrow()
+    expect(() => seg.rightSE.isOrientationCorrect()).toThrow()
   })
 })
