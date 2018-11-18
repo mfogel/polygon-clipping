@@ -73,12 +73,6 @@ describe('split', () => {
     expect(evts[1].segment.rightSE.segment).toBe(evts[1].segment)
   })
 
-  test('on endpoint - should throw error', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 10, y: 10 }, true)
-    expect(() => seg.split([{ x: 0, y: 0 }])).toThrow()
-    expect(() => seg.split([{ x: 10, y: 10 }])).toThrow()
-  })
-
   test('on three interior points', () => {
     const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 10, y: 10 }, true)
     const [sPt1, sPt2, sPt3] = [{ x: 2, y: 2 }, { x: 4, y: 4 }, { x: 6, y: 6 }]

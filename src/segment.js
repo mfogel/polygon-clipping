@@ -229,51 +229,42 @@ export default class Segment {
    *  * If there are more than two points given to split on, new segments
    *    in the middle will be generated with new leftSE and rightSE's.
    *  * An array of the newly generated SweepEvents will be returned.
+   *
+   * Warning: input array of points is modified
    */
   split (points) {
-    // sort them and unique-ify them
+    // sort the points in sweep line order
     points.sort(cmpPoints)
-    const newPts = []
-    for (var i = 0; i < points.length; i++) {
-      if (i === 0 || cmpPoints(points[i - 1], points[i]) !== 0) newPts.push(points[i])
-    }
-    points = newPts
+
+    const newEvents = []
+    let lastPoint = null
+    let lastSegments = this.coincidents
+    let newSegments = []
 
     for (let i = 0, iMax = points.length; i < iMax; i++) {
-      const pt = points[i]
-      if (this.isAnEndpoint(pt)) {
-        throw new Error(
-          `Cannot split segment upon endpoint at [${pt.x}, ${pt.y}]`
-        )
+      const point = points[i]
+      // skip repeated points
+      if (lastPoint && cmpPoints(lastPoint, point) === 0) continue
+
+      for (let i = 0, iMax = lastSegments.length; i < iMax; i++) {
+        const thisSeg = lastSegments[i]
+        const newLeftSE = new SweepEvent(point, true)
+        const newRightSE = new SweepEvent(point, false)
+        newSegments.push(new Segment(newLeftSE, thisSeg.rightSE, thisSeg.ringIn))
+        thisSeg.rightSE = newRightSE
+        thisSeg.rightSE.segment = thisSeg
+        thisSeg.rightSE.otherSE = thisSeg.leftSE
+        thisSeg.leftSE.otherSE = thisSeg.rightSE
+        newEvents.push(newRightSE)
+        newEvents.push(newLeftSE)
+        if (i > 0) newSegments[i].registerCoincident(newSegments[i-1])
       }
+
+      lastSegments = newSegments
+      newSegments = []
+      lastPoint = point
     }
 
-    const point = points.shift()
-    const newSegments = []
-    const newEvents = []
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const thisSeg = this.coincidents[i]
-      const newLeftSE = new SweepEvent(point, true)
-      const newRightSE = new SweepEvent(point, false)
-      newSegments.push(new Segment(newLeftSE, thisSeg.rightSE, thisSeg.ringIn))
-      thisSeg.rightSE = newRightSE
-      thisSeg.rightSE.segment = thisSeg
-      thisSeg.rightSE.otherSE = thisSeg.leftSE
-      thisSeg.leftSE.otherSE = thisSeg.rightSE
-      newEvents.push(newRightSE)
-      newEvents.push(newLeftSE)
-    }
-
-    for (let i = 1, iMax = newSegments.length; i < iMax; i++) {
-      newSegments[i].registerCoincident(newSegments[i-1])
-    }
-
-    if (points.length > 0) {
-      const moreNewEvents = newSegments[0].split(points)
-      for (let i = 0, iMax = moreNewEvents.length; i < iMax; i++) {
-        newEvents.push(moreNewEvents[i])
-      }
-    }
     return newEvents
   }
 
