@@ -21,9 +21,24 @@ export default class SweepLine {
   process (event) {
     const segment = event.segment
     const newEvents = []
+
+    // if we've already been consumed by another segment,
+    // clean up our body parts and get out
+    if (event.consumedBy) {
+      if (! event.isLeft) this.tree.remove(segment)
+      return newEvents
+    }
+
     const node = event.isLeft
       ? this.tree.insert(segment)
       : this.tree.find(segment)
+
+    if (! node) throw new Error(
+      `Unable to find segment #${segment.leftSE.id} ` +
+      `[${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> ` +
+      `[${segment.rightSE.point.x}, ${segment.rightSE.point.y}] ` +
+      `in SweepLine tree. Please submit a bug report.`
+    )
 
     const prevNode = this.tree.prev(node)
     const prevSeg = prevNode ? prevNode.key : null
@@ -64,12 +79,9 @@ export default class SweepLine {
         }
       }
 
-      // did we get some intersections?
+      // did we get some intersections? split ourselves if need be
       if (newEvents.length > 0 || mySplitters.length > 0) {
-        this.tree.remove(segment)
-
         if (mySplitters.length > 0) {
-          // split ourselves
           const newEventsFromSplit = segment.split(mySplitters)
           for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
             newEvents.push(newEventsFromSplit[i])
@@ -78,8 +90,11 @@ export default class SweepLine {
 
         // Make sure sweep line ordering is totally consistent for later
         // use with the segment 'prev' pointers - re-do the current event.
+        this.tree.remove(segment)
         newEvents.push(event)
+
       } else {
+        // done with left event
         this.segments.push(segment)
         segment.registerPrev(prevSeg)
       }
@@ -123,26 +138,6 @@ export default class SweepLine {
       const pt = intersections[i]
       if (!segment.isAnEndpoint(pt)) splitters.push(pt)
     }
-
-    let newEvents = []
-    if (splitters.length > 0) {
-      // Sometimes, because of rounding errors, splitting segments can cause their
-      // ordering to change, making them un-findable in the sweep line tree.
-      // To avoid this, we remove and re-insert the segments while splitting.
-      // Also, keep in mind coincidents can change while splitting. (re: #44)
-      const nodes = []
-      for (let i = 0, iMax = segment.coincidents.length; i < iMax; i++) {
-        let node = this.tree.find(segment.coincidents[i])
-        if (node !== null) {
-          nodes.push(node)
-          this.tree.remove(node.key)
-        }
-      }
-      newEvents = segment.split(splitters)
-      for (let i = 0, iMax = nodes.length; i < iMax; i++) {
-        this.tree.insert(nodes[i].key)
-      }
-    }
-    return newEvents
+    return splitters.length > 0 ? segment.split(splitters) : []
   }
 }

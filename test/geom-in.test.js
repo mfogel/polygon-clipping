@@ -30,12 +30,6 @@ describe('RingIn', () => {
     const ring = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}], {}, false)
     expect(ring.isExterior).toBe(false)
   })
-
-  test('ring Id increments', () => {
-    const ring1 = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}])
-    const ring2 = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}])
-    expect(ring2.id - ring1.id).toBe(1)
-  })
 })
 
 describe('PolyIn', () => {

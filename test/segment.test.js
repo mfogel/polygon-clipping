@@ -7,15 +7,17 @@ describe('constructor', () => {
   test('general', () => {
     const leftSE = new SweepEvent({x: 0, y: 0})
     const rightSE = new SweepEvent({x: 1, y: 1})
-    const ringIn = {}
-    const seg = new Segment(leftSE, rightSE, ringIn)
-    expect(seg.ringIn).toBe(ringIn)
+    const ringsIn = []
+    const seg = new Segment(leftSE, rightSE, ringsIn)
+    expect(seg.ringsIn).toBe(ringsIn)
     expect(seg.leftSE).toBe(leftSE)
     expect(seg.leftSE.otherSE).toBe(rightSE)
     expect(seg.rightSE).toBe(rightSE)
     expect(seg.rightSE.otherSE).toBe(leftSE)
-    expect(seg.ringOut).toBeNull()
     expect(seg._cache).toEqual({})
+    expect(seg.ringOut).toBe(undefined)
+    expect(seg.prev).toBe(undefined)
+    expect(seg.consumedBy).toBe(undefined)
   })
 })
 
@@ -97,18 +99,6 @@ describe('split', () => {
     evt = newEvts.find(e => e.point === sPt3 && e.isLeft)
     expect(evt.segment).toBe(orgRightEvt.segment)
   })
-
-  test('coincidents stay coincident', () => {
-    const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 10, y: 10 }, 0)
-    const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 10, y: 10 }, 1)
-    seg1.leftSE.link(seg2.leftSE)
-    seg1.rightSE.link(seg2.rightSE)
-    expect(seg1.coincidents).toBe(seg2.coincidents)
-    const newEvents = seg1.split([{x: 5, y: 5}])
-    expect(seg1.coincidents).toBe(seg2.coincidents)
-    expect(newEvents.length).toBe(4)
-    newEvents.forEach(evt => expect(evt.segment.coincidents.length).toBe(2))
-  })
 })
 
 describe('simple properties - bbox, vector, points, isVertical', () => {
@@ -137,7 +127,7 @@ describe('simple properties - bbox, vector, points, isVertical', () => {
 describe('segment register ring', () => {
   test('unregistered at first', () => {
     const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 })
-    expect(seg.ringOut).toBeNull()
+    expect(seg.ringOut).toBe(undefined)
   })
 
   test('register it', () => {
@@ -148,52 +138,55 @@ describe('segment register ring', () => {
   })
 })
 
-describe('registerCoincident', () => {
-  test('not automatically registerd', () => {
+describe('consume()', () => {
+  test('not automatically consumed', () => {
     const p1 = { x: 0, y: 0 }
     const p2 = { x: 1, y: 0 }
     const seg1 = Segment.fromRing(p1, p2, {id: 1})
     const seg2 = Segment.fromRing(p1, p2, {id: 2})
-    expect(seg1.coincidents !== seg2.coincidents)
+    expect(seg1.consumedBy).toBe(undefined)
+    expect(seg2.consumedBy).toBe(undefined)
   })
 
   test('basic case', () => {
     const p1 = { x: 0, y: 0 }
     const p2 = { x: 1, y: 0 }
-    const seg1 = Segment.fromRing(p1, p2, {id: 1})
-    const seg2 = Segment.fromRing(p1, p2, {id: 2})
-    seg1.registerCoincident(seg2)
-    expect(seg1.coincidents === seg2.coincidents)
+    const seg1 = Segment.fromRing(p1, p2, {})
+    const seg2 = Segment.fromRing(p1, p2, {})
+    seg1.consume(seg2)
+    expect(seg2.consumedBy).toBe(seg1)
+    expect(seg1.consumedBy).toBe(undefined)
   })
 
-  test('coincidents cascade', () => {
+  test('ealier in sweep line sorting consumes later', () => {
+    const p1 = { x: 0, y: 0 }
+    const p2 = { x: 1, y: 0 }
+    const seg1 = Segment.fromRing(p1, p2, {})
+    const seg2 = Segment.fromRing(p1, p2, {})
+    seg2.consume(seg1)
+    expect(seg2.consumedBy).toBe(seg1)
+    expect(seg1.consumedBy).toBe(undefined)
+  })
+
+  test('consuming cascades', () => {
     const p1 = { x: 0, y: 0 }
     const p2 = { x: 0, y: 0 }
     const p3 = { x: 1, y: 0 }
     const p4 = { x: 1, y: 0 }
-    const seg1 = Segment.fromRing(p1, p3, {id: 1})
-    const seg2 = Segment.fromRing(p1, p3, {id: 2})
-    const seg3 = Segment.fromRing(p2, p4, {id: 3})
-    const seg4 = Segment.fromRing(p2, p4, {id: 4})
-    seg1.registerCoincident(seg2)
-    seg3.registerCoincident(seg4)
-    seg2.registerCoincident(seg3)
-    expect(seg1.coincidents === seg4.coincidents)
-  })
-
-  test('winner at the front of coincidents', () => {
-    const p1 = { x: 0, y: 0 }
-    const p2 = { x: 0, y: 0 }
-    const p3 = { x: 1, y: 0 }
-    const p4 = { x: 1, y: 0 }
-    const seg1 = Segment.fromRing(p1, p3, {id: 1})
-    const seg2 = Segment.fromRing(p1, p3, {id: 2})
-    const seg3 = Segment.fromRing(p2, p4, {id: 3})
-    const seg4 = Segment.fromRing(p2, p4, {id: 4})
-    seg1.registerCoincident(seg2)
-    seg2.registerCoincident(seg3)
-    seg3.registerCoincident(seg4)
-    expect(seg4.coincidents[0] === seg1)
+    const seg1 = Segment.fromRing(p1, p3, {})
+    const seg2 = Segment.fromRing(p1, p3, {})
+    const seg3 = Segment.fromRing(p2, p4, {})
+    const seg4 = Segment.fromRing(p2, p4, {})
+    const seg5 = Segment.fromRing(p2, p4, {})
+    seg1.consume(seg2)
+    seg4.consume(seg2)
+    seg3.consume(seg2)
+    seg3.consume(seg5)
+    expect(seg1.consumedBy).toBe(undefined)
+    expect(seg2.consumedBy).toBe(seg1)
+    expect(seg3.consumedBy).toBe(seg1)
+    expect(seg4.consumedBy).toBe(seg1)
+    expect(seg5.consumedBy).toBe(seg1)
   })
 })
 

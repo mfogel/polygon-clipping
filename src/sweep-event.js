@@ -1,6 +1,10 @@
 import { cmp, cmpPoints } from './flp'
 import { cosineOfAngle, sineOfAngle } from './vector'
 
+// Give sweep events unique ID's to get consistent sorting of
+// segments and sweep events when all else is identical
+let sweepEventId = 0
+
 export default class SweepEvent {
 
   static compare (a, b) {
@@ -16,41 +20,44 @@ export default class SweepEvent {
       if (cmpY !== 0) return cmpY
 
       // Points are equal, so go ahead and link these events.
-      // This will cascade and possibly mark segments coincident.
       a.link(b)
     }
 
     // favor right events over left
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
 
-    // favor vertical segments for left events, and non-vertical for right
-    // https://github.com/mfogel/polygon-clipping/issues/29
-    const aVert = a.segment.isVertical()
-    const bVert = b.segment.isVertical()
-    if (aVert && ! bVert) return a.isLeft ? 1 : -1
-    if (! aVert && bVert) return a.isLeft ? -1 : 1
-
-    // favor events where the line segment is lower
-    const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
-    if (pointSegCmp !== 0) return pointSegCmp > 0 ? -1 : 1
-
-    // as a tie-breaker, favor lower segment creation id
-    const aId = a.segment.ringIn.id
-    const bId = b.segment.ringIn.id
-    if (aId !== bId) return aId < bId ? -1 : 1
-
-    // NOTE:  We don't sort on segment length because that changes
-    //        as segments are divided.
-
-    // they appear to be the same point... are they?
+    // are they identical?
     if (a === b) return 0
 
-    // they're from overlapping segments of the same ring
-    // https://github.com/mfogel/polygon-clipping/issues/48
-    const aTie = a.segment.tiebreaker()
-    const bTie = b.segment.tiebreaker()
-    if (aTie < bTie) return -1
-    if (aTie > bTie) return 1
+    // The calcuations of relative segment angle below can give different
+    // results after segment splitting due to rounding errors.
+    // To maintain sweep event queue ordering, we thus skip these calculations
+    // if we already know the segements to be colinear (one of the requirements
+    // of the 'consumedBy' relationship).
+    let aConsumedBy = a
+    let bConsumedBy = b
+    while (aConsumedBy.consumedBy) aConsumedBy = aConsumedBy.consumedBy
+    while (bConsumedBy.consumedBy) bConsumedBy = bConsumedBy.consumedBy
+    if (aConsumedBy !== bConsumedBy) {
+
+      // favor vertical segments for left events, and non-vertical for right
+      // https://github.com/mfogel/polygon-clipping/issues/29
+      const aVert = a.segment.isVertical()
+      const bVert = b.segment.isVertical()
+      if (aVert && ! bVert) return a.isLeft ? 1 : -1
+      if (! aVert && bVert) return a.isLeft ? -1 : 1
+
+      // favor events where the line segment is lower
+      const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
+      if (pointSegCmp !== 0) return pointSegCmp > 0 ? -1 : 1
+
+      // NOTE:  We don't sort on segment length because that changes
+      //        as segments are divided.
+    }
+
+    // as a tie-breaker, favor lower creation id
+    if (a.id < b.id) return -1
+    if (a.id > b.id) return 1
 
     throw new Error(
       `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]`
@@ -63,6 +70,7 @@ export default class SweepEvent {
     else point.events.push(this)
     this.point = point
     this.isLeft = isLeft
+    this.id = ++sweepEventId
     // this.segment, this.otherSE set by factory
   }
 
@@ -78,7 +86,7 @@ export default class SweepEvent {
       evt.point = this.point
       for (let j = 0, jMax = numOriginalEvents; j < jMax; j++) {
         if (this.point.events[j].otherSE.point === evt.otherSE.point) {
-          this.point.events[j].segment.registerCoincident(evt.segment)
+          this.point.events[j].segment.consume(evt.segment)
         }
       }
     }

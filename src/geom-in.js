@@ -1,13 +1,8 @@
 import Segment from './segment'
 import SweepEvent from './sweep-event.js'
 
-// Give rings unique ID's to get consistent sorting of segments
-// and sweep events when all else is identical
-let ringId = 0
-
 export class RingIn {
   constructor (geomRing, poly, isExterior) {
-    this.id = ringId++
     this.poly = poly
     this.isExterior = isExterior
     this.segments = []

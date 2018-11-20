@@ -6,7 +6,6 @@ import { crossProduct, compareVectorAngles, intersection, perpendicular } from '
 
 export default class Segment {
   static compare (a, b) {
-    if (a === b) return 0
 
     const alx = a.leftSE.point.x
     const aly = a.leftSE.point.y
@@ -19,34 +18,51 @@ export default class Segment {
     if (cmp(brx, alx) < 0) return 1
     if (cmp(arx, blx) < 0) return -1
 
-    const cmpLeft = a.comparePoint(b.leftSE.point)
-    const cmpLX = cmp(alx, blx)
+    // check for a consumption relationship. if present,
+    // avoid the segment angle calculations (can yield
+    // inconsistent results after splitting)
+    let aConsumedBy = a
+    let bConsumedBy = b
+    while (aConsumedBy.consumedBy) aConsumedBy = aConsumedBy.consumedBy
+    while (bConsumedBy.consumedBy) bConsumedBy = bConsumedBy.consumedBy
 
-    // are a and b colinear?
-    if (
-      cmpLeft === 0 &&
-      a.comparePoint(b.rightSE.point) === 0 &&
-      b.comparePoint(a.leftSE.point) === 0 &&
-      b.comparePoint(a.rightSE.point) === 0
-    ) {
-      // colinear segments with non-matching left-endpoints, consider
-      // the more-left endpoint to be earlier
-      if (cmpLX !== 0) return cmpLX
+    // for segment angle comparisons
+    let aCmpBLeft, aCmpBRight, bCmpALeft, bCmpARight
+
+    if (aConsumedBy === bConsumedBy) {
+      // are they identical?
+      if (a === b) return 0
 
       // colinear segments with matching left-endpoints, fall back
-      // on creation order of segments as a tie-breaker
+      // on creation order of left sweep events as a tie-breaker
+      const aId = a.leftSE.id
+      const bId = b.leftSE.id
+      if (aId < bId) return -1
+      if (aId > bId) return 1
+
+    } else if (
+      // are a and b colinear?
+      (aCmpBLeft = a.comparePoint(b.leftSE.point)) === 0 &&
+      (aCmpBRight = a.comparePoint(b.rightSE.point)) === 0 &&
+      (bCmpALeft = b.comparePoint(a.leftSE.point)) === 0 &&
+      (bCmpARight = b.comparePoint(a.rightSE.point)) === 0
+    ) {
+      // they're colinear
+
+      // colinear segments with non-matching left-endpoints, consider
+      // the more-left endpoint to be earlier
+      const cmpLX = cmp(alx, blx)
+      if (cmpLX !== 0) return cmpLX
+
       // NOTE: we do not use segment length to break a tie here, because
       //       when segments are split their length changes
-      if (a.ringIn.id !== b.ringIn.id) {
-        return a.ringIn.id < b.ringIn.id ? -1 : 1
-      }
 
-      // overlapping segments from the same ring
-      // https://github.com/mfogel/polygon-clipping/issues/48
-      const aTie = a.tiebreaker()
-      const bTie = b.tiebreaker()
-      if (aTie < bTie) return -1
-      if (aTie > bTie) return 1
+      // colinear segments with matching left-endpoints, fall back
+      // on creation order of left sweep events as a tie-breaker
+      const aId = a.leftSE.id
+      const bId = b.leftSE.id
+      if (aId < bId) return -1
+      if (aId > bId) return 1
 
     } else {
       // not colinear
@@ -54,8 +70,12 @@ export default class Segment {
       // if the our left endpoints are not in the same vertical line,
       // consider a vertical line at the rightmore of the two left endpoints,
       // consider the segment that intersects lower with that line to be earlier
-      if (cmpLX < 0) return cmpLeft === 1 ? -1 : 1
-      if (cmpLX > 0) return b.comparePoint(a.leftSE.point) === 1 ? 1 : -1
+      const cmpLX = cmp(alx, blx)
+      if (cmpLX < 0) return aCmpBLeft === 1 ? -1 : 1
+      if (cmpLX > 0) {
+        if (bCmpALeft === undefined) bCmpALeft = b.comparePoint(a.leftSE.point)
+        return bCmpALeft === 1 ? 1 : -1
+      }
 
       // if our left endpoints match, consider the segment
       // that angles more downward to be earlier
@@ -65,7 +85,10 @@ export default class Segment {
         // part of https://github.com/mfogel/polygon-clipping/issues/29
         const aVert = a.isVertical()
         if (aVert !== b.isVertical()) return aVert ? 1 : -1
-        else return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
+        else {
+          if (aCmpBRight === undefined) aCmpBRight = a.comparePoint(b.rightSE.point)
+          return aCmpBRight > 0 ? -1 : 1
+        }
       }
 
       // left endpoints are in the same vertical line but don't overlap exactly,
@@ -79,7 +102,9 @@ export default class Segment {
     )
   }
 
-  constructor (leftSE, rightSE, ringIn) {
+  /* Warning: a reference to ringsIn input will be stored,
+   *  and possibly will be later modified */
+  constructor (leftSE, rightSE, ringsIn) {
     this.leftSE = leftSE
     if (leftSE !== null) {
       leftSE.segment = this
@@ -90,11 +115,10 @@ export default class Segment {
       rightSE.segment = this
       rightSE.otherSE = leftSE
     }
-    this.ringIn = ringIn
-    this.ringOut = null
-    this.prev = null
-    this.coincidents = [this]
+    this.ringsIn = ringsIn
     this._cache = {}
+    // left unset for performance, set later in algorithm
+    // this.ringOut, this.consumedBy, this.prev
   }
 
   static fromRing(point1, point2, ring) {
@@ -111,13 +135,7 @@ export default class Segment {
         `Tried to create degenerate segment at [${point1.x}, ${point2.y}]`
       )
     }
-    return new Segment(leftSE, rightSE, ring)
-  }
-
-  // used for sorting equal sweep events, segments consistently
-  tiebreaker () {
-    if (this._tiebreaker === undefined) this._tiebreaker = Math.random()
-    return this._tiebreaker
+    return new Segment(leftSE, rightSE, [ring])
   }
 
   bbox () {
@@ -219,13 +237,11 @@ export default class Segment {
   }
 
   /**
-   * Split the given segment and all of its coincidents into multiple segments
-   * on the given points.
+   * Split the given segment into multiple segments on the given points.
    *  * Each existing segment will retain its leftSE and a new rightSE will be
    *    generated for it.
    *  * A new segment will be generated which will adopt the original segment's
    *    rightSE, and a new leftSE will be generated for it.
-   *  * New segments will be marked coincident as needed.
    *  * If there are more than two points given to split on, new segments
    *    in the middle will be generated with new leftSE and rightSE's.
    *  * An array of the newly generated SweepEvents will be returned.
@@ -236,33 +252,27 @@ export default class Segment {
     // sort the points in sweep line order
     points.sort(cmpPoints)
 
-    const newEvents = []
-    let lastPoint = null
-    let lastSegments = this.coincidents
-    let newSegments = []
+    let prevSeg = this
+    let prevPoint = null
 
+    const newEvents = []
     for (let i = 0, iMax = points.length; i < iMax; i++) {
       const point = points[i]
       // skip repeated points
-      if (lastPoint && cmpPoints(lastPoint, point) === 0) continue
+      if (prevPoint && cmpPoints(prevPoint, point) === 0) continue
 
-      for (let i = 0, iMax = lastSegments.length; i < iMax; i++) {
-        const thisSeg = lastSegments[i]
-        const newLeftSE = new SweepEvent(point, true)
-        const newRightSE = new SweepEvent(point, false)
-        newSegments.push(new Segment(newLeftSE, thisSeg.rightSE, thisSeg.ringIn))
-        thisSeg.rightSE = newRightSE
-        thisSeg.rightSE.segment = thisSeg
-        thisSeg.rightSE.otherSE = thisSeg.leftSE
-        thisSeg.leftSE.otherSE = thisSeg.rightSE
-        newEvents.push(newRightSE)
-        newEvents.push(newLeftSE)
-        if (i > 0) newSegments[i].registerCoincident(newSegments[i-1])
-      }
+      const newLeftSE = new SweepEvent(point, true)
+      const newRightSE = new SweepEvent(point, false)
+      const oldRightSE = prevSeg.rightSE
+      prevSeg.rightSE = newRightSE
+      prevSeg.rightSE.segment = prevSeg
+      prevSeg.rightSE.otherSE = prevSeg.leftSE
+      prevSeg.leftSE.otherSE = prevSeg.rightSE
+      newEvents.push(newRightSE)
+      newEvents.push(newLeftSE)
 
-      lastSegments = newSegments
-      newSegments = []
-      lastPoint = point
+      prevSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+      prevPoint = point
     }
 
     return newEvents
@@ -276,16 +286,33 @@ export default class Segment {
     this.ringOut = ring
   }
 
-  registerCoincident (other) {
-    if (this.coincidents == other.coincidents) return // already coincident
-    const otherCoincidents = other.coincidents
-    for (let i = 0, iMax = otherCoincidents.length; i < iMax; i++) {
-      const seg = otherCoincidents[i]
-      this.coincidents.push(seg)
-      seg.coincidents = this.coincidents
+  /* Consume another segment. We take their ringsIn under our wing
+   * and mark them as consumed. Use for perfectly overlapping segments */
+  consume (other) {
+    let consumer = this
+    let consumee = other
+    while (consumer.consumedBy) consumer = consumer.consumedBy
+    while (consumee.consumedBy) consumee = consumee.consumedBy
+
+    const cmp = Segment.compare(consumer, consumee)
+    if (cmp === 0) return  // already consumed
+    // the winner of the consumption is the earlier segment
+    // according to sweep line ordering
+    if (cmp  > 0) {
+      const tmp = consumer
+      consumer = consumee
+      consumee = tmp
     }
-    // put the 'winner' at the front. arbitrary: winner has lowest ringId
-    this.coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
+
+    for (let i = 0, iMax = consumee.ringsIn.length; i < iMax; i++) {
+      consumer.ringsIn.push(consumee.ringsIn[i])
+    }
+    consumee.ringsIn = null
+    consumee.consumedBy = consumer
+
+    // mark sweep events consumed as to maintain ordering in sweep event queue
+    consumee.leftSE.consumedBy = consumer.leftSE
+    consumee.rightSE.consumedBy = consumer.rightSE
   }
 
   /* The first segment previous segment chain that is in the result */
@@ -296,7 +323,7 @@ export default class Segment {
   }
 
   _prevInResult () {
-    if (this.prev === null) return null
+    if (! this.prev) return null
     if (this.prev.isInResult()) return this.prev
     return this.prev.prevInResult()
   }
@@ -308,9 +335,8 @@ export default class Segment {
   }
 
   _ringsBefore () {
-    if (!this.prev) return []
-    if (this.coincidents === this.prev.coincidents) return this.prev.ringsBefore()
-    return this.prev.ringsAfter()
+    if (! this.prev) return []
+    return (this.prev.consumedBy || this.prev).ringsAfter()
   }
 
   ringsAfter () {
@@ -321,8 +347,8 @@ export default class Segment {
 
   _ringsAfter () {
     const rings = this.ringsBefore().slice(0)
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const ring = this.coincidents[i].ringIn
+    for (let i = 0, iMax = this.ringsIn.length; i < iMax; i++) {
+      const ring = this.ringsIn[i]
       const index = rings.indexOf(ring)
       if (index === -1) rings.push(ring)
       else rings.splice(index, 1)
@@ -337,11 +363,8 @@ export default class Segment {
   }
 
   _multiPolysBefore () {
-    if (!this.prev) return []
-    if (this.coincidents === this.prev.coincidents) {
-      return this.prev.multiPolysBefore()
-    }
-    return this.prev.multiPolysAfter()
+    if (! this.prev) return []
+    return (this.prev.consumedBy || this.prev).multiPolysAfter()
   }
 
   multiPolysAfter () {
@@ -383,8 +406,8 @@ export default class Segment {
   }
 
   _isInResult () {
-    // if it's not the coincidence winner, it's not in the resul
-    if (this !== this.coincidents[0]) return false
+    // if we've been consumed, we're not in the result
+    if (this.consumedBy) return false
 
     const mpsBefore = this.multiPolysBefore()
     const mpsAfter = this.multiPolysAfter()
