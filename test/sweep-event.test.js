@@ -233,26 +233,3 @@ describe('sweep event get leftmost comparator', () => {
     expect(comparator(e4, e3)).toBe(1)
   })
 })
-
-describe('isOrientationCorrect()', () => {
-  test('yes', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    expect(seg.leftSE.isOrientationCorrect()).toBe(true)
-    expect(seg.rightSE.isOrientationCorrect()).toBe(true)
-  })
-
-  test('no', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    seg.leftSE.point.x = 42
-    expect(seg.leftSE.isOrientationCorrect()).toBe(false)
-    expect(seg.rightSE.isOrientationCorrect()).toBe(false)
-  })
-
-  test('degenerate segment', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    seg.leftSE.point.x = 1
-    seg.leftSE.point.y = 1
-    expect(() => seg.leftSE.isOrientationCorrect()).toThrow()
-    expect(() => seg.rightSE.isOrientationCorrect()).toThrow()
-  })
-})

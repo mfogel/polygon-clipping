@@ -797,3 +797,23 @@ describe('compare segments', () => {
     expect(Segment.compare(seg2, seg1)).toBe(result * -1)
   })
 })
+
+describe('isOrientationCorrect()', () => {
+  test('yes', () => {
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    expect(seg.isOrientationCorrect()).toBe(true)
+  })
+
+  test('no', () => {
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    seg.leftSE.point.x = 42
+    expect(seg.isOrientationCorrect()).toBe(false)
+  })
+
+  test('degenerate segment', () => {
+    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    seg.leftSE.point.x = 1
+    seg.leftSE.point.y = 1
+    expect(() => seg.isOrientationCorrect()).toThrow()
+  })
+})

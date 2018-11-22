@@ -140,11 +140,4 @@ export default class SweepEvent {
       return cmp(bsine, asine)
     }
   }
-
-  isOrientationCorrect () {
-    const ptCmp = cmpPoints(this.point, this.otherSE.point)
-    if (ptCmp < 0) return this.isLeft
-    if (ptCmp > 0) return ! this.isLeft
-    throw new Error("Degenerate segment encountered")
-  }
 }

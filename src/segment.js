@@ -271,9 +271,14 @@ export default class Segment {
       newEvents.push(newRightSE)
       newEvents.push(newLeftSE)
 
+      // becaues of rounding errors, left & right events can swap places
+      // https://github.com/mfogel/polygon-clipping/issues/29
+      if (! prevSeg.isOrientationCorrect()) prevSeg.swapEvents()
+
       prevSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
       prevPoint = point
     }
+    if (! prevSeg.isOrientationCorrect()) prevSeg.swapEvents()
 
     return newEvents
   }
@@ -284,6 +289,12 @@ export default class Segment {
 
   registerRingOut (ring) {
     this.ringOut = ring
+  }
+
+  isOrientationCorrect () {
+    const ptCmp = cmpPoints(this.leftSE.point, this.rightSE.point)
+    if (ptCmp !== 0) return ptCmp < 0
+    throw new Error("Degenerate segment encountered")
   }
 
   /* Consume another segment. We take their ringsIn under our wing
