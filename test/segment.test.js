@@ -124,20 +124,6 @@ describe('simple properties - bbox, vector, points, isVertical', () => {
   })
 })
 
-describe('segment register ring', () => {
-  test('unregistered at first', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 })
-    expect(seg.ringOut).toBe(undefined)
-  })
-
-  test('register it', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 0 })
-    const ring = {}
-    seg.registerRingOut(ring)
-    expect(seg.ringOut).toBe(ring)
-  })
-})
-
 describe('consume()', () => {
   test('not automatically consumed', () => {
     const p1 = { x: 0, y: 0 }

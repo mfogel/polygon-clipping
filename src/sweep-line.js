@@ -96,7 +96,7 @@ export default class SweepLine {
       } else {
         // done with left event
         this.segments.push(segment)
-        segment.registerPrev(prevSeg)
+        segment.prev = prevSeg
       }
 
     } else {

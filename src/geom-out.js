@@ -85,13 +85,9 @@ export class RingOut {
   constructor (events) {
     this.events = events
     for (let i = 0, iMax = events.length; i < iMax; i++) {
-      events[i].segment.registerRingOut(this)
+      events[i].segment.ringOut = this
     }
     this.poly = null
-  }
-
-  registerPoly (poly) {
-    this.poly = poly
   }
 
   getGeom () {
@@ -174,13 +170,13 @@ export class RingOut {
 export class PolyOut {
   constructor (exteriorRing) {
     this.exteriorRing = exteriorRing
-    exteriorRing.registerPoly(this)
+    exteriorRing.poly = this
     this.interiorRings = []
   }
 
   addInterior (ring) {
     this.interiorRings.push(ring)
-    ring.registerPoly(this)
+    ring.poly = this
   }
 
   getGeom () {

@@ -283,14 +283,6 @@ export default class Segment {
     return newEvents
   }
 
-  registerPrev (other) {
-    this.prev = other
-  }
-
-  registerRingOut (ring) {
-    this.ringOut = ring
-  }
-
   isOrientationCorrect () {
     const ptCmp = cmpPoints(this.leftSE.point, this.rightSE.point)
     if (ptCmp !== 0) return ptCmp < 0

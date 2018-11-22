@@ -374,42 +374,42 @@ describe('ring', () => {
 
 describe('poly', () => {
   test('basic', () => {
-    const ring1 = { registerPoly: jest.fn(), getGeom: () => 1 }
-    const ring2 = { registerPoly: jest.fn(), getGeom: () => 2 }
-    const ring3 = { registerPoly: jest.fn(), getGeom: () => 3 }
+    const ring1 = { poly: null, getGeom: () => 1 }
+    const ring2 = { poly: null, getGeom: () => 2 }
+    const ring3 = { poly: null, getGeom: () => 3 }
 
     const poly = new PolyOut(ring1)
     poly.addInterior(ring2)
     poly.addInterior(ring3)
 
-    expect(ring1.registerPoly).toHaveBeenCalledWith(poly)
-    expect(ring2.registerPoly).toHaveBeenCalledWith(poly)
-    expect(ring3.registerPoly).toHaveBeenCalledWith(poly)
+    expect(ring1.poly).toBe(poly)
+    expect(ring2.poly).toBe(poly)
+    expect(ring3.poly).toBe(poly)
 
     expect(poly.getGeom()).toEqual([1, 2, 3])
   })
 
   test('has all colinear exterior ring', () => {
-    const ring1 = { registerPoly: jest.fn(), getGeom: () => null }
+    const ring1 = { poly: null, getGeom: () => null }
     const poly = new PolyOut(ring1)
 
-    expect(ring1.registerPoly).toHaveBeenCalledWith(poly)
+    expect(ring1.poly).toBe(poly)
 
     expect(poly.getGeom()).toEqual(null)
   })
 
   test('has all colinear interior ring', () => {
-    const ring1 = { registerPoly: jest.fn(), getGeom: () => 1 }
-    const ring2 = { registerPoly: jest.fn(), getGeom: () => null }
-    const ring3 = { registerPoly: jest.fn(), getGeom: () => 3 }
+    const ring1 = { poly: null, getGeom: () => 1 }
+    const ring2 = { poly: null, getGeom: () => null }
+    const ring3 = { poly: null, getGeom: () => 3 }
 
     const poly = new PolyOut(ring1)
     poly.addInterior(ring2)
     poly.addInterior(ring3)
 
-    expect(ring1.registerPoly).toHaveBeenCalledWith(poly)
-    expect(ring2.registerPoly).toHaveBeenCalledWith(poly)
-    expect(ring3.registerPoly).toHaveBeenCalledWith(poly)
+    expect(ring1.poly).toBe(poly)
+    expect(ring2.poly).toBe(poly)
+    expect(ring3.poly).toBe(poly)
 
     expect(poly.getGeom()).toEqual([1, 3])
   })
