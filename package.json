@@ -46,7 +46,7 @@
     "file-loader": "^1.1.11",
     "jest": "^22.1.4",
     "load-json-file": "^2.0.0",
-    "martinez-polygon-clipping": "^0.3.3",
+    "martinez-polygon-clipping": "^0.5.0",
     "raw-loader": "^0.5.1",
     "vue": "^2.5.16",
     "vue-loader": "^14.2.2",
@@ -56,8 +56,7 @@
     "webpack-dev-server": "^3.1.4"
   },
   "dependencies": {
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "splaytree": "^2.0.2",
-    "tinyqueue": "^1.2.3"
+    "babel-plugin-add-module-exports": "^1.0.0",
+    "splaytree": "^2.0.3"
   }
 }
