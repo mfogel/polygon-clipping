@@ -76,6 +76,10 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
  * Support polygons with infinitely thin sections ([#48](https://github.com/mfogel/polygon-clipping/issues/48))
  * Performance improvements ([#31](https://github.com/mfogel/polygon-clipping/issues/31))
 
+### v0.9.2 (2018-11-24)
+
+ * Don't overwrite globals ([#50](https://github.com/mfogel/polygon-clipping/issues/50))
+
 ### v0.9.1 (2018-11-12)
 
  * Bug fixes ([#36](https://github.com/mfogel/polygon-clipping/issues/36) again, [#44](https://github.com/mfogel/polygon-clipping/issues/44))
