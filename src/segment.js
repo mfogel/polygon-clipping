@@ -416,7 +416,7 @@ export default class Segment {
     const mpsAfter = this.multiPolysAfter()
 
     switch (operation.type) {
-      case operation.types.UNION:
+      case 'union':
         // UNION - included iff:
         //  * On one side of us there is 0 poly interiors AND
         //  * On the other side there is 1 or more.
@@ -424,7 +424,7 @@ export default class Segment {
         const noAfters = mpsAfter.length === 0
         return noBefores !== noAfters
 
-      case operation.types.INTERSECTION:
+      case 'intersection':
         // INTERSECTION - included iff:
         //  * on one side of us all multipolys are rep. with poly interiors AND
         //  * on the other side of us, not all multipolys are repsented
@@ -440,14 +440,14 @@ export default class Segment {
         }
         return most === operation.numMultiPolys && least < most
 
-      case operation.types.XOR:
+      case 'xor':
         // XOR - included iff:
         //  * the difference between the number of multipolys represented
         //    with poly interiors on our two sides is an odd number
         const diff = Math.abs(mpsBefore.length - mpsAfter.length)
         return diff % 2 === 1
 
-      case operation.types.DIFFERENCE:
+      case 'difference':
         // DIFFERENCE included iff:
         //  * on exactly one side, we have just the subject
         const isJustSubject = mps => mps.length === 1 && mps[0].isSubject
