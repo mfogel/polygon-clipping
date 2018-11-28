@@ -81,6 +81,11 @@ export default class SweepLine {
 
       // did we get some intersections? split ourselves if need be
       if (newEvents.length > 0 || mySplitters.length > 0) {
+
+        // remove from tree before splitting. Rounding errors can
+        // cause changes in ordering.
+        this.tree.remove(segment)
+
         if (mySplitters.length > 0) {
           const newEventsFromSplit = segment.split(mySplitters)
           for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
@@ -90,7 +95,6 @@ export default class SweepLine {
 
         // Make sure sweep line ordering is totally consistent for later
         // use with the segment 'prev' pointers - re-do the current event.
-        this.tree.remove(segment)
         newEvents.push(event)
 
       } else {
@@ -130,6 +134,16 @@ export default class SweepLine {
       const pt = intersections[i]
       if (!segment.isAnEndpoint(pt)) splitters.push(pt)
     }
-    return splitters.length > 0 ? segment.split(splitters) : []
+    let newEvents = []
+    if (splitters.length > 0) {
+      // remove from tree before splitting. Rounding errors can
+      // cause changes in ordering.
+      // removeNode() doesn't work, so have re-find the seg
+      // https://github.com/w8r/splay-tree/pull/5
+      this.tree.remove(segment)
+      newEvents = segment.split(splitters)
+      this.tree.insert(segment)
+    }
+    return newEvents
   }
 }
