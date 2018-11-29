@@ -106,15 +106,11 @@ export default class Segment {
    *  and possibly will be later modified */
   constructor (leftSE, rightSE, ringsIn) {
     this.leftSE = leftSE
-    if (leftSE !== null) {
-      leftSE.segment = this
-      leftSE.otherSE = rightSE
-    }
+    leftSE.segment = this
+    leftSE.otherSE = rightSE
     this.rightSE = rightSE
-    if (rightSE !== null) {
-      rightSE.segment = this
-      rightSE.otherSE = leftSE
-    }
+    rightSE.segment = this
+    rightSE.otherSE = leftSE
     this.ringsIn = ringsIn
     this._cache = {}
     // left unset for performance, set later in algorithm
@@ -138,6 +134,26 @@ export default class Segment {
     return new Segment(leftSE, rightSE, [ring])
   }
 
+  /* When a segment is split, the rightSE is replaced with a new sweep event */
+  replaceRightSE (newRightSE) {
+    this.rightSE = newRightSE
+    this.rightSE.segment = this
+    this.rightSE.otherSE = this.leftSE
+    this.leftSE.otherSE = this.rightSE
+
+    // becaues of rounding errors, left & right events can swap places
+    // If this happens, fix it.
+    // https://github.com/mfogel/polygon-clipping/issues/29
+    if (cmpPoints(this.leftSE.point, this.rightSE.point) > 0) {
+      // swap the events
+      const tmp = this.leftSE
+      this.leftSE = this.rightSE
+      this.leftSE.isLeft = true
+      this.rightSE = tmp
+      this.rightSE.isLeft = false
+    }
+  }
+
   bbox () {
     const y1 = this.leftSE.point.y
     const y2 = this.rightSE.point.y
@@ -159,23 +175,11 @@ export default class Segment {
     return cmp(this.leftSE.point.x, this.rightSE.point.x) === 0
   }
 
-  swapEvents () {
-    const tmp = this.leftSE
-    this.leftSE = this.rightSE
-    this.leftSE.isLeft = true
-    this.rightSE = tmp
-    this.rightSE.isLeft = false
-  }
-
   isAnEndpoint (point) {
     return (
       cmpPoints(point, this.leftSE.point) === 0 ||
       cmpPoints(point, this.rightSE.point) === 0
     )
-  }
-
-  isPointOn (point) {
-    return isInBbox(this.bbox(), point) && this.comparePoint(point) === 0
   }
 
   /* Compare this segment with a point. Return value indicates
@@ -222,8 +226,8 @@ export default class Segment {
       const point = bboxCorners[i]
       // test if this point is an intersection
       if (
-        (this.isAnEndpoint(point) && other.isPointOn(point)) ||
-        (other.isAnEndpoint(point) && this.isPointOn(point))
+        (this.isAnEndpoint(point) && other.comparePoint(point) === 0) ||
+        (other.isAnEndpoint(point) && this.comparePoint(point) === 0)
       ) {
         intersections.push(point)
       }
@@ -264,29 +268,15 @@ export default class Segment {
       const newLeftSE = new SweepEvent(point, true)
       const newRightSE = new SweepEvent(point, false)
       const oldRightSE = prevSeg.rightSE
-      prevSeg.rightSE = newRightSE
-      prevSeg.rightSE.segment = prevSeg
-      prevSeg.rightSE.otherSE = prevSeg.leftSE
-      prevSeg.leftSE.otherSE = prevSeg.rightSE
+      prevSeg.replaceRightSE(newRightSE)
       newEvents.push(newRightSE)
       newEvents.push(newLeftSE)
-
-      // becaues of rounding errors, left & right events can swap places
-      // https://github.com/mfogel/polygon-clipping/issues/29
-      if (! prevSeg.isOrientationCorrect()) prevSeg.swapEvents()
 
       prevSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
       prevPoint = point
     }
-    if (! prevSeg.isOrientationCorrect()) prevSeg.swapEvents()
 
     return newEvents
-  }
-
-  isOrientationCorrect () {
-    const ptCmp = cmpPoints(this.leftSE.point, this.rightSE.point)
-    if (ptCmp !== 0) return ptCmp < 0
-    throw new Error("Degenerate segment encountered")
   }
 
   /* Consume another segment. We take their ringsIn under our wing

@@ -192,27 +192,6 @@ describe('is an endpoint', () => {
   })
 })
 
-describe('is Point On', () => {
-  const p1 = { x: -1, y: -1 }
-  const p2 = { x: 1, y: 1 }
-  const seg = Segment.fromRing(p1, p2)
-
-  test('yup', () => {
-    expect(seg.isPointOn(p1)).toBeTruthy()
-    expect(seg.isPointOn(p2)).toBeTruthy()
-    expect(seg.isPointOn({ x: 0, y: 0 })).toBeTruthy()
-    expect(seg.isPointOn({ x: 0.5, y: 0.5 })).toBeTruthy()
-  })
-
-  test('nope', () => {
-    expect(seg.isPointOn({ x: -234, y: 23421 })).toBeFalsy()
-  })
-
-  test('nope really close', () => {
-    expect(seg.isPointOn({ x: 0, y: Number.EPSILON })).toBeFalsy()
-  })
-})
-
 describe('comparison with point', () => {
   test('general', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
@@ -249,7 +228,7 @@ describe('comparison with point', () => {
  * in a floating point world. Previously, these two methods were coming to
  * different conclusions for the these points.
  */
-describe('consistency between isPointOn() and getIntersections()', () => {
+describe('consistency between comparePoint() and getIntersections()', () => {
   test('t-intersection on endpoint', () => {
     const pt = {x: -104.0626, y: 75.4279525872937}
     const s1 = Segment.fromRing({x: -104.117212, y: 75.4383502}, {x: -104.0624, y: 75.4279145091691})
@@ -265,8 +244,8 @@ describe('consistency between isPointOn() and getIntersections()', () => {
     expect(inters2[0].x).toBe(pt.x)
     expect(inters2[0].y).toBe(pt.y)
 
-    expect(s1.isPointOn(pt)).toBe(true)
-    expect(s2.isPointOn(pt)).toBe(true)
+    expect(s1.comparePoint(pt)).toBe(0)
+    expect(s2.comparePoint(pt)).toBe(0)
   })
 
   test('two intersections on endpoints, overlapping parrallel segments', () => {
@@ -289,11 +268,11 @@ describe('consistency between isPointOn() and getIntersections()', () => {
     expect(inters2[1].x).toBe(pt1.x)
     expect(inters2[1].y).toBe(pt1.y)
 
-    expect(s1.isPointOn(pt1)).toBe(true)
-    expect(s1.isPointOn(pt2)).toBe(true)
+    expect(s1.comparePoint(pt1)).toBe(0)
+    expect(s1.comparePoint(pt2)).toBe(0)
 
-    expect(s2.isPointOn(pt1)).toBe(true)
-    expect(s2.isPointOn(pt2)).toBe(true)
+    expect(s2.comparePoint(pt1)).toBe(0)
+    expect(s2.comparePoint(pt2)).toBe(0)
   })
 })
 
@@ -781,25 +760,5 @@ describe('compare segments', () => {
     const result = Segment.compare(seg1, seg2)
     expect(Segment.compare(seg1, seg2)).toBe(result)
     expect(Segment.compare(seg2, seg1)).toBe(result * -1)
-  })
-})
-
-describe('isOrientationCorrect()', () => {
-  test('yes', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    expect(seg.isOrientationCorrect()).toBe(true)
-  })
-
-  test('no', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    seg.leftSE.point.x = 42
-    expect(seg.isOrientationCorrect()).toBe(false)
-  })
-
-  test('degenerate segment', () => {
-    const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    seg.leftSE.point.x = 1
-    seg.leftSE.point.y = 1
-    expect(() => seg.isOrientationCorrect()).toThrow()
   })
 })
