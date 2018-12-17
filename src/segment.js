@@ -2,11 +2,10 @@ import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, getBboxOverlap, getUniqueCorners } from './bbox'
 import { cmp, cmpPoints } from './flp'
-import { crossProduct, compareVectorAngles } from './vector'
+import { crossProduct, compareVectorAngles, intersection, perpendicular } from './vector'
 
 export default class Segment {
   static compare (a, b) {
-    if (a === b) return 0
 
     const alx = a.leftSE.point.x
     const aly = a.leftSE.point.y
@@ -19,89 +18,127 @@ export default class Segment {
     if (cmp(brx, alx) < 0) return 1
     if (cmp(arx, blx) < 0) return -1
 
-    const cmpLeft = a.comparePoint(b.leftSE.point)
-    const cmpLX = cmp(alx, blx)
+    // check for a consumption relationship. if present,
+    // avoid the segment angle calculations (can yield
+    // inconsistent results after splitting)
+    let aConsumedBy = a
+    let bConsumedBy = b
+    while (aConsumedBy.consumedBy) aConsumedBy = aConsumedBy.consumedBy
+    while (bConsumedBy.consumedBy) bConsumedBy = bConsumedBy.consumedBy
 
-    // are a and b colinear?
-    if (
-      cmpLeft === 0 &&
-      a.comparePoint(b.rightSE.point) === 0 &&
-      b.comparePoint(a.leftSE.point) === 0 &&
-      b.comparePoint(a.rightSE.point) === 0
-    ) {
-      // colinear segments with non-matching left-endpoints, consider
-      // the more-left endpoint to be earlier
-      if (cmpLX !== 0) return cmpLX
+    // for segment angle comparisons
+    let aCmpBLeft, aCmpBRight, bCmpALeft, bCmpARight
+
+    if (aConsumedBy === bConsumedBy) {
+      // are they identical?
+      if (a === b) return 0
 
       // colinear segments with matching left-endpoints, fall back
-      // on creation order of segments as a tie-breaker
+      // on creation order of left sweep events as a tie-breaker
+      const aId = a.leftSE.id
+      const bId = b.leftSE.id
+      if (aId < bId) return -1
+      if (aId > bId) return 1
+
+    } else if (
+      // are a and b colinear?
+      (aCmpBLeft = a.comparePoint(b.leftSE.point)) === 0 &&
+      (aCmpBRight = a.comparePoint(b.rightSE.point)) === 0 &&
+      (bCmpALeft = b.comparePoint(a.leftSE.point)) === 0 &&
+      (bCmpARight = b.comparePoint(a.rightSE.point)) === 0
+    ) {
+      // they're colinear
+
+      // colinear segments with non-matching left-endpoints, consider
+      // the more-left endpoint to be earlier
+      const cmpLX = cmp(alx, blx)
+      if (cmpLX !== 0) return cmpLX
+
       // NOTE: we do not use segment length to break a tie here, because
       //       when segments are split their length changes
-      if (a.ringIn.id !== b.ringIn.id) {
-        return a.ringIn.id < b.ringIn.id ? -1 : 1
-      }
+
+      // colinear segments with matching left-endpoints, fall back
+      // on creation order of left sweep events as a tie-breaker
+      const aId = a.leftSE.id
+      const bId = b.leftSE.id
+      if (aId < bId) return -1
+      if (aId > bId) return 1
+
     } else {
       // not colinear
 
       // if the our left endpoints are not in the same vertical line,
       // consider a vertical line at the rightmore of the two left endpoints,
       // consider the segment that intersects lower with that line to be earlier
-      if (cmpLX < 0) return cmpLeft === 1 ? -1 : 1
-      if (cmpLX > 0) return b.comparePoint(a.leftSE.point) === 1 ? 1 : -1
+      const cmpLX = cmp(alx, blx)
+      if (cmpLX < 0) return aCmpBLeft === 1 ? -1 : 1
+      if (cmpLX > 0) {
+        if (bCmpALeft === undefined) bCmpALeft = b.comparePoint(a.leftSE.point)
+        return bCmpALeft === 1 ? 1 : -1
+      }
 
       // if our left endpoints match, consider the segment
       // that angles more downward to be earlier
-      if (cmpLX === 0 && cmp(a.leftSE.point.y, b.leftSE.point.y) === 0) {
-        return a.comparePoint(b.rightSE.point) > 0 ? -1 : 1
+      const cmpLY = cmp(aly, bly)
+      if (cmpLY === 0) {
+        // special case verticals due to rounding errors
+        // part of https://github.com/mfogel/polygon-clipping/issues/29
+        const aVert = a.isVertical()
+        if (aVert !== b.isVertical()) return aVert ? 1 : -1
+        else {
+          if (aCmpBRight === undefined) aCmpBRight = a.comparePoint(b.rightSE.point)
+          return aCmpBRight > 0 ? -1 : 1
+        }
       }
 
       // left endpoints are in the same vertical line but don't overlap exactly,
       // lower means ealier
-      return cmp(aly, bly)
+      return cmpLY
     }
 
     throw new Error(
-      `Segment comparison (from [${a.leftSE.point.x}, ${a.leftSR.point.y}])` +
-        ` -> to [${a.rightSE.point.x}, ${a.rightSE.point.y}]) failed... ` +
-        ` segments equal but not identical?`
+      `Segment comparison from [${a.leftSE.point.x}, ${a.leftSE.point.y}]` +
+      ` to [${a.rightSE.point.x}, ${a.rightSE.point.y}] failed`
     )
   }
 
-  constructor (point1, point2, ring) {
-    this.ringIn = ring
-    this.ringOut = null
+  /* Warning: a reference to ringsIn input will be stored,
+   *  and possibly will be later modified */
+  constructor (leftSE, rightSE, ringsIn) {
+    this.leftSE = leftSE
+    if (leftSE !== null) {
+      leftSE.segment = this
+      leftSE.otherSE = rightSE
+    }
+    this.rightSE = rightSE
+    if (rightSE !== null) {
+      rightSE.segment = this
+      rightSE.otherSE = leftSE
+    }
+    this.ringsIn = ringsIn
+    this._cache = {}
+    // left unset for performance, set later in algorithm
+    // this.ringOut, this.consumedBy, this.prev
+  }
 
+  static fromRing(point1, point2, ring) {
+    let leftSE, rightSE
     const ptCmp = cmpPoints(point1, point2)
-    let lp
-    let rp
     if (ptCmp < 0) {
-      lp = point1
-      rp = point2
-      this.flowL2R = true
+      leftSE = new SweepEvent(point1, true)
+      rightSE = new SweepEvent(point2, false)
     } else if (ptCmp > 0) {
-      lp = point2
-      rp = point1
-      this.flowL2R = false
+      leftSE = new SweepEvent(point2, true)
+      rightSE = new SweepEvent(point1, false)
     } else {
       throw new Error(
-        `Tried to create degenerate segment at [${point1.x}, ${point1.y}]`
+        `Tried to create degenerate segment at [${point1.x}, ${point2.y}]`
       )
     }
-
-    this.leftSE = new SweepEvent(lp, this)
-    this.rightSE = new SweepEvent(rp, this)
-
-    // cache of dynamically computed properies
-    this._clearCache()
+    return new Segment(leftSE, rightSE, [ring])
   }
 
-  clone () {
-    const seg = new Segment(this.leftSE.point, this.rightSE.point, this.ringIn)
-    seg.flowL2R = this.flowL2R
-    return seg
-  }
-
-  get bbox () {
+  bbox () {
     const y1 = this.leftSE.point.y
     const y2 = this.rightSE.point.y
     return {
@@ -111,26 +148,23 @@ export default class Segment {
   }
 
   /* A vector from the left point to the right */
-  get vector () {
+  vector () {
     return {
       x: this.rightSE.point.x - this.leftSE.point.x,
       y: this.rightSE.point.y - this.leftSE.point.y
     }
   }
 
-  get isVertical () {
+  isVertical () {
     return cmp(this.leftSE.point.x, this.rightSE.point.x) === 0
   }
 
-  /* In the original ringIn, which event came second */
-  get flowIntoSE () {
-    return this.flowL2R ? this.rightSE : this.leftSE
-  }
-
-  getOtherSE (se) {
-    if (se === this.leftSE) return this.rightSE
-    if (se === this.rightSE) return this.leftSE
-    throw new Error('may only be called by own sweep events')
+  swapEvents () {
+    const tmp = this.leftSE
+    this.leftSE = this.rightSE
+    this.leftSE.isLeft = true
+    this.rightSE = tmp
+    this.rightSE.isLeft = false
   }
 
   isAnEndpoint (point) {
@@ -141,7 +175,7 @@ export default class Segment {
   }
 
   isPointOn (point) {
-    return isInBbox(this.bbox, point) && this.comparePoint(point) === 0
+    return isInBbox(this.bbox(), point) && this.comparePoint(point) === 0
   }
 
   /* Compare this segment with a point. Return value indicates
@@ -150,7 +184,13 @@ export default class Segment {
    *   -1: point is above segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    return compareVectorAngles(point, this.leftSE.point, this.rightSE.point)
+    const v1 = this.vector()
+    const v2 = perpendicular(v1)
+    const interPt = intersection(this.leftSE.point, v1, point, v2)
+
+    const cmpY = cmp(point.y, interPt.y)
+    if (cmpY !== 0) return cmpY
+    return cmp(interPt.x, point.x)
   }
 
   /**
@@ -163,7 +203,7 @@ export default class Segment {
    */
   getIntersections (other) {
     // If bboxes don't overlap, there can't be any intersections
-    const bboxOverlap = getBboxOverlap(this.bbox, other.bbox)
+    const bboxOverlap = getBboxOverlap(this.bbox(), other.bbox())
     if (bboxOverlap === null) return []
 
     // The general algorithim doesn't handle overlapping colinear segments.
@@ -190,373 +230,232 @@ export default class Segment {
     }
     if (intersections.length > 0) return intersections
 
-    // General case for non-overlapping segments.
-    // This algorithm is based on Schneider and Eberly.
-    // http://www.cimec.org.ar/~ncalvo/Schneider_Eberly.pdf - pg 244
-    const al = this.leftSE.point
-    const bl = other.leftSE.point
-    const va = this.vector
-    const vb = other.vector
-    const ve = { x: bl.x - al.x, y: bl.y - al.y }
-    const kross = crossProduct(va, vb)
-
-    // not on line segment a
-    const s = crossProduct(ve, vb) / kross
-    if (cmp(s, 0) < 0 || cmp(1, s) < 0) return []
-
-    const t = crossProduct(ve, va) / kross
-    if (cmp(t, 0) < 0 || cmp(1, t) < 0) return []
-
-    // intersection is in a midpoint of both lines, let's average them and
-    // bound the result by org bbox (otherwise leftSE and rightSE could swap)
-    let x = (al.x + s * va.x + bl.x + t * vb.x) / 2
-    let y = (al.y + s * va.y + bl.y + t * vb.y) / 2
-    if (x < bboxOverlap.ll.x) x = bboxOverlap.ll.x
-    if (x > bboxOverlap.ur.x) x = bboxOverlap.ur.x
-    if (y < bboxOverlap.ll.y) y = bboxOverlap.ll.y
-    if (y > bboxOverlap.ur.y) y = bboxOverlap.ur.y
-    return [{ x: x, y: y }]
+    // general case of one intersection between non-overlapping segments
+    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
+    if (pt !== null && isInBbox(bboxOverlap, pt)) return [pt]
+    return []
   }
 
   /**
    * Split the given segment into multiple segments on the given points.
-   *  * The existing segment will retain it's leftSE and a new rightSE will be
+   *  * Each existing segment will retain its leftSE and a new rightSE will be
    *    generated for it.
    *  * A new segment will be generated which will adopt the original segment's
    *    rightSE, and a new leftSE will be generated for it.
    *  * If there are more than two points given to split on, new segments
    *    in the middle will be generated with new leftSE and rightSE's.
    *  * An array of the newly generated SweepEvents will be returned.
+   *
+   * Warning: input array of points is modified
    */
   split (points) {
-    // sort them and unique-ify them
+    // sort the points in sweep line order
     points.sort(cmpPoints)
-    points = points.filter(
-      (pt, i, pts) => i === 0 || cmpPoints(pts[i - 1], pt) !== 0
-    )
 
+    let prevSeg = this
+    let prevPoint = null
+
+    const newEvents = []
     for (let i = 0, iMax = points.length; i < iMax; i++) {
-      const pt = points[i]
-      if (this.isAnEndpoint(pt)) {
-        throw new Error(
-          `Cannot split segment upon endpoint at [${pt.x}, ${pt.y}]`
-        )
-      }
-    }
+      const point = points[i]
+      // skip repeated points
+      if (prevPoint && cmpPoints(prevPoint, point) === 0) continue
 
-    const point = points.shift()
-    const newSeg = this.clone()
-    newSeg.leftSE = new SweepEvent(point, newSeg)
-    newSeg.rightSE = this.rightSE
-    this.rightSE.segment = newSeg
-    this.rightSE = new SweepEvent(point, this)
-    const newEvents = [this.rightSE, newSeg.leftSE]
+      const newLeftSE = new SweepEvent(point, true)
+      const newRightSE = new SweepEvent(point, false)
+      const oldRightSE = prevSeg.rightSE
+      prevSeg.rightSE = newRightSE
+      prevSeg.rightSE.segment = prevSeg
+      prevSeg.rightSE.otherSE = prevSeg.leftSE
+      prevSeg.leftSE.otherSE = prevSeg.rightSE
+      newEvents.push(newRightSE)
+      newEvents.push(newLeftSE)
 
-    if (points.length > 0) {
-      const moreNewEvents = newSeg.split(points)
-      for (let i = 0, iMax = moreNewEvents.length; i < iMax; i++) {
-        newEvents.push(moreNewEvents[i])
-      }
+      // becaues of rounding errors, left & right events can swap places
+      // https://github.com/mfogel/polygon-clipping/issues/29
+      if (! prevSeg.isOrientationCorrect()) prevSeg.swapEvents()
+
+      prevSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+      prevPoint = point
     }
+    if (! prevSeg.isOrientationCorrect()) prevSeg.swapEvents()
+
     return newEvents
   }
 
-  registerPrev (other) {
-    this.prev = other
-    this._clearCache()
+  isOrientationCorrect () {
+    const ptCmp = cmpPoints(this.leftSE.point, this.rightSE.point)
+    if (ptCmp !== 0) return ptCmp < 0
+    throw new Error("Degenerate segment encountered")
   }
 
-  registerRingOut (ring) {
-    this.ringOut = ring
+  /* Consume another segment. We take their ringsIn under our wing
+   * and mark them as consumed. Use for perfectly overlapping segments */
+  consume (other) {
+    let consumer = this
+    let consumee = other
+    while (consumer.consumedBy) consumer = consumer.consumedBy
+    while (consumee.consumedBy) consumee = consumee.consumedBy
+
+    const cmp = Segment.compare(consumer, consumee)
+    if (cmp === 0) return  // already consumed
+    // the winner of the consumption is the earlier segment
+    // according to sweep line ordering
+    if (cmp  > 0) {
+      const tmp = consumer
+      consumer = consumee
+      consumee = tmp
+    }
+
+    for (let i = 0, iMax = consumee.ringsIn.length; i < iMax; i++) {
+      consumer.ringsIn.push(consumee.ringsIn[i])
+    }
+    consumee.ringsIn = null
+    consumee.consumedBy = consumer
+
+    // mark sweep events consumed as to maintain ordering in sweep event queue
+    consumee.leftSE.consumedBy = consumer.leftSE
+    consumee.rightSE.consumedBy = consumer.rightSE
   }
 
   /* The first segment previous segment chain that is in the result */
-  get prevInResult () {
+  prevInResult () {
     const key = 'prevInResult'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
   _prevInResult () {
-    let prev = this.prev
-    while (prev && !prev.isInResult) prev = prev.prev
-    return prev
+    if (! this.prev) return null
+    if (this.prev.isInResult()) return this.prev
+    return this.prev.prevInResult()
   }
 
-  /* The segments, including ourselves, for which we overlap perfectly */
-  get coincidents () {
-    const key = 'coincidents'
+  ringsBefore () {
+    const key = 'ringsBefore'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
-  _coincidents () {
-    // a coincident will have both left and right sweepEvents linked with us
-    const coincidents = []
-    const leftLinkedEvents = this.leftSE.linkedEvents
-    const rightLinkedEvents = this.rightSE.linkedEvents
-    for (let i = 0, iMax = leftLinkedEvents.length; i < iMax; i++) {
-      const leftSE = leftLinkedEvents[i]
-      if (!leftSE.isLeft) continue
-      if (leftSE.segment.rightSE.linkedEvents !== rightLinkedEvents) continue
-      coincidents.push(leftSE.segment)
+  _ringsBefore () {
+    if (! this.prev) return []
+    return (this.prev.consumedBy || this.prev).ringsAfter()
+  }
+
+  ringsAfter () {
+    const key = 'ringsAfter'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
+  }
+
+  _ringsAfter () {
+    const rings = this.ringsBefore().slice(0)
+    for (let i = 0, iMax = this.ringsIn.length; i < iMax; i++) {
+      const ring = this.ringsIn[i]
+      const index = rings.indexOf(ring)
+      if (index === -1) rings.push(ring)
+      else rings.splice(index, 1)
     }
+    return rings
+  }
 
-    if (coincidents.length > 0) {
-      // put the 'winner' at the front
-      // arbitary - winner is the one with lowest ringId
-      coincidents.sort((a, b) => a.ringIn.id - b.ringIn.id)
+  multiPolysBefore () {
+    const key = 'multiPolysBefore'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
+  }
 
-      // set this in all our coincident's caches so they don't have to calc it
-      for (let i = 0, iMax = coincidents.length; i < iMax; i++) {
-        coincidents[i]._cache['coincidents'] = coincidents
+  _multiPolysBefore () {
+    if (! this.prev) return []
+    return (this.prev.consumedBy || this.prev).multiPolysAfter()
+  }
+
+  multiPolysAfter () {
+    const key = 'multiPolysAfter'
+    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
+    return this._cache[key]
+  }
+
+  _multiPolysAfter () {
+    // first calcualte our polysAfter
+    const polysAfter = []
+    const polysExclude = []
+    const ringsAfter = this.ringsAfter()
+    for (let i = 0, iMax = ringsAfter.length; i < iMax; i++) {
+      const ring = ringsAfter[i]
+      const poly = ring.poly
+      if (polysExclude.includes(poly)) continue
+      if (ring.isExterior) polysAfter.push(poly)
+      else {
+        if (! polysExclude.includes(poly)) polysExclude.push(poly)
+        const index = polysAfter.indexOf(ring.poly)
+        if (index !== -1) polysAfter.splice(index, 1)
       }
     }
-    return coincidents
-  }
-
-  get prevNotCoincident () {
-    const key = 'prevNotCoincident'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _prevNotCoincident () {
-    // iterating backwards from next to prev
-    let next = this
-    let prev = this.prev
-    while (prev && next.coincidents === prev.coincidents) {
-      next = prev
-      prev = prev.prev
-    }
-    return prev
-  }
-
-  /* Does the sweep line, when it intersects this segment, enter the ring? */
-  get sweepLineEntersRing () {
-    const key = 'sweepLineEntersRing'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _sweepLineEntersRing () {
-    // opposite of previous segment on the same ring
-    let prev = this.prevNotCoincident
-    while (prev) {
-      for (let i = 0, iMax = prev.coincidents.length; i < iMax; i++) {
-        const seg = prev.coincidents[i]
-        if (seg.ringIn === this.ringIn) return !seg.sweepLineEntersRing
-      }
-      prev = prev.prevNotCoincident
-    }
-    return true
-  }
-
-  /* Does the sweep line, when it intersects this segment, enter the polygon? */
-  get sweepLineEntersPoly () {
-    if (!this.isValidEdgeForPoly) return false
-    return this.ringIn.isExterior === this.sweepLineEntersRing
-  }
-
-  /* Does the sweep line, when it intersects this segment, exit the polygon? */
-  get sweepLineExitsPoly () {
-    if (!this.isValidEdgeForPoly) return false
-    return this.ringIn.isExterior !== this.sweepLineEntersRing
-  }
-
-  /* Array of input rings this segment is inside of (not on boundary) */
-  get ringsInsideOf () {
-    const key = 'ringsInsideOf'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _ringsInsideOf () {
-    if (!this.prev) return []
-
-    // coincidents always share the same rings. Return same array to save mem
-    if (this.coincidents === this.prev.coincidents) {
-      return this.prev.ringsInsideOf
-    }
-
-    let rings = []
-    let prevRingsInsideOf = this.prev.ringsInsideOf
-    let prevRingsEntering = this.prev.getRingsEntering()
-    let ringsExiting = this.getRingsExiting()
-
-    // rings our prev was inside of all count, except those we're exiting
-    for (let i = 0, iMax = prevRingsInsideOf.length; i < iMax; i++) {
-      const ring = prevRingsInsideOf[i]
-      if (!ringsExiting.includes(ring)) rings.push(ring)
-    }
-
-    // rings our prev was entering of all count, except those we're exiting
-    for (let i = 0, iMax = prevRingsEntering.length; i < iMax; i++) {
-      const ring = prevRingsEntering[i]
-      if (!ringsExiting.includes(ring)) rings.push(ring)
-    }
-
-    return rings
-  }
-
-  /* Array of input rings this segment is on boundary of */
-  getRingsOnEdgeOf () {
-    const rings = []
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      rings.push(this.coincidents[i].ringIn)
-    }
-    return rings
-  }
-
-  /* Array of input rings this segment is on boundary of,
-   * and for which the sweep line enters when intersecting there */
-  getRingsEntering () {
-    const rings = []
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const segment = this.coincidents[i]
-      if (!segment.sweepLineEntersRing) continue
-      rings.push(segment.ringIn)
-    }
-    return rings
-  }
-
-  /* Array of input rings this segment is on boundary of,
-   * and for which the sweep line exits when intersecting there */
-  getRingsExiting () {
-    const rings = []
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const segment = this.coincidents[i]
-      if (segment.sweepLineEntersRing) continue
-      rings.push(segment.ringIn)
-    }
-    return rings
-  }
-
-  /* Is this segment valid on our own polygon? (ie not outside exterior ring) */
-  get isValidEdgeForPoly () {
-    const key = 'isValidEdgeForPoly'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _isValidEdgeForPoly () {
-    // SLER: sweep line entering orientation
-    let sameSLER
-    let diffSLER
-    if (this.sweepLineEntersRing) {
-      sameSLER = this.getRingsEntering()
-      diffSLER = this.getRingsExiting()
-    } else {
-      diffSLER = this.getRingsEntering()
-      sameSLER = this.getRingsExiting()
-    }
-    return this.ringIn.isValid(sameSLER, diffSLER, this.ringsInsideOf)
-  }
-
-  /* Array of multipolys this segment is inside of */
-  getMultiPolysInsideOf () {
+    // now calculate our multiPolysAfter
     const mps = []
-    for (let i = 0, iMax = this.ringsInsideOf.length; i < iMax; i++) {
-      const poly = this.ringsInsideOf[i].poly
-      if (mps.includes(poly.multiPoly)) continue
-      if (!poly.isInside(this.getRingsOnEdgeOf(), this.ringsInsideOf)) continue
-      mps.push(poly.multiPoly)
-    }
-    return mps
-  }
-
-  /* The multipolys on one side of us */
-  getMultiPolysSLPEnters (multiPolysInsideOf) {
-    // start with the multipolys we're fully inside
-    const mps = multiPolysInsideOf.slice()
-    // add the multipolys we have the sweep line entering
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const seg = this.coincidents[i]
-      if (!seg.sweepLineEntersPoly) continue
-      const mp = seg.ringIn.poly.multiPoly
-      if (!mps.includes(mp)) mps.push(mp)
-    }
-    return mps
-  }
-
-  /* The multipolys on the other side of us */
-  getMultiPolysSLPExits (multiPolysInsideOf) {
-    // start with the multipolys we're fully inside
-    const mps = multiPolysInsideOf.slice()
-    // add the multipolys we have the sweep line entering
-    for (let i = 0, iMax = this.coincidents.length; i < iMax; i++) {
-      const seg = this.coincidents[i]
-      if (!seg.sweepLineExitsPoly) continue
-      const mp = seg.ringIn.poly.multiPoly
+    for (let i = 0, iMax = polysAfter.length; i < iMax; i++) {
+      const mp = polysAfter[i].multiPoly
       if (!mps.includes(mp)) mps.push(mp)
     }
     return mps
   }
 
   /* Is this segment part of the final result? */
-  get isInResult () {
+  isInResult () {
     const key = 'isInResult'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
   _isInResult () {
-    // if it's not the coincidence winner, it's not in the resul
-    if (this !== this.coincidents[0]) return false
+    // if we've been consumed, we're not in the result
+    if (this.consumedBy) return false
 
-    const multiPolysInsideOf = this.getMultiPolysInsideOf()
-    const multiPolysSLPEnters = this.getMultiPolysSLPEnters(multiPolysInsideOf)
-    const multiPolysSLPExits = this.getMultiPolysSLPExits(multiPolysInsideOf)
+    const mpsBefore = this.multiPolysBefore()
+    const mpsAfter = this.multiPolysAfter()
 
     switch (operation.type) {
-      case operation.types.UNION:
+      case 'union':
         // UNION - included iff:
         //  * On one side of us there is 0 poly interiors AND
         //  * On the other side there is 1 or more.
-        const noEnters = multiPolysSLPEnters.length === 0
-        const noExits = multiPolysSLPExits.length === 0
-        return noEnters !== noExits
+        const noBefores = mpsBefore.length === 0
+        const noAfters = mpsAfter.length === 0
+        return noBefores !== noAfters
 
-      case operation.types.INTERSECTION:
+      case 'intersection':
         // INTERSECTION - included iff:
         //  * on one side of us all multipolys are rep. with poly interiors AND
         //  * on the other side of us, not all multipolys are repsented
         //    with poly interiors
         let least
         let most
-        if (multiPolysSLPEnters.length < multiPolysSLPExits.length) {
-          least = multiPolysSLPEnters.length
-          most = multiPolysSLPExits.length
+        if (mpsBefore.length < mpsAfter.length) {
+          least = mpsBefore.length
+          most = mpsAfter.length
         } else {
-          least = multiPolysSLPExits.length
-          most = multiPolysSLPEnters.length
+          least = mpsAfter.length
+          most = mpsBefore.length
         }
         return most === operation.numMultiPolys && least < most
 
-      case operation.types.XOR:
+      case 'xor':
         // XOR - included iff:
         //  * the difference between the number of multipolys represented
         //    with poly interiors on our two sides is an odd number
-        const diff = Math.abs(
-          multiPolysSLPEnters.length - multiPolysSLPExits.length
-        )
+        const diff = Math.abs(mpsBefore.length - mpsAfter.length)
         return diff % 2 === 1
 
-      case operation.types.DIFFERENCE:
+      case 'difference':
         // DIFFERENCE included iff:
         //  * on exactly one side, we have just the subject
         const isJustSubject = mps => mps.length === 1 && mps[0].isSubject
-        return (
-          isJustSubject(multiPolysSLPEnters) !==
-          isJustSubject(multiPolysSLPExits)
-        )
+        return isJustSubject(mpsBefore) !== isJustSubject(mpsAfter)
 
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)
     }
   }
 
-  _clearCache () {
-    this._cache = {}
-  }
 }

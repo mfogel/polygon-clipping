@@ -1,5 +1,4 @@
 import SplayTree from 'splaytree'
-import { cmpPoints } from './flp'
 import Segment from './segment'
 
 /**
@@ -17,15 +16,29 @@ export default class SweepLine {
   constructor (comparator = Segment.compare) {
     this.tree = new SplayTree(comparator)
     this.segments = []
-    this.prevEvent = null
   }
 
   process (event) {
     const segment = event.segment
     const newEvents = []
+
+    // if we've already been consumed by another segment,
+    // clean up our body parts and get out
+    if (event.consumedBy) {
+      if (! event.isLeft) this.tree.remove(segment)
+      return newEvents
+    }
+
     const node = event.isLeft
       ? this.tree.insert(segment)
       : this.tree.find(segment)
+
+    if (! node) throw new Error(
+      `Unable to find segment #${segment.leftSE.id} ` +
+      `[${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> ` +
+      `[${segment.rightSE.point.x}, ${segment.rightSE.point.y}] ` +
+      `in SweepLine tree. Please submit a bug report.`
+    )
 
     const prevNode = this.tree.prev(node)
     const prevSeg = prevNode ? prevNode.key : null
@@ -66,10 +79,8 @@ export default class SweepLine {
         }
       }
 
-      // did we get some intersections?
+      // did we get some intersections? split ourselves if need be
       if (newEvents.length > 0 || mySplitters.length > 0) {
-        this.tree.remove(segment)
-
         if (mySplitters.length > 0) {
           const newEventsFromSplit = segment.split(mySplitters)
           for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
@@ -79,12 +90,15 @@ export default class SweepLine {
 
         // Make sure sweep line ordering is totally consistent for later
         // use with the segment 'prev' pointers - re-do the current event.
+        this.tree.remove(segment)
         newEvents.push(event)
-        return newEvents
+
+      } else {
+        // done with left event
+        this.segments.push(segment)
+        segment.prev = prevSeg
       }
 
-      this.segments.push(segment)
-      segment.registerPrev(prevSeg)
     } else {
       // event.isRight
 
@@ -107,11 +121,6 @@ export default class SweepLine {
       this.tree.remove(segment)
     }
 
-    if (this.prevEvent && cmpPoints(this.prevEvent.point, event.point) === 0) {
-      this.prevEvent.link(event)
-    }
-    this.prevEvent = event
-
     return newEvents
   }
 
@@ -121,13 +130,6 @@ export default class SweepLine {
       const pt = intersections[i]
       if (!segment.isAnEndpoint(pt)) splitters.push(pt)
     }
-
-    let newEvents
-    if (splitters.length > 0) {
-      this.tree.remove(segment)
-      newEvents = segment.split(splitters)
-      this.tree.insert(segment)
-    } else newEvents = []
-    return newEvents
+    return splitters.length > 0 ? segment.split(splitters) : []
   }
 }
