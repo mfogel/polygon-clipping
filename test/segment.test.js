@@ -708,6 +708,13 @@ describe('compare segments', () => {
       expect(Segment.compare(seg1, seg2)).toBe(1)
       expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
+
+    test('one segment thinks theyre colinear, but the other says no', () => {
+      const seg1 = Segment.fromRing({ x: -60.6876, y: -40.83428174062278 }, { x: -60.6841701, y: -40.83491 })
+      const seg2 = Segment.fromRing({ x: -60.6876, y: -40.83428174062278 }, { x: -60.6874, y: -40.83431837489067 })
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
+    })
   })
 
   describe('colinear', () => {

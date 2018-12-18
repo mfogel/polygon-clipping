@@ -86,19 +86,28 @@ export default class Segment {
         const aVert = a.isVertical()
         if (aVert !== b.isVertical()) return aVert ? 1 : -1
         else {
+          // sometimes, because one segment is longer than the other,
+          // one of these comparisons will return 0 and the other won't
           if (aCmpBRight === undefined) aCmpBRight = a.comparePoint(b.rightSE.point)
-          return aCmpBRight > 0 ? -1 : 1
+          if (aCmpBRight > 0) return -1
+          if (aCmpBRight < 0) return 1
+          if (bCmpARight === undefined) bCmpARight = b.comparePoint(a.rightSE.point)
+          if (bCmpARight > 0) return 1
+          if (bCmpARight < 0) return -1
         }
+      } else {
+        // left endpoints are in the same vertical line but don't overlap exactly,
+        // lower means ealier
+        return cmpLY
       }
-
-      // left endpoints are in the same vertical line but don't overlap exactly,
-      // lower means ealier
-      return cmpLY
     }
 
     throw new Error(
-      `Segment comparison from [${a.leftSE.point.x}, ${a.leftSE.point.y}]` +
-      ` to [${a.rightSE.point.x}, ${a.rightSE.point.y}] failed`
+      `Segment comparison of ` +
+      `[${a.leftSE.point.x}, ${a.leftSE.point.y}] -> [${a.rightSE.point.x}, ${a.rightSE.point.y}] ` +
+      `against ` +
+      `[${b.leftSE.point.x}, ${b.leftSE.point.y}] -> [${b.rightSE.point.x}, ${b.rightSE.point.y}] ` +
+      `failed. Please submit a bug report.`
     )
   }
 
