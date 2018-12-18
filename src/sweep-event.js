@@ -47,9 +47,14 @@ export default class SweepEvent {
       if (aVert && ! bVert) return a.isLeft ? 1 : -1
       if (! aVert && bVert) return a.isLeft ? -1 : 1
 
-      // favor events where the line segment is lower
+      // Favor events where the line segment is lower.
+      // Sometimes, because one segment is longer than the other,
+      // one of these comparisons will return 0 and the other won't.
       const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
-      if (pointSegCmp !== 0) return pointSegCmp > 0 ? -1 : 1
+      if (pointSegCmp === 1) return -1
+      if (pointSegCmp === -1) return 1
+      const otherPointSegCmp = b.segment.comparePoint(a.otherSE.point)
+      if (otherPointSegCmp !== 0) return otherPointSegCmp
 
       // NOTE:  We don't sort on segment length because that changes
       //        as segments are divided.

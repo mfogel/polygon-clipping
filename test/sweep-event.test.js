@@ -46,6 +46,17 @@ describe('sweep event compare', () => {
     expect(SweepEvent.compare(seg2.rightSE, seg1.leftSE)).toBe(1)
   })
 
+  // Sometimes from one segment's perspective it appears colinear
+  // to another segment, but from that other segment's perspective
+  // they aren't colinear. This happens because a longer segment
+  // is able to better determine what is and is not colinear.
+  test('and favor barely lower segment', () => {
+    const seg1 = Segment.fromRing({ x: -75.725, y: 45.357 }, { x: -75.72484615384616, y: 45.35723076923077 })
+    const seg2 = Segment.fromRing({ x: -75.725, y: 45.357 }, { x: -75.723, y: 45.36 })
+    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(1)
+    expect(SweepEvent.compare(seg2.leftSE, seg1.leftSE)).toBe(-1)
+  })
+
   test('then favor lower ring id', () => {
     const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 })
     const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 2 })
