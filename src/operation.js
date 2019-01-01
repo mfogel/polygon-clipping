@@ -9,10 +9,13 @@ export class Operation {
   run (type, geom, moreGeoms) {
     operation.type = type
 
+    const sbbox = [Infinity, Infinity, -Infinity, -Infinity]
+    const cbbox = [Infinity, Infinity, -Infinity, -Infinity]
+
     /* Make a copy of the input geometry with points as objects, for perf */
-    const geoms = [cleanInput.pointsAsObjects(geom)]
+    const geoms = [cleanInput.pointsAsObjects(geom, sbbox)]
     for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-      geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
+      geoms.push(cleanInput.pointsAsObjects(moreGeoms[i], cbbox))
     }
 
     /* Clean inputs */
@@ -38,24 +41,24 @@ export class Operation {
       }
     }
 
+    const rightbound = Math.min(sbbox[2], cbbox[2])
+
     /* Pass the sweep line over those endpoints */
     const sweepLine = new SweepLine()
     let node
-    let prevQueueSize = queue.size
     while (node = queue.pop()) {
-      const evt = node.key
-      if (queue.size === prevQueueSize) {
-        // prevents an infinite loop, an otherwise common manifestation of bugs
-        throw new Error(
-          `Unable to pop() SweepEvent #${evt.id} [${evt.point.x}, ${evt.point.y}] ` +
-          `from queue. Please file a bug report.`
-        )
+
+       // optimization by bboxes for intersection and difference goes here
+      if (cbbox[0] !== Infinity && (operation.type === 'intersection' && node.key.point.x > rightbound) ||
+          (operation.type === 'difference' && node.key.point.x > sbbox[2])) {
+        break;
       }
-      const newEvents = sweepLine.process(evt)
+
+      const newEvents = sweepLine.process(node.key)
+
       for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
         queue.insert(newEvents[i])
       }
-      prevQueueSize = queue.size
     }
 
     /* Collect and compile segments we're keeping into a multipolygon */
