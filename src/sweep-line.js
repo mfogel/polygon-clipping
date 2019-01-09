@@ -13,7 +13,8 @@ import Segment from './segment'
  */
 
 export default class SweepLine {
-  constructor (comparator = Segment.compare) {
+  constructor (queue, comparator = Segment.compare) {
+    this.queue = queue
     this.tree = new SplayTree(comparator)
     this.segments = []
   }
@@ -82,9 +83,11 @@ export default class SweepLine {
       // did we get some intersections? split ourselves if need be
       if (newEvents.length > 0 || mySplitters.length > 0) {
 
-        // remove from tree before splitting. Rounding errors can
-        // cause changes in ordering.
+        // Rounding errors can cause changes in ordering,
+        // so remove afected segments and right sweep events before splitting
         this.tree.remove(segment)
+        this.queue.remove(segment.rightSE)
+        newEvents.push(segment.rightSE)
 
         if (mySplitters.length > 0) {
           const newEventsFromSplit = segment.split(mySplitters)
@@ -136,12 +139,15 @@ export default class SweepLine {
     }
     let newEvents = []
     if (splitters.length > 0) {
-      // remove from tree before splitting. Rounding errors can
-      // cause changes in ordering.
+      // Rounding errors can cause changes in ordering,
+      // so remove afected segments and right sweep events before splitting
       // removeNode() doesn't work, so have re-find the seg
       // https://github.com/w8r/splay-tree/pull/5
       this.tree.remove(segment)
+      const rightSE = segment.rightSE
+      this.queue.remove(rightSE)
       newEvents = segment.split(splitters)
+      newEvents.push(rightSE)
       this.tree.insert(segment)
     }
     return newEvents

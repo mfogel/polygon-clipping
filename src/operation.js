@@ -39,7 +39,7 @@ export class Operation {
     }
 
     /* Pass the sweep line over those endpoints */
-    const sweepLine = new SweepLine()
+    const sweepLine = new SweepLine(queue)
     let node
     let prevQueueSize = queue.size
     while (node = queue.pop()) {
