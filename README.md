@@ -71,6 +71,11 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 
 ## Changelog
 
+### vNext (committed to master, but not yet released)
+
+ * Support IE11
+ * Bug fix ([#37](https://github.com/mfogel/polygon-clipping/issues/37))
+
 ### v0.10 (2019-01-07)
 
  * Support polygons with infinitely thin sections ([#48](https://github.com/mfogel/polygon-clipping/issues/48))
