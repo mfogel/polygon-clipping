@@ -305,6 +305,13 @@ export default class Segment {
       consumee = tmp
     }
 
+    // make sure a segment doesn't consume it's prev
+    if (consumer.prev === consumee) {
+      const tmp = consumer
+      consumer = consumee
+      consumee = tmp
+    }
+
     for (let i = 0, iMax = consumee.ringsIn.length; i < iMax; i++) {
       consumer.ringsIn.push(consumee.ringsIn[i])
     }
