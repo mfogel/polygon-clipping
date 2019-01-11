@@ -63,9 +63,9 @@ export const getUniqueCorners = bbox => {
       { x: xmin, y: ymax },
       { x: xmax, y: ymin },
       { x: xmax, y: ymax }
-    ]    
+    ]
   }
-  if (xEq && yEq) return [{ x: xmin, y: ymin }]
-  if (xEq) return [{ x: xmin, y: ymin }, { x: xmin, y: ymax }]
-  if (yEq) return [{ x: xmin, y: ymin }, { x: xmax, y: ymin }]
+  if (xEq && !yEq) return [{ x: xmin, y: ymin }, { x: xmin, y: ymax }]
+  if (!xEq && yEq) return [{ x: xmin, y: ymin }, { x: xmax, y: ymin }]
+  return [{ x: xmin, y: ymin }]
 }
