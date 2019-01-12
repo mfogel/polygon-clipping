@@ -536,6 +536,24 @@ describe('get intersections 2', () => {
     expect(a.getIntersections(b)).toEqual([])
     expect(b.getIntersections(a)).toEqual([])
   })
+
+  test('endpoint intersections should be consistent', () => {
+    // If segment A T-intersects segment B, then the non-intersecting endpoint
+    // of segment A should be irrelevant to the intersection of the two segs
+    // From https://github.com/mfogel/polygon-clipping/issues/60
+    const x = -91.41360941065206, y = 29.53135
+    const segA1 = Segment.fromRing({ x: x, y: y}, { x: -91.4134943, y: 29.5310677 })
+    const segA2 = Segment.fromRing({ x: x, y: y}, { x: -91.413, y: 29.5315 })
+    const segB = Segment.fromRing(
+      { x: -91.4137213, y: 29.5316244 },
+      { x: -91.41352785864918, y: 29.53115 }
+    )
+
+    expect(segA1.getIntersections(segB)).toEqual([{x: x, y: y}])
+    expect(segA2.getIntersections(segB)).toEqual([{x: x, y: y}])
+    expect(segB.getIntersections(segA1)).toEqual([{x: x, y: y}])
+    expect(segB.getIntersections(segA2)).toEqual([{x: x, y: y}])
+  })
 })
 
 describe('compare segments', () => {
