@@ -240,12 +240,14 @@ export default class Segment {
         intersections.push(point)
       }
     }
-    if (intersections.length > 0) return intersections
 
-    // general case of one intersection between non-overlapping segments
-    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
-    if (pt !== null && isInBbox(bboxOverlap, pt)) return [pt]
-    return []
+    if (intersections.length === 0) {
+      // general case of one intersection between non-overlapping segments
+      const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
+      if (pt !== null && isInBbox(bboxOverlap, pt)) intersections.push(pt)
+    }
+
+    return intersections
   }
 
   /**
