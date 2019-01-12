@@ -312,4 +312,16 @@ describe('intersection()', () => {
     expect(i.x).toBe(7)
     expect(i.y).toBe(7)
   })
+
+  test('consistency', () => {
+    // Taken from https://github.com/mfogel/polygon-clipping/issues/37
+    const p1 = { x: 0.523787, y: 51.281453 }
+    const v1 = { x: 0.0002729999999999677, y: 0.0002729999999999677 }
+    const p2 = { x: 0.523985, y: 51.281651 }
+    const v2 = { x: 0.000024999999999941735, y: 0.000049000000004184585 }
+    const i1 = intersection(p1, v1, p2, v2)
+    const i2 = intersection(p2, v2, p1, v1)
+    expect(i1.x).toBe(i2.x)
+    expect(i1.y).toBe(i2.y)
+  })
 })

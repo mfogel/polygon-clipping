@@ -69,8 +69,10 @@ export const intersection = (pt1, v1, pt2, v2) => {
   const d2 = crossProduct(ve, v2) / kross
 
   // take the average of the two calculations to minimize rounding error
-  let x = (pt1.x + d2 * v1.x + pt2.x + d1 * v2.x) / 2
-  let y = (pt1.y + d2 * v1.y + pt2.y + d1 * v2.y) / 2
+  const x1 = pt1.x + d2 * v1.x, x2 = pt2.x + d1 * v2.x
+  const y1 = pt1.y + d2 * v1.y, y2 = pt2.y + d1 * v2.y
+  const x = (x1 + x2) / 2
+  const y = (y1 + y2) / 2
   return { x: x, y: y }
 }
 
