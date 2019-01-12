@@ -200,9 +200,13 @@ export default class Segment {
    *   -1: point is above segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    const inter = verticalIntersection(this.leftSE.point, this.vector(), point.x)
-    if (inter === null) return cmp(this.leftSE.point.x, point.x)
-    return cmp(point.y, inter.y)
+    const v1 = this.vector()
+    const v2 = perpendicular(v1)
+    const interPt = intersection(this.leftSE.point, v1, point, v2)
+
+    const cmpY = cmp(point.y, interPt.y)
+    if (cmpY !== 0) return cmpY
+    return cmp(interPt.x, point.x)
   }
 
   /**
@@ -231,14 +235,8 @@ export default class Segment {
     const intersections = []
     const bboxCorners = getUniqueCorners(bboxOverlap)
     for (let i = 0, iMax = bboxCorners.length; i < iMax; i++) {
-      const point = bboxCorners[i]
-      // test if this point is an intersection
-      if (
-        (this.isAnEndpoint(point) && other.comparePoint(point) === 0) ||
-        (other.isAnEndpoint(point) && this.comparePoint(point) === 0)
-      ) {
-        intersections.push(point)
-      }
+      const pt = bboxCorners[i]
+      if (this.comparePoint(pt) === 0 && other.comparePoint(pt) === 0) intersections.push(pt)
     }
 
     if (intersections.length === 0) {

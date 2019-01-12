@@ -549,9 +549,10 @@ describe('get intersections 2', () => {
       { x: -91.41352785864918, y: 29.53115 }
     )
 
-    expect(segA1.getIntersections(segB)).toEqual([{x: x, y: y}])
+    const otherInter = { x: -91.41352785864918, y: 29.53115 }
+    expect(segA1.getIntersections(segB)).toEqual([{x: x, y: y}, otherInter])
     expect(segA2.getIntersections(segB)).toEqual([{x: x, y: y}])
-    expect(segB.getIntersections(segA1)).toEqual([{x: x, y: y}])
+    expect(segB.getIntersections(segA1)).toEqual([{x: x, y: y}, otherInter])
     expect(segB.getIntersections(segA2)).toEqual([{x: x, y: y}])
   })
 })
