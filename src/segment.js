@@ -152,18 +152,6 @@ export default class Segment {
     this.rightSE.segment = this
     this.rightSE.otherSE = this.leftSE
     this.leftSE.otherSE = this.rightSE
-
-    // becaues of rounding errors, left & right events can swap places
-    // If this happens, fix it.
-    // https://github.com/mfogel/polygon-clipping/issues/29
-    if (cmpPoints(this.leftSE.point, this.rightSE.point) > 0) {
-      // swap the events
-      const tmp = this.leftSE
-      this.leftSE = this.rightSE
-      this.leftSE.isLeft = true
-      this.rightSE = tmp
-      this.rightSE.isLeft = false
-    }
   }
 
   bbox () {
@@ -200,9 +188,25 @@ export default class Segment {
    *   -1: point is above segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    const inter = verticalIntersection(this.leftSE.point, this.vector(), point.x)
-    if (inter === null) return cmp(this.leftSE.point.x, point.x)
-    return cmp(point.y, inter.y)
+    const v1 = this.vector()
+    const v2 = perpendicular(v1)
+    const interPt = intersection(this.leftSE.point, v1, point, v2)
+
+    // Trying to be as exact as possible here, hence not using flp comparisons
+    if (point.y < interPt.y) return -1
+    if (point.y > interPt.y) return 1
+    if (point.x > interPt.x) return -1
+    if (point.x < interPt.x) return 1
+    return 0
+  }
+
+  /* Does the given point fall on this segment? Greedy comparison */
+  touches (point) {
+    if (this.isAnEndpoint(point)) return true
+    const v1 = this.vector()
+    const v2 = perpendicular(v1)
+    const interPt = intersection(this.leftSE.point, v1, point, v2)
+    return cmpPoints(point, interPt) === 0
   }
 
   /**
@@ -231,21 +235,17 @@ export default class Segment {
     const intersections = []
     const bboxCorners = getUniqueCorners(bboxOverlap)
     for (let i = 0, iMax = bboxCorners.length; i < iMax; i++) {
-      const point = bboxCorners[i]
-      // test if this point is an intersection
-      if (
-        (this.isAnEndpoint(point) && other.comparePoint(point) === 0) ||
-        (other.isAnEndpoint(point) && this.comparePoint(point) === 0)
-      ) {
-        intersections.push(point)
-      }
+      const pt = bboxCorners[i]
+      if (this.touches(pt) && other.touches(pt)) intersections.push(pt)
     }
-    if (intersections.length > 0) return intersections
 
-    // general case of one intersection between non-overlapping segments
-    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
-    if (pt !== null && isInBbox(bboxOverlap, pt)) return [pt]
-    return []
+    if (intersections.length === 0) {
+      // general case of one intersection between non-overlapping segments
+      const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
+      if (pt !== null && isInBbox(bboxOverlap, pt)) intersections.push(pt)
+    }
+
+    return intersections
   }
 
   /**
@@ -300,13 +300,6 @@ export default class Segment {
     // the winner of the consumption is the earlier segment
     // according to sweep line ordering
     if (cmp  > 0) {
-      const tmp = consumer
-      consumer = consumee
-      consumee = tmp
-    }
-
-    // make sure a segment doesn't consume it's prev
-    if (consumer.prev === consumee) {
       const tmp = consumer
       consumer = consumee
       consumee = tmp

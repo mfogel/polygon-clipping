@@ -92,26 +92,31 @@ export class RingOut {
 
   getGeom () {
     // Remove superfluous points (ie extra points along a straight line),
-    const points = [[this.events[0].point.x, this.events[0].point.y]]
+    let prevPt = this.events[0].point
+    const points = [prevPt]
     for (let i = 1, iMax = this.events.length - 1; i < iMax; i++) {
-      const prevPt = this.events[i - 1].point
       const pt = this.events[i].point
       const nextPt = this.events[i + 1].point
       if (compareVectorAngles(pt, prevPt, nextPt) === 0) continue
-      points.push([pt.x, pt.y])
+      points.push(pt)
+      prevPt = pt
     }
 
+    // ring was all (within rounding error of angle calc) colinear points
+    if (points.length === 1) return null
+
     // check if the starting point is necessary
-    const prevPt = this.events[this.events.length - 2].point
-    const pt = this.events[0].point
-    const nextPt = this.events[1].point
+    const pt = points[0]
+    const nextPt = points[1]
     if (compareVectorAngles(pt, prevPt, nextPt) === 0) points.shift()
 
-    // ring was all (within rounding error of angle calc) colinear points
-    if (points.length === 0) return null
-
     points.push(points[0])
-    return this.isExteriorRing() ? points : points.reverse()
+    const step = this.isExteriorRing() ? 1 : -1
+    const iStart = this.isExteriorRing() ? 0 : points.length - 1
+    const iEnd = this.isExteriorRing() ? points.length : -1
+    const orderedPoints = []
+    for (let i = iStart; i != iEnd; i += step) orderedPoints.push([points[i].x, points[i].y])
+    return orderedPoints
   }
 
   isExteriorRing () {
