@@ -204,9 +204,21 @@ export default class Segment {
     const v2 = perpendicular(v1)
     const interPt = intersection(this.leftSE.point, v1, point, v2)
 
-    const cmpY = cmp(point.y, interPt.y)
-    if (cmpY !== 0) return cmpY
-    return cmp(interPt.x, point.x)
+    // Trying to be as exact as possible here, hence not using flp comparisons
+    if (point.y < interPt.y) return -1
+    if (point.y > interPt.y) return 1
+    if (point.x > interPt.x) return -1
+    if (point.x < interPt.x) return 1
+    return 0
+  }
+
+  /* Does the given point fall on this segment? Greedy comparison */
+  touches (point) {
+    if (this.isAnEndpoint(point)) return true
+    const v1 = this.vector()
+    const v2 = perpendicular(v1)
+    const interPt = intersection(this.leftSE.point, v1, point, v2)
+    return cmpPoints(point, interPt) === 0
   }
 
   /**
@@ -236,7 +248,7 @@ export default class Segment {
     const bboxCorners = getUniqueCorners(bboxOverlap)
     for (let i = 0, iMax = bboxCorners.length; i < iMax; i++) {
       const pt = bboxCorners[i]
-      if (this.comparePoint(pt) === 0 && other.comparePoint(pt) === 0) intersections.push(pt)
+      if (this.touches(pt) && other.touches(pt)) intersections.push(pt)
     }
 
     if (intersections.length === 0) {

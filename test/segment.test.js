@@ -228,7 +228,7 @@ describe('comparison with point', () => {
  * in a floating point world. Previously, these two methods were coming to
  * different conclusions for the these points.
  */
-describe('consistency between comparePoint() and getIntersections()', () => {
+describe('consistency between touches() and getIntersections()', () => {
   test('t-intersection on endpoint', () => {
     const pt = {x: -104.0626, y: 75.4279525872937}
     const s1 = Segment.fromRing({x: -104.117212, y: 75.4383502}, {x: -104.0624, y: 75.4279145091691})
@@ -244,8 +244,8 @@ describe('consistency between comparePoint() and getIntersections()', () => {
     expect(inters2[0].x).toBe(pt.x)
     expect(inters2[0].y).toBe(pt.y)
 
-    expect(s1.comparePoint(pt)).toBe(0)
-    expect(s2.comparePoint(pt)).toBe(0)
+    expect(s1.touches(pt)).toBe(true)
+    expect(s2.touches(pt)).toBe(true)
   })
 
   test('two intersections on endpoints, overlapping parrallel segments', () => {
@@ -268,11 +268,11 @@ describe('consistency between comparePoint() and getIntersections()', () => {
     expect(inters2[1].x).toBe(pt1.x)
     expect(inters2[1].y).toBe(pt1.y)
 
-    expect(s1.comparePoint(pt1)).toBe(0)
-    expect(s1.comparePoint(pt2)).toBe(0)
+    expect(s1.touches(pt1)).toBe(true)
+    expect(s1.touches(pt2)).toBe(true)
 
-    expect(s2.comparePoint(pt1)).toBe(0)
-    expect(s2.comparePoint(pt2)).toBe(0)
+    expect(s2.touches(pt1)).toBe(true)
+    expect(s2.touches(pt2)).toBe(true)
   })
 })
 
@@ -537,7 +537,7 @@ describe('get intersections 2', () => {
     expect(b.getIntersections(a)).toEqual([])
   })
 
-  test('endpoint intersections should be consistent', () => {
+  test('endpoint intersections should be consistent - issue 60', () => {
     // If segment A T-intersects segment B, then the non-intersecting endpoint
     // of segment A should be irrelevant to the intersection of the two segs
     // From https://github.com/mfogel/polygon-clipping/issues/60
