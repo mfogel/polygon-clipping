@@ -111,8 +111,12 @@ export class RingOut {
     if (compareVectorAngles(pt, prevPt, nextPt) === 0) points.shift()
 
     points.push(points[0])
-    const orderedPoints = this.isExteriorRing() ? points : points.reverse()
-    return orderedPoints.map(p => [p.x, p.y])
+    const step = this.isExteriorRing() ? 1 : -1
+    const iStart = this.isExteriorRing() ? 0 : points.length - 1
+    const iEnd = this.isExteriorRing() ? points.length : -1
+    const orderedPoints = []
+    for (let i = iStart; i != iEnd; i += step) orderedPoints.push([points[i].x, points[i].y])
+    return orderedPoints
   }
 
   isExteriorRing () {
