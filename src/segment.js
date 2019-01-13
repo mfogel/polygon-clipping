@@ -152,18 +152,6 @@ export default class Segment {
     this.rightSE.segment = this
     this.rightSE.otherSE = this.leftSE
     this.leftSE.otherSE = this.rightSE
-
-    // becaues of rounding errors, left & right events can swap places
-    // If this happens, fix it.
-    // https://github.com/mfogel/polygon-clipping/issues/29
-    if (cmpPoints(this.leftSE.point, this.rightSE.point) > 0) {
-      // swap the events
-      const tmp = this.leftSE
-      this.leftSE = this.rightSE
-      this.leftSE.isLeft = true
-      this.rightSE = tmp
-      this.rightSE.isLeft = false
-    }
   }
 
   bbox () {
@@ -312,13 +300,6 @@ export default class Segment {
     // the winner of the consumption is the earlier segment
     // according to sweep line ordering
     if (cmp  > 0) {
-      const tmp = consumer
-      consumer = consumee
-      consumee = tmp
-    }
-
-    // make sure a segment doesn't consume it's prev
-    if (consumer.prev === consumee) {
       const tmp = consumer
       consumer = consumee
       consumee = tmp
