@@ -92,6 +92,14 @@ describe('sweep event compare', () => {
     SweepEvent.compare(s1, s2)
     expect(s1.point === s2.point)
   })
+
+  test('consistency edge case', () => {
+    // harvested from https://github.com/mfogel/polygon-clipping/issues/62
+    const seg1 = Segment.fromRing({ x: -71.0390933353125, y: 41.504475 }, { x: -71.0389879, y: 41.5037842 })
+    const seg2 = Segment.fromRing({ x: -71.0390933353125, y: 41.504475 }, { x: -71.03906280974431, y: 41.504275 })
+    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(-1)
+    expect(SweepEvent.compare(seg2.leftSE, seg1.leftSE)).toBe(1)
+  })
 })
 
 describe('constructor', () => {

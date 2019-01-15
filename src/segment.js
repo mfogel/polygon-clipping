@@ -47,7 +47,7 @@ export default class Segment {
       (bCmpALeft = b.comparePoint(a.leftSE.point)) === 0 &&
       (bCmpARight = b.comparePoint(a.rightSE.point)) === 0
     ) {
-      // they're colinear
+      // a & b are colinear
 
       // colinear segments with non-matching left-endpoints, consider
       // the more-left endpoint to be earlier
@@ -65,44 +65,40 @@ export default class Segment {
       if (aId > bId) return 1
 
     } else {
-      // not colinear
+      // a & b are not colinear
 
-      // if the our left endpoints are not in the same vertical line,
-      // consider a vertical line at the rightmore of the two left endpoints,
-      // consider the segment that intersects lower with that line to be earlier
       const cmpLX = cmp(alx, blx)
+      // if the left endpoints are not in the same vertical line,
+      // consider the placement of the left event of the right-more segment
+      // with respect to the left-more segment.
       if (cmpLX < 0) {
-        if (aCmpBLeft === 1) return -1
-        if (aCmpBLeft === -1) return 1
+        if (aCmpBLeft > 0) return -1
+        if (aCmpBLeft < 0) return 1
+        // NOTE: fall-through is necessary here. why? Can that be avoided?
       }
       if (cmpLX > 0) {
         if (bCmpALeft === undefined) bCmpALeft = b.comparePoint(a.leftSE.point)
         if (bCmpALeft !== 0) return bCmpALeft
+        // NOTE: fall-through is necessary here. why? Can that be avoided?
       }
 
-      // one or both of the left endpoints intersect with the other segment,
-      // so consider the segment that angles more downward to be earlier
       const cmpLY = cmp(aly, bly)
-      if (cmpLY === 0) {
-        // special case verticals due to rounding errors
-        // part of https://github.com/mfogel/polygon-clipping/issues/29
-        const aVert = a.isVertical()
-        if (aVert !== b.isVertical()) return aVert ? 1 : -1
-        else {
-          // sometimes, because one segment is longer than the other,
-          // one of these comparisons will return 0 and the other won't
-          if (aCmpBRight === undefined) aCmpBRight = a.comparePoint(b.rightSE.point)
-          if (aCmpBRight > 0) return -1
-          if (aCmpBRight < 0) return 1
-          if (bCmpARight === undefined) bCmpARight = b.comparePoint(a.rightSE.point)
-          if (bCmpARight > 0) return 1
-          if (bCmpARight < 0) return -1
-        }
-      } else {
-        // left endpoints are in the same vertical line but don't overlap exactly,
-        // lower means ealier
-        return cmpLY
-      }
+      // if left endpoints are in the same vertical line, lower means ealier
+      if (cmpLY !== 0) return cmpLY
+      // left endpoints match exactly
+
+      // special case verticals due to rounding errors
+      // part of https://github.com/mfogel/polygon-clipping/issues/29
+      const aVert = a.isVertical()
+      if (aVert !== b.isVertical()) return aVert ? 1 : -1
+
+      // sometimes, because one segment is longer than the other,
+      // one of these comparisons will return 0 and the other won't
+      if (aCmpBRight === undefined) aCmpBRight = a.comparePoint(b.rightSE.point)
+      if (aCmpBRight > 0) return -1
+      if (aCmpBRight < 0) return 1
+      if (bCmpARight === undefined) bCmpARight = b.comparePoint(a.rightSE.point)
+      if (bCmpARight !== 0) return bCmpARight
     }
 
     throw new Error(
@@ -182,10 +178,10 @@ export default class Segment {
     )
   }
 
-  /* Compare this segment with a point. Return value indicates
-   *    1: point is below segment
-   *    0: point is colinear to segment
-   *   -1: point is above segment */
+  /* Compare this segment with a point. Return value indicates:
+   *     1: point lies above or to the left of segment
+   *     0: point is colinear to segment
+   *    -1: point is below or to the right of segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
     const v1 = this.vector()
@@ -197,6 +193,22 @@ export default class Segment {
     if (point.y > interPt.y) return 1
     if (point.x > interPt.x) return -1
     if (point.x < interPt.x) return 1
+    return 0
+  }
+
+  /* Compare point vertically with segment.
+   *    1: point is below segment
+   *    0: segment appears to be vertical
+   *   -1: point is above segment */
+  compareVertically (point) {
+    if (this.isAnEndpoint(point)) return 0
+    const interPt = verticalIntersection(this.leftSE.point, this.vector(), point.x)
+
+    // Trying to be as exact as possible here, hence not using flp comparisons
+    if (interPt !== null) {
+      if (point.y < interPt.y) return -1
+      if (point.y > interPt.y) return 1
+    }
     return 0
   }
 

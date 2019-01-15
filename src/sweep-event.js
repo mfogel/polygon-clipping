@@ -50,10 +50,10 @@ export default class SweepEvent {
       // Favor events where the line segment is lower.
       // Sometimes, because one segment is longer than the other,
       // one of these comparisons will return 0 and the other won't.
-      const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
+      const pointSegCmp = a.segment.compareVertically(b.otherSE.point)
       if (pointSegCmp === 1) return -1
       if (pointSegCmp === -1) return 1
-      const otherPointSegCmp = b.segment.comparePoint(a.otherSE.point)
+      const otherPointSegCmp = b.segment.compareVertically(a.otherSE.point)
       if (otherPointSegCmp !== 0) return otherPointSegCmp
 
       // NOTE:  We don't sort on segment length because that changes
