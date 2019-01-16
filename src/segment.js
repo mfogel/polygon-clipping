@@ -148,6 +148,19 @@ export default class Segment {
     this.rightSE.segment = this
     this.rightSE.otherSE = this.leftSE
     this.leftSE.otherSE = this.rightSE
+
+    // because of rounding errors, non-vertical segments that point downward
+    // can be split into a vertical segment and a non-vertical one. The sweep
+    // events of the vertical one can be backwards - right should be on the
+    // upper point, left on the lower point.
+    if (cmpPoints(this.leftSE.point, this.rightSE.point) > 0) {
+      // swap the events
+      const tmp = this.leftSE
+      this.leftSE = this.rightSE
+      this.leftSE.isLeft = true
+      this.rightSE = tmp
+      this.rightSE.isLeft = false
+    }
   }
 
   bbox () {
