@@ -69,3 +69,19 @@ export const cmpPoints = (aPt, bPt) => {
   // they're the same
   return 0
 }
+
+// TODO: testsuite
+/* Greedy comparison. Two numbers are defined to touch
+ * if their midpoint is indistinguishable from either. */
+export const touch = (a, b) => {
+  const m = (a + b) / 2
+  return cmp(m, a) === 0 || cmp(m, b) === 0
+}
+
+// TODO: testsuite
+/* Greedy comparison. Two points are defined to touch
+ * if their midpoint is indistinguishable from either. */
+export const touchPoints = (aPt, bPt) => {
+  const mPt = { x: (aPt.x + bPt.x) / 2, y: (aPt.y + bPt.y) / 2 }
+  return cmpPoints(mPt, aPt) === 0 || cmpPoints(mPt, bPt) === 0
+}

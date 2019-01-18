@@ -1,4 +1,4 @@
-import { cmp } from './flp'
+import { cmp, touch } from './flp'
 
 /**
  * A bounding box has the format:
@@ -8,17 +8,25 @@ import { cmp } from './flp'
  */
 
 export const isInBbox = (bbox, point) => {
-  const xmin = bbox.ll.x
-  const ymin = bbox.ll.y
-  const xmax = bbox.ur.x
-  const ymax = bbox.ur.y
-  const xpt = point.x
-  const ypt = point.y
   return (
-    cmp(xmin, xpt) <= 0 &&
-    cmp(xpt, xmax) <= 0 &&
-    cmp(ymin, ypt) <= 0 &&
-    cmp(ypt, ymax) <= 0
+    cmp(bbox.ll.x, point.x) <= 0 &&
+    cmp(point.x, bbox.ur.x) <= 0 &&
+    cmp(bbox.ll.y, point.y) <= 0 &&
+    cmp(point.y, bbox.ur.y) <= 0
+  )
+}
+
+// TODO: testsuite
+/* Greedy comparison with a bbox. A point is defined to 'touch'
+ * a bbox if:
+ *  - it is inside the bbox
+ *  - it 'touches' one of the sides (another greedy comparison) */
+export const touchesBbox = (bbox, point) => {
+  return (
+    (cmp(bbox.ll.x, point.x) <= 0 || touch(bbox.ll.x, point.x)) &&
+    (cmp(point.x, bbox.ur.x) <= 0 || touch(point.x, bbox.ur.x)) &&
+    (cmp(bbox.ll.y, point.y) <= 0 || touch(bbox.ll.y, point.y)) &&
+    (cmp(point.y, bbox.ur.y) <= 0 || touch(point.y, bbox.ur.y))
   )
 }
 

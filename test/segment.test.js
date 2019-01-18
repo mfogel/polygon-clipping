@@ -469,7 +469,7 @@ describe('get intersections 2', () => {
     expect(b.getIntersection(a)).toBeNull()
   })
 
-  test.skip('endpoint intersections should be consistent - issue 60', () => {
+  test('endpoint intersections should be consistent - issue 60', () => {
     // If segment A T-intersects segment B, then the non-intersecting endpoint
     // of segment A should be irrelevant to the intersection of the two segs
     // From https://github.com/mfogel/polygon-clipping/issues/60
@@ -481,11 +481,10 @@ describe('get intersections 2', () => {
       { x: -91.41352785864918, y: 29.53115 }
     )
 
-    const otherInter = { x: -91.41352785864918, y: 29.53115 }
-    expect(segA1.getIntersections(segB)).toEqual([{x: x, y: y}, otherInter])
-    expect(segA2.getIntersections(segB)).toEqual([{x: x, y: y}])
-    expect(segB.getIntersections(segA1)).toEqual([{x: x, y: y}, otherInter])
-    expect(segB.getIntersections(segA2)).toEqual([{x: x, y: y}])
+    expect(segA1.getIntersection(segB)).toMatchObject({x: x, y: y})
+    expect(segA2.getIntersection(segB)).toMatchObject({x: x, y: y})
+    expect(segB.getIntersection(segA1)).toMatchObject({x: x, y: y})
+    expect(segB.getIntersection(segA2)).toMatchObject({x: x, y: y})
   })
 })
 

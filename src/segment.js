@@ -1,8 +1,8 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
-import { isInBbox, getBboxOverlap } from './bbox'
-import { cmp, cmpPoints } from './flp'
-import { intersection, perpendicular, verticalIntersection } from './vector'
+import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
+import { cmp, cmpPoints, touchPoints } from './flp'
+import { closestPoint, intersection, perpendicular, verticalIntersection } from './vector'
 
 export default class Segment {
   static compare (a, b) {
@@ -164,6 +164,7 @@ export default class Segment {
     }
   }
 
+  // TODO: make into pre-calculated constant?
   bbox () {
     const y1 = this.leftSE.point.y
     const y2 = this.rightSE.point.y
@@ -226,6 +227,17 @@ export default class Segment {
     return 0
   }
 
+  /* Does the point in question touch the given segment?
+   * Greedy - essentially a 2 * Number.EPSILON comparison.
+   * If it's not possible to add an independent point between the
+   * point and the segment, we say the point 'touches' the segment. */
+  touches (point) {
+    if (!touchesBbox(this.bbox(), point)) return false
+    const cPt = closestPoint(this.leftSE.point, this.vector(), point)
+    const avgPt = { x: (cPt.x + point.x) / 2, y: (cPt.y + point.y) / 2 }
+    return touchPoints(avgPt, cPt) || touchPoints(avgPt, point)
+  }
+
   /**
    * Given another segment, returns the first non-trivial intersection
    * between the two segments (in terms of sweep line ordering), if it exists.
@@ -246,65 +258,63 @@ export default class Segment {
     const bboxOverlap = getBboxOverlap(this.bbox(), other.bbox())
     if (bboxOverlap === null) return null
 
-    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
+    // We first check to see if the endpoints can be considered intersections.
+    // This will 'snap' intersections to endpoints if possible, and will
+    // handle cases of colinearity.
 
-    // parrallel segments. we want to return the first non-trivial intersection
-    if (pt === null) {
+    // does each endpoint touch the other segment?
+    const touchesOtherLSE = this.touches(other.leftSE.point)
+    const touchesThisLSE = other.touches(this.leftSE.point)
+    const touchesOtherRSE = this.touches(other.rightSE.point)
+    const touchesThisRSE = other.touches(this.rightSE.point)
 
-      // check to see if they're colinear by swapping endpoints and doing the same calc
-      const vlr = {
-        x: other.rightSE.point.x - this.leftSE.point.x,
-        y: other.rightSE.point.y - this.leftSE.point.y
-      }
-      const vrl = {
-        x: other.leftSE.point.x - this.rightSE.point.x,
-        y: other.leftSE.point.y - this.rightSE.point.y
-      }
-      const otherPt = intersection(this.leftSE.point, vlr, this.rightSE.point, vrl)
-      // if those two vectors are not parrallel, then we have two parrallel segments
-      // that are not colinear, and hence do not intersect
-      // this also catches the case of colinear segments with just endpoint overlap
-      if (otherPt !== null) return null
-
-      // favor the left endpoints as they come first in the sweep line pass
-      const thisLSEin = isInBbox(bboxOverlap, this.leftSE.point)
-      const otherLSEin = isInBbox(bboxOverlap, other.leftSE.point)
-      if (thisLSEin && !otherLSEin) return this.leftSE.point
-      if (!thisLSEin && otherLSEin) return other.leftSE.point
-
-      const thisRSEin = isInBbox(bboxOverlap, this.rightSE.point)
-      const otherRSEin = isInBbox(bboxOverlap, other.rightSE.point)
-      if (thisRSEin && !otherRSEin) return this.rightSE.point
-      if (!thisRSEin && otherRSEin) return other.rightSE.point
-
-      // segments match each other exactly
-      // TODO: use the consumedBy pointers? consume?
+    // do left endpoints match?
+    if (touchesThisLSE && touchesOtherLSE) {
+      // these two cases are for colinear segments with matching left
+      // endpoints, and one segment being longer than the other
+      if (touchesThisRSE && !touchesOtherRSE) return this.rightSE.point
+      if (!touchesThisRSE && touchesOtherRSE) return other.rightSE.point
+      // either the two segments match exactly (two trival intersections)
+      // or just on their left endpoint (one trivial intersection
       return null
     }
 
-    // TODO: is this necessary??
+    // does this left endpoint matches (other doesn't)
+    if (touchesThisLSE) {
+      // check for segments that just intersect on opposing endpoints
+      if (touchesOtherRSE && cmpPoints(this.leftSE.point, other.rightSE.point) === 0) return null
+      // t-intersection on left endpoint
+      return this.leftSE.point
+    }
+
+    // does other left endpoint matches (this doesn't)
+    if (touchesOtherLSE) {
+      // check for segments that just intersect on opposing endpoints
+      if (touchesThisRSE && cmpPoints(this.rightSE.point, other.leftSE.point) === 0) return null
+      // t-intersection on left endpoint
+      return other.leftSE.point
+    }
+
+    // trivial intersection on right endpoints
+    if (touchesThisRSE && touchesOtherRSE) return null
+
+    // t-intersections on just one right endpoint
+    if (touchesThisRSE) return this.rightSE.point
+    if (touchesOtherRSE) return other.rightSE.point
+
+    // None of our endpoints intersect. Look for a general intersection between segments.
+
+    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
+
+    // parrallel segments. If they were colinear with overlap, they would have an
+    // endpoint intersection and that case was already handled above
+    if (pt === null) return null
+
     if (!isInBbox(bboxOverlap, pt)) return null
 
-    // if the calculated intersection is within 'touching' distance of an
-    // endpoint, we want to go ahead and 'snap' to that endpoint
-    // favor the endpoints earlier in the sweep line pass
-    let thisPtMatch = null
-    if (cmpPoints(pt, this.rightSE.point) === 0) thisPtMatch = this.rightSE.point
-    if (cmpPoints(pt, this.leftSE.point) === 0) thisPtMatch = this.leftSE.point
-
-    let otherPtMatch = null
-    if (cmpPoints(pt, other.rightSE.point) === 0) otherPtMatch = other.rightSE.point
-    if (cmpPoints(pt, other.leftSE.point) === 0) otherPtMatch = other.leftSE.point
-
-    // standard, common case. Did not match to any endpoint
-    if (!thisPtMatch && !otherPtMatch) return pt
-
-    // matched to an endpoint of one segment, but not the other
-    if (thisPtMatch && !otherPtMatch) return thisPtMatch
-    if (!thisPtMatch && otherPtMatch) return otherPtMatch
-
-    // matched to endpoints of both segments. this is a trivial intersection
-    return null
+    // We don't need to check if we need to 'snap' to an endpoint,
+    // because the endpoint cmps we did eariler were greedy
+    return pt
   }
 
   /**
