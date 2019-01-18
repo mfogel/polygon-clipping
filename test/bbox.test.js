@@ -3,7 +3,6 @@
 import {
   doBboxesOverlap,
   getBboxOverlap,
-  getUniqueCorners,
   isInBbox
 } from '../src/bbox'
 
@@ -345,35 +344,5 @@ describe('bbox overlap', () => {
         expect(getBboxOverlap(p, p)).toEqual(p)
       })
     })
-  })
-})
-
-describe('get unique corners', () => {
-  test('normal', () => {
-    const bbox = { ll: { x: 2, y: 3 }, ur: { x: 4, y: 5 } }
-    const expected = [
-      { x: 2, y: 3 },
-      { x: 2, y: 5 },
-      { x: 4, y: 3 },
-      { x: 4, y: 5 }
-    ]
-    expect(getUniqueCorners(bbox)).toEqual(expected)
-  })
-
-  test('horizontal', () => {
-    const bbox = { ll: { x: 2, y: 3 }, ur: { x: 4, y: 3 } }
-    const expected = [bbox.ll, bbox.ur]
-    expect(getUniqueCorners(bbox)).toEqual(expected)
-  })
-
-  test('vertical', () => {
-    const bbox = { ll: { x: 2, y: 3 }, ur: { x: 2, y: 5 } }
-    const expected = [bbox.ll, bbox.ur]
-    expect(getUniqueCorners(bbox)).toEqual(expected)
-  })
-
-  test('point', () => {
-    const pt = { x: 2, y: 2 }
-    expect(getUniqueCorners({ ll: pt, ur: pt })).toEqual([pt])
   })
 })

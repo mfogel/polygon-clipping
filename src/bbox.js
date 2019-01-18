@@ -47,25 +47,3 @@ export const getBboxOverlap = (b1, b2) => {
   // put those middle values together to get the overlap
   return { ll: { x: lowerX, y: lowerY }, ur: { x: upperX, y: upperY } }
 }
-
-/* Returns a list of unique corners.
- * Will contain one, two or four points */
-export const getUniqueCorners = bbox => {
-  const xmin = bbox.ll.x
-  const ymin = bbox.ll.y
-  const xmax = bbox.ur.x
-  const ymax = bbox.ur.y
-  const xEq = cmp(xmin, xmax) === 0
-  const yEq = cmp(ymin, ymax) === 0
-  if (!xEq && !yEq) {
-    return [
-      { x: xmin, y: ymin },
-      { x: xmin, y: ymax },
-      { x: xmax, y: ymin },
-      { x: xmax, y: ymax }
-    ]
-  }
-  if (xEq && !yEq) return [{ x: xmin, y: ymin }, { x: xmin, y: ymax }]
-  if (!xEq && yEq) return [{ x: xmin, y: ymin }, { x: xmax, y: ymin }]
-  return [{ x: xmin, y: ymin }]
-}
