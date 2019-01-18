@@ -4,6 +4,7 @@ import {
   crossProduct,
   dotProduct,
   length,
+  closestPoint,
   compareVectorAngles,
   cosineOfAngle,
   sineOfAngle,
@@ -195,6 +196,71 @@ describe('perpendicular()', () => {
     const r = perpendicular(v)
     expect(dotProduct(v, r)).toBe(0)
     expect(crossProduct(v, r)).not.toBe(0)
+  })
+})
+
+describe('closestPoint()', () => {
+  test('on line', () => {
+    const p1 = { x: 2, y: 2 }
+    const v1 = { x: 1, y: 1}
+    const p2 = { x: -1, y: -1 }
+    const cp = closestPoint(p1, v1, p2)
+    expect(cp).toEqual(p2)
+  })
+
+  test('on first point', () => {
+    const p1 = { x: 2, y: 2 }
+    const v1 = { x: 1, y: 1}
+    const p2 = { x: 2, y: 2 }
+    const cp = closestPoint(p1, v1, p2)
+    expect(cp).toEqual(p2)
+  })
+
+  test('off line above', () => {
+    const p1 = { x: 2, y: 2 }
+    const v1 = { x: 1, y: -1}
+    const v1R = { x: -1, y: 1}
+    const p2 = { x: 3, y: 7 }
+    const expected = { x: 0, y: 4 }
+    expect(closestPoint(p1, v1, p2)).toEqual(expected)
+    expect(closestPoint(p1, v1R, p2)).toEqual(expected)
+  })
+
+  test('off line below', () => {
+    const p1 = { x: 2, y: 2 }
+    const v1 = { x: 1, y: -1}
+    const v1R = { x: -1, y: 1}
+    const p2 = { x: 0, y: 2 }
+    const expected = { x: 1, y: 3 }
+    expect(closestPoint(p1, v1, p2)).toEqual(expected)
+    expect(closestPoint(p1, v1R, p2)).toEqual(expected)
+  })
+
+  test('off line perpendicular to first point', () => {
+    const p1 = { x: 2, y: 2 }
+    const v1 = { x: 1, y: 1}
+    const p2 = { x: 1, y: 3 }
+    const cp = closestPoint(p1, v1, p2)
+    const expected = { x: 2, y: 2 }
+    expect(cp).toEqual(expected)
+  })
+
+  test('horizontal vector', () => {
+    const p1 = { x: 2, y: 2 }
+    const v1 = { x: 1, y: 0}
+    const p2 = { x: 1, y: 3 }
+    const cp = closestPoint(p1, v1, p2)
+    const expected = { x: 1, y: 2 }
+    expect(cp).toEqual(expected)
+  })
+
+  test('vertical vector', () => {
+    const p1 = { x: 2, y: 2 }
+    const v1 = { x: 0, y: 1}
+    const p2 = { x: 1, y: 3 }
+    const cp = closestPoint(p1, v1, p2)
+    const expected = { x: 2, y: 3 }
+    expect(cp).toEqual(expected)
   })
 })
 

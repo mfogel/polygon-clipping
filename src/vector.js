@@ -30,6 +30,16 @@ export const cosineOfAngle = (pShared, pBase, pAngle) => {
   return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase)
 }
 
+/* Get the closest point on an line (defined by a point and a vector)
+ * to another point. */
+export const closestPoint = (pt1, v1, pt2) => {
+  if (v1.x === 0) return { x: pt1.x, y: pt2.y } // vertical vector
+  if (v1.y === 0) return { x: pt2.x, y: pt1.y } // horizontal vector
+  const v2 = { x: pt2.x - pt1.x, y: pt2.y - pt1.y }
+  const dist = dotProduct(v1, v2) / dotProduct(v1, v1)
+  return { x: pt1.x + dist * v1.x, y: pt1.y + dist * v1.y }
+}
+
 /* Get the x coordinate where the given line (defined by a point and vector)
  * crosses the horizontal line with the given y coordiante.
  * In the case of parrallel lines (including overlapping ones) returns null. */
