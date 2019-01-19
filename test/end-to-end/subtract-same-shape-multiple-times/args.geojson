@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[900, 0], [950, 85], [1000, 0], [1000, 100], [900, 100], [900, 0]]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [[[945, 83], [959, 80], [950, 90], [945, 83]]],
+          [[[945, 83], [959, 80], [950, 90], [945, 83]]]
+        ]
+      }
+    }
+  ]
+}

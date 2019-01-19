@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-3, -3], [3, -3], [3, 3], [-3, 3], [-3, -3]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-2, -1],
+            [-1, 0],
+            [1, 0],
+            [2, -1],
+            [2, 1],
+            [1, 0],
+            [-1, 0],
+            [-2, 1],
+            [-2, -1]
+          ]
+        ]
+      }
+    }
+  ]
+}

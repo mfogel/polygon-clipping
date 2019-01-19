@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { cmp, cmpPoints } = require('../src/flp')
+import { cmp, cmpPoints } from '../src/flp'
 
 describe('compare', () => {
   test('exactly equal', () => {

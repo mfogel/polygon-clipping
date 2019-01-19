@@ -1,18 +1,19 @@
-const Segment = require('./segment')
+import Segment from './segment'
+import SweepEvent from './sweep-event'
 
-// Give rings unique ID's to get consistent sorting of segments
-// and sweep events when all else is identical
-let ringId = 0
-
-class Ring {
-  constructor (geomRing, poly) {
-    this.id = ringId++
+export class RingIn {
+  constructor (geomRing, poly, isExterior) {
     this.poly = poly
+    this.isExterior = isExterior
     this.segments = []
 
+    let prevPoint = geomRing[0]
     for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
-      this.segments.push(new Segment(geomRing[i - 1], geomRing[i], this))
+      let point = geomRing[i]
+      this.segments.push(Segment.fromRing(prevPoint, point, this))
+      prevPoint = point
     }
+    this.segments.push(Segment.fromRing(prevPoint, geomRing[0], this))
   }
 
   getSweepEvents () {
@@ -24,61 +25,14 @@ class Ring {
     }
     return sweepEvents
   }
-
-  get isExterior () {
-    return this.poly.exteriorRing === this
-  }
-
-  get isInterior () {
-    return this.poly.exteriorRing !== this
-  }
-
-  /* Given a segment on this rings with these relationships to other rings,
-   * is it a valid segment of the ring's poly? */
-  isValid (ringsSameSLER, ringsDiffSLER, ringsInsideOf) {
-    const exterior = this.poly.exteriorRing
-    const interiors = this.poly.interiorRings
-
-    if (this === exterior) {
-      // exterior segments inside or interior, nope
-      for (let i = 0, iMax = ringsInsideOf.length; i < iMax; i++) {
-        if (interiors.includes(ringsInsideOf[i])) return false
-      }
-
-      // overlap with an interior of same SWL orientatio, nope
-      for (let i = 0, iMax = ringsSameSLER.length; i < iMax; i++) {
-        if (interiors.includes(ringsSameSLER[i])) return false
-      }
-
-      return true
-    }
-
-    // interior rings that aren't inside the exterior nor
-    // overlapping with different SWE
-    if (!ringsInsideOf.includes(exterior)) {
-      if (!ringsDiffSLER.includes(exterior)) return false
-    }
-
-    // interior rings inside another interior, nope
-    for (let i = 0, iMax = ringsInsideOf.length; i < iMax; i++) {
-      if (interiors.includes(ringsInsideOf[i])) return false
-    }
-
-    // overlapping interiors with different sweep line orientation, nope
-    for (let i = 0, iMax = ringsDiffSLER.length; i < iMax; i++) {
-      if (interiors.includes(ringsDiffSLER[i])) return false
-    }
-
-    return true
-  }
 }
 
-class Poly {
+export class PolyIn {
   constructor (geomPoly, multiPoly) {
-    this.exteriorRing = new Ring(geomPoly[0], this)
+    this.exteriorRing = new RingIn(geomPoly[0], this, true)
     this.interiorRings = []
     for (let i = 1, iMax = geomPoly.length; i < iMax; i++) {
-      this.interiorRings.push(new Ring(geomPoly[i], this))
+      this.interiorRings.push(new RingIn(geomPoly[i], this, false))
     }
     this.multiPoly = multiPoly
   }
@@ -93,31 +47,13 @@ class Poly {
     }
     return sweepEvents
   }
-
-  /* Given a segment with these rings, is that segment inside this polygon? */
-  isInside (ringsOnEdgeOf, ringsInsideOf) {
-    // if we're on an edge, we can't be inside
-    for (let i = 0, iMax = ringsOnEdgeOf.length; i < iMax; i++) {
-      if (ringsOnEdgeOf[i].poly === this) return false
-    }
-
-    // we need to be inside the exterior, and nothing else
-    let isInsideExterior = false
-    for (let i = 0, iMax = ringsInsideOf.length; i < iMax; i++) {
-      const ring = ringsInsideOf[i]
-      if (ring.poly !== this) continue
-      if (ring.isInterior) return false
-      isInsideExterior = true
-    }
-    return isInsideExterior
-  }
 }
 
-class MultiPoly {
+export class MultiPolyIn {
   constructor (geomMultiPoly) {
     this.polys = []
     for (let i = 0, iMax = geomMultiPoly.length; i < iMax; i++) {
-      this.polys.push(new Poly(geomMultiPoly[i], this))
+      this.polys.push(new PolyIn(geomMultiPoly[i], this))
     }
     this.isSubject = false
   }
@@ -137,5 +73,3 @@ class MultiPoly {
     return sweepEvents
   }
 }
-
-module.exports = { Ring, Poly, MultiPoly }

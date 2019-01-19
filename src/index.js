@@ -1,57 +1,20 @@
-const Queue = require('qheap')
-const cleanInput = require('./clean-input.js')
-const geomIn = require('./geom-in')
-const geomOut = require('./geom-out')
-const operation = require('./operation')
-const SweepEvent = require('./sweep-event')
-const SweepLine = require('./sweep-line')
+import operation from './operation'
 
-const doIt = (operationType, geom, moreGeoms) => {
-  /* Make a copy of the input geometry with points as objects, for perf */
-  const geoms = [cleanInput.pointsAsObjects(geom)]
-  for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-    geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
-  }
+const union = (geom, ...moreGeoms) =>
+  operation.run('union', geom, moreGeoms)
 
-  /* Clean inputs */
-  for (let i = 0, iMax = geoms.length; i < iMax; i++) {
-    cleanInput.forceMultiPoly(geoms[i])
-    cleanInput.cleanMultiPoly(geoms[i])
-  }
+const intersection = (geom, ...moreGeoms) =>
+  operation.run('intersection', geom, moreGeoms)
 
-  /* Convert inputs to MultiPoly objects, mark subject & register operation */
-  const multipolys = []
-  for (let i = 0, iMax = geoms.length; i < iMax; i++) {
-    multipolys.push(new geomIn.MultiPoly(geoms[i]))
-  }
-  multipolys[0].markAsSubject()
-  operation.register(operationType, multipolys.length)
+const xor = (geom, ...moreGeoms) =>
+  operation.run('xor', geom, moreGeoms)
 
-  /* Put segment endpoints in a priority queue */
-  const queue = new Queue({ comparBefore: SweepEvent.compareBefore })
-  for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
-    const sweepEvents = multipolys[i].getSweepEvents()
-    for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
-      queue.insert(sweepEvents[j])
-    }
-  }
+const difference = (subjectGeom, ...clippingGeoms) =>
+  operation.run('difference', subjectGeom, clippingGeoms)
 
-  /* Pass the sweep line over those endpoints */
-  const sweepLine = new SweepLine()
-  while (queue.length) {
-    const newEvents = sweepLine.process(queue.remove())
-    for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
-      queue.insert(newEvents[i])
-    }
-  }
-
-  /* Error on self-crossing input rings */
-  cleanInput.errorOnSelfIntersectingRings(sweepLine.segments)
-
-  /* Collect and compile segments we're keeping into a multipolygon */
-  const ringsOut = geomOut.Ring.factory(sweepLine.segments)
-  const result = new geomOut.MultiPoly(ringsOut)
-  return result.getGeom()
+export default {
+  union: union,
+  intersection: intersection,
+  xor: xor,
+  difference: difference,
 }
-
-module.exports = doIt

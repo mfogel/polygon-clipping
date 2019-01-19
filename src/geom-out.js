@@ -1,6 +1,7 @@
-const { compareVectorAngles } = require('./vector')
+import { compareVectorAngles } from './vector'
+import SweepEvent from './sweep-event'
 
-class Ring {
+export class RingOut {
   /* Given the segments from the sweep line pass, compute & return a series
    * of closed rings from all the segments marked to be part of the result */
   static factory (allSegments) {
@@ -8,14 +9,14 @@ class Ring {
 
     for (let i = 0, iMax = allSegments.length; i < iMax; i++) {
       const segment = allSegments[i]
-      if (!segment.isInResult || segment.ringOut) continue
+      if (!segment.isInResult() || segment.ringOut) continue
 
       let prevEvent = null
       let event = segment.leftSE
       let nextEvent = segment.rightSE
       const events = [event]
 
-      const startingLE = event.linkedEvents
+      const startingPoint = event.point
       const intersectionLEs = []
 
       /* Walk the chain of linked events to form a closed ring */
@@ -25,7 +26,7 @@ class Ring {
         events.push(event)
 
         /* Is the ring complete? */
-        if (event.linkedEvents === startingLE) break
+        if (event.point === startingPoint) break
 
         while (true) {
           const availableLEs = event.getAvailableLinkedEvents()
@@ -37,7 +38,7 @@ class Ring {
             const lastPt = events[events.length - 1].point
             throw new Error(
               `Unable to complete output ring starting at [${firstPt.x},` +
-                ` ${firstPt.y}]. Last matching segment found ends at ` +
+                ` ${firstPt.y}]. Last matching segment found ends at` +
                 ` [${lastPt.x}, ${lastPt.y}].`
             )
           }
@@ -51,7 +52,7 @@ class Ring {
           /* We must have an intersection. Check for a completed loop */
           let indexLE = null
           for (let j = 0, jMax = intersectionLEs.length; j < jMax; j++) {
-            if (intersectionLEs[j].linkedEvents === event.linkedEvents) {
+            if (intersectionLEs[j].point === event.point) {
               indexLE = j
               break
             }
@@ -61,13 +62,13 @@ class Ring {
             const intersectionLE = intersectionLEs.splice(indexLE)[0]
             const ringEvents = events.splice(intersectionLE.index)
             ringEvents.unshift(ringEvents[0].otherSE)
-            ringsOut.push(new Ring(ringEvents.reverse()))
+            ringsOut.push(new RingOut(ringEvents.reverse()))
             continue
           }
           /* register the intersection */
           intersectionLEs.push({
             index: events.length,
-            linkedEvents: event.linkedEvents
+            point: event.point,
           })
           /* Choose the left-most option to continue the walk */
           const comparator = event.getLeftmostComparator(prevEvent)
@@ -76,7 +77,7 @@ class Ring {
         }
       }
 
-      ringsOut.push(new Ring(events))
+      ringsOut.push(new RingOut(events))
     }
     return ringsOut
   }
@@ -84,72 +85,67 @@ class Ring {
   constructor (events) {
     this.events = events
     for (let i = 0, iMax = events.length; i < iMax; i++) {
-      events[i].segment.registerRingOut(this)
+      events[i].segment.ringOut = this
     }
     this.poly = null
-    this._clearCache()
-  }
-
-  registerPoly (poly) {
-    this.poly = poly
   }
 
   getGeom () {
     // Remove superfluous points (ie extra points along a straight line),
-    const points = [[this.events[0].point.x, this.events[0].point.y]]
+    let prevPt = this.events[0].point
+    const points = [prevPt]
     for (let i = 1, iMax = this.events.length - 1; i < iMax; i++) {
-      const prevPt = this.events[i - 1].point
       const pt = this.events[i].point
       const nextPt = this.events[i + 1].point
       if (compareVectorAngles(pt, prevPt, nextPt) === 0) continue
-      points.push([pt.x, pt.y])
+      points.push(pt)
+      prevPt = pt
     }
-
-    // check if the starting point is necessary
-    const prevPt = this.events[this.events.length - 2].point
-    const pt = this.events[0].point
-    const nextPt = this.events[1].point
-    if (compareVectorAngles(pt, prevPt, nextPt) === 0) points.shift()
 
     // ring was all (within rounding error of angle calc) colinear points
-    if (points.length === 0) return null
+    if (points.length === 1) return null
+
+    // check if the starting point is necessary
+    const pt = points[0]
+    const nextPt = points[1]
+    if (compareVectorAngles(pt, prevPt, nextPt) === 0) points.shift()
 
     points.push(points[0])
-    return this.isExteriorRing ? points : points.reverse()
+    const step = this.isExteriorRing() ? 1 : -1
+    const iStart = this.isExteriorRing() ? 0 : points.length - 1
+    const iEnd = this.isExteriorRing() ? points.length : -1
+    const orderedPoints = []
+    for (let i = iStart; i != iEnd; i += step) orderedPoints.push([points[i].x, points[i].y])
+    return orderedPoints
   }
 
-  get enclosingRing () {
-    return this._getCached('enclosingRing')
-  }
-
-  get isExteriorRing () {
-    return this._getCached('isExteriorRing')
-  }
-
-  _clearCache () {
-    this._cache = {}
-  }
-
-  _getCached (propName, calcMethod) {
-    // if this._cache[something] isn't set, fill it with this._something()
-    if (this._cache[propName] === undefined) {
-      this._cache[propName] = this[`_${propName}`].bind(this)()
+  isExteriorRing () {
+    if (this._isExteriorRing === undefined) {
+      const enclosing = this.enclosingRing()
+      this._isExteriorRing = enclosing ? ! enclosing.isExteriorRing() : true
     }
-    return this._cache[propName]
+    return this._isExteriorRing
   }
 
-  _isExteriorRing () {
-    if (!this.enclosingRing) return true
-    if (!this.enclosingRing.enclosingRing) return false
-    // an island in hole is a whole new polygon
-    return this.enclosingRing.enclosingRing.isExteriorRing
+  enclosingRing () {
+    if (this._enclosingRing === undefined) {
+      this._enclosingRing = this._calcEnclosingRing()
+    }
+    return this._enclosingRing
   }
 
   /* Returns the ring that encloses this one, if any */
-  _enclosingRing () {
-    let prevSeg = this.events[0].segment.prevInResult
-    while (prevSeg && prevSeg.ringOut === this) prevSeg = prevSeg.prevInResult
-    let prevPrevSeg = prevSeg ? prevSeg.prevInResult : null
+  _calcEnclosingRing () {
+    // start with the ealier sweep line event so that the prevSeg
+    // chain doesn't lead us inside of a loop of ours
+    let leftMostEvt = this.events[0]
+    for (let i = 1, iMax = this.events.length; i < iMax; i++) {
+      const evt = this.events[i]
+      if (SweepEvent.compare(leftMostEvt, evt) > 0) leftMostEvt = evt
+    }
+
+    let prevSeg = leftMostEvt.segment.prevInResult()
+    let prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null
 
     while (true) {
       // no segment found, thus no ring can enclose us
@@ -163,29 +159,29 @@ class Ring {
       // segment must either loop around us or the ring of the prev prev
       // seg, which would make us and the ring of the prev peers
       if (prevPrevSeg.ringOut !== prevSeg.ringOut) {
-        if (prevPrevSeg.ringOut.enclosingRing !== prevSeg.ringOut) {
+        if (prevPrevSeg.ringOut.enclosingRing() !== prevSeg.ringOut) {
           return prevSeg.ringOut
-        } else return prevSeg.ringOut.enclosingRing
+        } else return prevSeg.ringOut.enclosingRing()
       }
 
       // two segments are from the same ring, so this was a penisula
       // of that ring. iterate downward, keep searching
-      prevSeg = prevPrevSeg.prevInResult
-      prevPrevSeg = prevSeg ? prevSeg.prevInResult : null
+      prevSeg = prevPrevSeg.prevInResult()
+      prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null
     }
   }
 }
 
-class Poly {
+export class PolyOut {
   constructor (exteriorRing) {
     this.exteriorRing = exteriorRing
-    exteriorRing.registerPoly(this)
+    exteriorRing.poly = this
     this.interiorRings = []
   }
 
   addInterior (ring) {
     this.interiorRings.push(ring)
-    ring.registerPoly(this)
+    ring.poly = this
   }
 
   getGeom () {
@@ -202,7 +198,7 @@ class Poly {
   }
 }
 
-class MultiPoly {
+export class MultiPolyOut {
   constructor (rings) {
     this.rings = rings
     this.polys = this._composePolys(rings)
@@ -224,14 +220,13 @@ class MultiPoly {
     for (let i = 0, iMax = rings.length; i < iMax; i++) {
       const ring = rings[i]
       if (ring.poly) continue
-      if (ring.isExteriorRing) polys.push(new Poly(ring))
+      if (ring.isExteriorRing()) polys.push(new PolyOut(ring))
       else {
-        if (!ring.enclosingRing.poly) polys.push(new Poly(ring.enclosingRing))
-        ring.enclosingRing.poly.addInterior(ring)
+        const enclosingRing = ring.enclosingRing()
+        if (!enclosingRing.poly) polys.push(new PolyOut(enclosingRing))
+        enclosingRing.poly.addInterior(ring)
       }
     }
     return polys
   }
 }
-
-module.exports = { Ring, Poly, MultiPoly }

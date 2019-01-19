@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-const fs = require('fs')
-const path = require('path')
-const load = require('load-json-file')
-const polygonClipping = require('../main')
+import fs from 'fs'
+import path from 'path'
+import load from 'load-json-file'
+import polygonClipping from '../src'
 
 /** USE ME TO RUN ONLY ONE TEST **/
 const targetOnly = ''
@@ -31,6 +31,12 @@ describe('end to end', () => {
         .readdirSync(targetDir)
         .filter(fn => fn !== 'args.geojson' && fn.endsWith('.geojson'))
         .map(fn => [fn.slice(0, -'.geojson'.length), path.join(targetDir, fn)])
+        .map(([opType, p]) =>
+          opType === 'all' ?
+          [['union', p], ['intersection', p], ['xor', p], ['difference', p]] :
+          [[opType, p]]
+        )
+        .reduce((acc, val) => acc.concat(val), []) // flatten equiv: .flat(1)
 
       resultPathsAndOperationTypes.forEach(([operationType, resultPath]) => {
         let doTest = test

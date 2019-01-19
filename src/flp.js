@@ -4,16 +4,18 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/EPSILON
  */
 
-// IE Polyfill
-if (Number.EPSILON === undefined) Number.EPSILON = Math.pow(2, -52)
+let epsilon = Number.EPSILON
 
-const EPSILON_SQ = Number.EPSILON * Number.EPSILON
+// IE Polyfill
+if (epsilon === undefined) epsilon = Math.pow(2, -52)
+
+const EPSILON_SQ = epsilon * epsilon
 
 /* FLP comparator */
-const cmp = (a, b) => {
+export const cmp = (a, b) => {
   // check if they're both 0
-  if (-Number.EPSILON < a && a < Number.EPSILON) {
-    if (-Number.EPSILON < b && b < Number.EPSILON) {
+  if (-epsilon < a && a < epsilon) {
+    if (-epsilon < b && b < epsilon) {
       return 0
     }
   }
@@ -28,18 +30,19 @@ const cmp = (a, b) => {
 }
 
 /* FLP point comparator, favors point encountered first by sweep line */
-const cmpPoints = (aPt, bPt) => {
-  // fist compare X, then compare Y
+export const cmpPoints = (aPt, bPt) => {
+  if (aPt === bPt) return 0
 
+  // fist compare X, then compare Y
   let a = aPt.x
   let b = bPt.x
 
   // inlined version of cmp() for performance boost
   if (
-    a <= -Number.EPSILON ||
-    Number.EPSILON <= a ||
-    b <= -Number.EPSILON ||
-    Number.EPSILON <= b
+    a <= -epsilon ||
+    epsilon <= a ||
+    b <= -epsilon ||
+    epsilon <= b
   ) {
     const diff = a - b
     if (diff * diff >= EPSILON_SQ * a * b) {
@@ -52,10 +55,10 @@ const cmpPoints = (aPt, bPt) => {
 
   // inlined version of cmp() for performance boost
   if (
-    a <= -Number.EPSILON ||
-    Number.EPSILON <= a ||
-    b <= -Number.EPSILON ||
-    Number.EPSILON <= b
+    a <= -epsilon ||
+    epsilon <= a ||
+    b <= -epsilon ||
+    epsilon <= b
   ) {
     const diff = a - b
     if (diff * diff >= EPSILON_SQ * a * b) {
@@ -65,9 +68,4 @@ const cmpPoints = (aPt, bPt) => {
 
   // they're the same
   return 0
-}
-
-module.exports = {
-  cmp,
-  cmpPoints
 }

@@ -26,7 +26,7 @@
 
 <script>
 
-var pc = require('../../main')
+var pc = require('../../src')
 var martinez = require('martinez-polygon-clipping')
 
 var operation = pc.intersection

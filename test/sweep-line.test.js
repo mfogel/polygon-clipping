@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const SweepLine = require('../src/sweep-line')
+import SweepLine from '../src/sweep-line'
 
 const comparator = (a, b) => {
   if (a === b) return 0
@@ -9,7 +9,7 @@ const comparator = (a, b) => {
 
 describe('sweep line', () => {
   test('test filling up the tree then emptying it out', () => {
-    const sl = new SweepLine(comparator)
+    const sl = new SweepLine(null, comparator)
     const k1 = 4
     const k2 = 9
     const k3 = 13
