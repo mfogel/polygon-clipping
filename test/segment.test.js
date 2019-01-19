@@ -365,9 +365,17 @@ describe('get intersections 2', () => {
     expect(b.getIntersection(a)).toBeNull()
   })
 
-  test('T-crossing', () => {
+  test('T-crossing left endpoint', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({ x: 0.5, y: 0.5 }, { x: 1, y: 0 })
+    const inter = { x: 0.5, y: 0.5 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
+  })
+
+  test('T-crossing right endpoint', () => {
+    const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    const b = Segment.fromRing({ x: 0, y: 1 }, { x: 0.5, y: 0.5 })
     const inter = { x: 0.5, y: 0.5 }
     expect(a.getIntersection(b)).toMatchObject(inter)
     expect(b.getIntersection(a)).toMatchObject(inter)

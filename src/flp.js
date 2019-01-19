@@ -70,7 +70,6 @@ export const cmpPoints = (aPt, bPt) => {
   return 0
 }
 
-// TODO: testsuite
 /* Greedy comparison. Two numbers are defined to touch
  * if their midpoint is indistinguishable from either. */
 export const touch = (a, b) => {
@@ -78,7 +77,6 @@ export const touch = (a, b) => {
   return cmp(m, a) === 0 || cmp(m, b) === 0
 }
 
-// TODO: testsuite
 /* Greedy comparison. Two points are defined to touch
  * if their midpoint is indistinguishable from either. */
 export const touchPoints = (aPt, bPt) => {

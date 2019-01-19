@@ -302,14 +302,15 @@ export default class Segment {
     if (touchesThisRSE) return this.rightSE.point
     if (touchesOtherRSE) return other.rightSE.point
 
-    // None of our endpoints intersect. Look for a general intersection between segments.
-
+    // None of our endpoints intersect. Look for a general intersection between
+    // infinite lines laid over the segments
     const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
 
-    // parrallel segments. If they were colinear with overlap, they would have an
-    // endpoint intersection and that case was already handled above
+    // are the segments parrallel? Note that if they were colinear with overlap,
+    // they would have an endpoint intersection and that case was already handled above
     if (pt === null) return null
 
+    // is the intersection found between the lines not on the segments?
     if (!isInBbox(bboxOverlap, pt)) return null
 
     // We don't need to check if we need to 'snap' to an endpoint,

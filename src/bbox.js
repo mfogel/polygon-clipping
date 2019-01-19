@@ -16,7 +16,6 @@ export const isInBbox = (bbox, point) => {
   )
 }
 
-// TODO: testsuite
 /* Greedy comparison with a bbox. A point is defined to 'touch'
  * a bbox if:
  *  - it is inside the bbox
@@ -30,19 +29,17 @@ export const touchesBbox = (bbox, point) => {
   )
 }
 
-export const doBboxesOverlap = (b1, b2) =>
-  !(
-    cmp(b2.ur.x, b1.ll.x) < 0 ||
-    cmp(b1.ur.x, b2.ll.x) < 0 ||
-    cmp(b2.ur.y, b1.ll.y) < 0 ||
-    cmp(b1.ur.y, b2.ll.y) < 0
-  )
-
 /* Returns either null, or a bbox (aka an ordered pair of points)
  * If there is only one point of overlap, a bbox with identical points
  * will be returned */
 export const getBboxOverlap = (b1, b2) => {
-  if (!doBboxesOverlap(b1, b2)) return null
+  // check if the bboxes overlap at all
+  if (
+      cmp(b2.ur.x, b1.ll.x) < 0 ||
+      cmp(b1.ur.x, b2.ll.x) < 0 ||
+      cmp(b2.ur.y, b1.ll.y) < 0 ||
+      cmp(b1.ur.y, b2.ll.y) < 0
+    ) return null
 
   // find the middle two X values
   const lowerX = b1.ll.x < b2.ll.x ? b2.ll.x : b1.ll.x
