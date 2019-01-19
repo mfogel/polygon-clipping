@@ -1,8 +1,8 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
-import { isInBbox, getBboxOverlap, getUniqueCorners } from './bbox'
-import { cmp, cmpPoints } from './flp'
-import { crossProduct, compareVectorAngles, intersection, perpendicular, verticalIntersection } from './vector'
+import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
+import { cmp, cmpPoints, touchPoints } from './flp'
+import { closestPoint, intersection, perpendicular, verticalIntersection } from './vector'
 
 export default class Segment {
   static compare (a, b) {
@@ -148,19 +148,6 @@ export default class Segment {
     this.rightSE.segment = this
     this.rightSE.otherSE = this.leftSE
     this.leftSE.otherSE = this.rightSE
-
-    // because of rounding errors, non-vertical segments that point downward
-    // can be split into a vertical segment and a non-vertical one. The sweep
-    // events of the vertical one can be backwards - right should be on the
-    // upper point, left on the lower point.
-    if (cmpPoints(this.leftSE.point, this.rightSE.point) > 0) {
-      // swap the events
-      const tmp = this.leftSE
-      this.leftSE = this.rightSE
-      this.leftSE.isLeft = true
-      this.rightSE = tmp
-      this.rightSE.isLeft = false
-    }
   }
 
   bbox () {
@@ -225,52 +212,95 @@ export default class Segment {
     return 0
   }
 
-  /* Does the given point fall on this segment? Greedy comparison */
+  /* Does the point in question touch the given segment?
+   * Greedy - essentially a 2 * Number.EPSILON comparison.
+   * If it's not possible to add an independent point between the
+   * point and the segment, we say the point 'touches' the segment. */
   touches (point) {
-    if (this.isAnEndpoint(point)) return true
-    const v1 = this.vector()
-    const v2 = perpendicular(v1)
-    const interPt = intersection(this.leftSE.point, v1, point, v2)
-    return cmpPoints(point, interPt) === 0
+    if (!touchesBbox(this.bbox(), point)) return false
+    const cPt = closestPoint(this.leftSE.point, this.vector(), point)
+    const avgPt = { x: (cPt.x + point.x) / 2, y: (cPt.y + point.y) / 2 }
+    return touchPoints(avgPt, cPt) || touchPoints(avgPt, point)
   }
 
   /**
-   * Given another segment, returns an array of intersection points
-   * between the two segments. The returned array can contain:
-   *  * zero points:  no intersection b/t segments
-   *  * one point:    segments intersect once
-   *  * two points:   segments overlap. Endpoints of overlap returned.
-   *                  Will be ordered as sweep line would encounter them.
+   * Given another segment, returns the first non-trivial intersection
+   * between the two segments (in terms of sweep line ordering), if it exists.
+   *
+   * A 'non-trivial' intersection is one that will cause one or both of the
+   * segments to be split(). As such, 'trivial' vs. 'non-trivial' intersection:
+   *
+   *   * endpoint of segA with endpoint of segB --> trivial
+   *   * endpoint of segA with point along segB --> non-trivial
+   *   * endpoint of segB with point along segA --> non-trivial
+   *   * point along segA with point along segB --> non-trivial
+   *
+   * If no non-trivial intersection exists, return null
+   * Else, return null.
    */
-  getIntersections (other) {
+  getIntersection (other) {
     // If bboxes don't overlap, there can't be any intersections
     const bboxOverlap = getBboxOverlap(this.bbox(), other.bbox())
-    if (bboxOverlap === null) return []
+    if (bboxOverlap === null) return null
 
-    // The general algorithim doesn't handle overlapping colinear segments.
-    // Overlapping colinear segments, if present, will have intersections
-    // of one pair of opposing corners of the bbox overlap. Thus we just
-    // manually check those coordinates.
-    //
-    // Note this also handles the cases of a collapsed bbox (just one point)
-    // and semi-collapsed bbox (a vertical or horizontal line) as well.
-    //
-    // In addition, in the case of a T-intersection, this ensures that the
-    // interseciton returned matches exactly an endpoint - no rounding error.
-    const intersections = []
-    const bboxCorners = getUniqueCorners(bboxOverlap)
-    for (let i = 0, iMax = bboxCorners.length; i < iMax; i++) {
-      const pt = bboxCorners[i]
-      if (this.touches(pt) && other.touches(pt)) intersections.push(pt)
+    // We first check to see if the endpoints can be considered intersections.
+    // This will 'snap' intersections to endpoints if possible, and will
+    // handle cases of colinearity.
+
+    // does each endpoint touch the other segment?
+    const touchesOtherLSE = this.touches(other.leftSE.point)
+    const touchesThisLSE = other.touches(this.leftSE.point)
+    const touchesOtherRSE = this.touches(other.rightSE.point)
+    const touchesThisRSE = other.touches(this.rightSE.point)
+
+    // do left endpoints match?
+    if (touchesThisLSE && touchesOtherLSE) {
+      // these two cases are for colinear segments with matching left
+      // endpoints, and one segment being longer than the other
+      if (touchesThisRSE && !touchesOtherRSE) return this.rightSE.point
+      if (!touchesThisRSE && touchesOtherRSE) return other.rightSE.point
+      // either the two segments match exactly (two trival intersections)
+      // or just on their left endpoint (one trivial intersection
+      return null
     }
 
-    if (intersections.length === 0) {
-      // general case of one intersection between non-overlapping segments
-      const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
-      if (pt !== null && isInBbox(bboxOverlap, pt)) intersections.push(pt)
+    // does this left endpoint matches (other doesn't)
+    if (touchesThisLSE) {
+      // check for segments that just intersect on opposing endpoints
+      if (touchesOtherRSE && cmpPoints(this.leftSE.point, other.rightSE.point) === 0) return null
+      // t-intersection on left endpoint
+      return this.leftSE.point
     }
 
-    return intersections
+    // does other left endpoint matches (this doesn't)
+    if (touchesOtherLSE) {
+      // check for segments that just intersect on opposing endpoints
+      if (touchesThisRSE && cmpPoints(this.rightSE.point, other.leftSE.point) === 0) return null
+      // t-intersection on left endpoint
+      return other.leftSE.point
+    }
+
+    // trivial intersection on right endpoints
+    if (touchesThisRSE && touchesOtherRSE) return null
+
+    // t-intersections on just one right endpoint
+    if (touchesThisRSE) return this.rightSE.point
+    if (touchesOtherRSE) return other.rightSE.point
+
+    // None of our endpoints intersect. Look for a general intersection between
+    // infinite lines laid over the segments
+    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
+
+    // are the segments parrallel? Note that if they were colinear with overlap,
+    // they would have an endpoint intersection and that case was already handled above
+    if (pt === null) return null
+
+    // is the intersection found between the lines not on the segments?
+    if (!isInBbox(bboxOverlap, pt)) return null
+
+    // We don't need to check if we need to 'snap' to an endpoint,
+    // because the endpoint cmps we did eariler were greedy
+    return pt
   }
 
   /**
@@ -297,6 +327,7 @@ export default class Segment {
       const point = points[i]
       // skip repeated points
       if (prevPoint && cmpPoints(prevPoint, point) === 0) continue
+      const alreadyLinked = point.events !== undefined
 
       const newLeftSE = new SweepEvent(point, true)
       const newRightSE = new SweepEvent(point, false)
@@ -306,10 +337,35 @@ export default class Segment {
       newEvents.push(newLeftSE)
 
       prevSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+
+      // in the point we just used to create new sweep events with was already
+      // linked to other events, we need to check if either of the affected
+      // segments should be consumed
+      if (alreadyLinked) {
+        newLeftSE.segment.checkForConsuming()
+        newRightSE.segment.checkForConsuming()
+      }
+
       prevPoint = point
     }
 
     return newEvents
+  }
+
+  /* Do a pass over the linked events and to see if any segments
+   * should be consumed. If so, do it. */
+  checkForConsuming () {
+    if (this.leftSE.point.events.length === 1) return
+    if (this.rightSE.point.events.length === 1) return
+    for (let i = 0, iMax = this.leftSE.point.events.length; i < iMax; i++) {
+      const le = this.leftSE.point.events[i]
+      if (le === this.leftSE) continue
+      for (let j = 0, jMax = this.rightSE.point.events.length; j < jMax; j++) {
+        const re = this.rightSE.point.events[j]
+        if (re === this.rightSE) continue
+        if (le.segment === re.segment) this.consume(le.segment)
+      }
+    }
   }
 
   /* Consume another segment. We take their ringsIn under our wing

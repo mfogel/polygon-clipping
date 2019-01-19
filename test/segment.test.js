@@ -221,320 +221,260 @@ describe('comparison with point', () => {
   })
 })
 
-/**
- * These tests ensures that these two methods produce consistent results.
- *
- * Deciding whether a point is on an infinitely thin line is a tricky question
- * in a floating point world. Previously, these two methods were coming to
- * different conclusions for the these points.
- */
-describe('consistency between touches() and getIntersections()', () => {
-  test('t-intersection on endpoint', () => {
-    const pt = {x: -104.0626, y: 75.4279525872937}
-    const s1 = Segment.fromRing({x: -104.117212, y: 75.4383502}, {x: -104.0624, y: 75.4279145091691})
-    const s2 = Segment.fromRing(pt, {x: -104.0625, y: 75.44})
-
-    const inters1 = s1.getIntersections(s2)
-    expect(inters1.length).toBe(1)
-    expect(inters1[0].x).toBe(pt.x)
-    expect(inters1[0].y).toBe(pt.y)
-
-    const inters2 = s2.getIntersections(s1)
-    expect(inters2.length).toBe(1)
-    expect(inters2[0].x).toBe(pt.x)
-    expect(inters2[0].y).toBe(pt.y)
-
-    expect(s1.touches(pt)).toBe(true)
-    expect(s2.touches(pt)).toBe(true)
-  })
-
-  test('two intersections on endpoints, overlapping parrallel segments', () => {
-    const pt1 = {x: -104.0624, y: 75.4279145091691}
-    const pt2 = {x: -104.0626, y: 75.4279525872937}
-    const s1 = Segment.fromRing({x: -104.117212, y: 75.4383502}, pt1)
-    const s2 = Segment.fromRing(pt2, {x: -104.0529352, y: 75.4261125})
-
-    const inters1 = s1.getIntersections(s2)
-    expect(inters1.length).toBe(2)
-    expect(inters1[0].x).toBe(pt2.x)
-    expect(inters1[0].y).toBe(pt2.y)
-    expect(inters1[1].x).toBe(pt1.x)
-    expect(inters1[1].y).toBe(pt1.y)
-
-    const inters2 = s2.getIntersections(s1)
-    expect(inters2.length).toBe(2)
-    expect(inters2[0].x).toBe(pt2.x)
-    expect(inters2[0].y).toBe(pt2.y)
-    expect(inters2[1].x).toBe(pt1.x)
-    expect(inters2[1].y).toBe(pt1.y)
-
-    expect(s1.touches(pt1)).toBe(true)
-    expect(s1.touches(pt2)).toBe(true)
-
-    expect(s2.touches(pt1)).toBe(true)
-    expect(s2.touches(pt2)).toBe(true)
-  })
-})
-
 describe('get intersections 2', () => {
   test('colinear full overlap', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const s2 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    const inters = [{ x: 0, y: 0 }, { x: 1, y: 1 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    expect(s1.getIntersection(s2)).toBeNull()
+    expect(s2.getIntersection(s1)).toBeNull()
   })
 
   test('colinear partial overlap upward slope', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 2, y: 2 })
     const s2 = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
-    const inters = [{ x: 1, y: 1 }, { x: 2, y: 2 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 1, y: 1 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('colinear partial overlap downward slope', () => {
     const s1 = Segment.fromRing({ x: 0, y: 2 }, { x: 2, y: 0 })
     const s2 = Segment.fromRing({ x: -1, y: 3 }, { x: 1, y: 1 })
-    const inters = [{ x: 0, y: 2 }, { x: 1, y: 1 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 0, y: 2 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('colinear partial overlap horizontal', () => {
     const s1 = Segment.fromRing({ x: 0, y: 1 }, { x: 2, y: 1 })
     const s2 = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 1 })
-    const inters = [{ x: 1, y: 1 }, { x: 2, y: 1 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 1, y: 1 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('colinear partial overlap vertical', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 0, y: 3 })
     const s2 = Segment.fromRing({ x: 0, y: 2 }, { x: 0, y: 4 })
-    const inters = [{ x: 0, y: 2 }, { x: 0, y: 3 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 0, y: 2 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('colinear endpoint overlap', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const s2 = Segment.fromRing({ x: 1, y: 1 }, { x: 2, y: 2 })
-    const inters = [{ x: 1, y: 1 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    expect(s1.getIntersection(s2)).toBeNull()
+    expect(s2.getIntersection(s1)).toBeNull()
   })
 
   test('colinear no overlap', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const s2 = Segment.fromRing({ x: 3, y: 3 }, { x: 4, y: 4 })
-    const inters = []
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    expect(s1.getIntersection(s2)).toBeNull()
+    expect(s2.getIntersection(s1)).toBeNull()
   })
 
   test('parallel no overlap', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const s2 = Segment.fromRing({ x: 0, y: 3 }, { x: 1, y: 4 })
-    const inters = []
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    expect(s1.getIntersection(s2)).toBeNull()
+    expect(s2.getIntersection(s1)).toBeNull()
   })
 
   test('intersect general', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 2, y: 2 })
     const s2 = Segment.fromRing({ x: 0, y: 2 }, { x: 2, y: 0 })
-    const inters = [{ x: 1, y: 1 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 1, y: 1 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('T-intersect with an endpoint', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 2, y: 2 })
     const s2 = Segment.fromRing({ x: 1, y: 1 }, { x: 5, y: 4 })
-    const inters = [{ x: 1, y: 1 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 1, y: 1 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('intersect with vertical', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 })
     const s2 = Segment.fromRing({ x: 3, y: 0 }, { x: 3, y: 44 })
-    const inters = [{ x: 3, y: 3 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 3, y: 3 } 
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('intersect with horizontal', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 })
     const s2 = Segment.fromRing({ x: 0, y: 3 }, { x: 23, y: 3 })
-    const inters = [{ x: 3, y: 3 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 3, y: 3 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('horizontal and vertical T-intersection', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 0 })
     const s2 = Segment.fromRing({ x: 3, y: 0 }, { x: 3, y: 5 })
-    const inters = [{ x: 3, y: 0 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 3, y: 0 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('horizontal and vertical general intersection', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 0 })
     const s2 = Segment.fromRing({ x: 3, y: -5 }, { x: 3, y: 5 })
-    const inters = [{ x: 3, y: 0 }]
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    const inter = { x: 3, y: 0 }
+    expect(s1.getIntersection(s2)).toMatchObject(inter)
+    expect(s2.getIntersection(s1)).toMatchObject(inter)
   })
 
   test('no intersection not even close', () => {
     const s1 = Segment.fromRing({ x: 1000, y: 10002 }, { x: 2000, y: 20002 })
     const s2 = Segment.fromRing({ x: -234, y: -123 }, { x: -12, y: -23 })
-    const inters = []
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    expect(s1.getIntersection(s2)).toBeNull()
+    expect(s2.getIntersection(s1)).toBeNull()
   })
 
   test('no intersection kinda close', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 })
     const s2 = Segment.fromRing({ x: 0, y: 10 }, { x: 10, y: 0 })
-    const inters = []
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    expect(s1.getIntersection(s2)).toBeNull()
+    expect(s2.getIntersection(s1)).toBeNull()
   })
 
   test('no intersection with vertical touching bbox', () => {
     const s1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 })
     const s2 = Segment.fromRing({ x: 2, y: -5 }, { x: 2, y: 0 })
-    const inters = []
-    expect(s1.getIntersections(s2)).toEqual(inters)
-    expect(s2.getIntersections(s1)).toEqual(inters)
+    expect(s1.getIntersection(s2)).toBeNull()
+    expect(s2.getIntersection(s1)).toBeNull()
   })
 
-  test('shared point 1', () => {
+  test('shared point 1 (endpoint)', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({ x: 0, y: 1 }, { x: 0, y: 0 })
-    const inters = [{ x: 0, y: 0 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
-  test('shared point 2', () => {
+  test('shared point 2 (endpoint)', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({x: 0, y: 1 }, { x: 1, y: 1 })
-    const inters = [{ x: 1, y: 1 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
-  test('T-crossing', () => {
+  test('T-crossing left endpoint', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({ x: 0.5, y: 0.5 }, { x: 1, y: 0 })
-    const inters = [{ x: 0.5, y: 0.5 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    const inter = { x: 0.5, y: 0.5 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
+  })
+
+  test('T-crossing right endpoint', () => {
+    const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
+    const b = Segment.fromRing({ x: 0, y: 1 }, { x: 0.5, y: 0.5 })
+    const inter = { x: 0.5, y: 0.5 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
   })
 
   test('full overlap', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 10, y: 10 })
     const b = Segment.fromRing({ x: 1, y: 1 }, { x: 5, y: 5 })
-    const inters = [{ x: 1, y: 1 }, { x: 5, y: 5 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    const inter = { x: 1, y: 1 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
   })
 
   test('shared point + overlap', () => {
     const a = Segment.fromRing({ x: 1, y: 1 }, { x: 10, y: 10 })
     const b = Segment.fromRing({ x: 1, y: 1 }, { x: 5, y: 5 })
-    const inters = [{ x: 1, y: 1 }, { x: 5, y: 5 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    const inter = { x: 5, y: 5 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
   })
 
   test('mutual overlap', () => {
     const a = Segment.fromRing({ x: 3, y: 3 }, { x: 10, y: 10 })
     const b = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 })
-    const inters = [{ x: 3, y: 3 }, { x: 5, y: 5 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    const inter = { x: 3, y: 3 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
   })
 
   test('full overlap', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    const inters = [{ x: 0, y: 0 }, { x: 1, y: 1 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('full overlap, orientation', () => {
     const a = Segment.fromRing({ x: 1, y: 1 }, { x: 0, y: 0 })
     const b = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    const inters = [{ x: 0, y: 0 }, { x: 1, y: 1 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('colinear, shared point', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({ x: 1, y: 1 }, { x: 2, y: 2 })
-    const inters = [{ x: 1, y: 1 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('colinear, shared other point', () => {
     const a = Segment.fromRing({ x: 1, y: 1 }, { x: 0, y: 0 })
     const b = Segment.fromRing({ x: 1, y: 1 }, { x: 2, y: 2 })
-    const inters = [{ x: 1, y: 1 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('colinear, one encloses other', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 })
     const b = Segment.fromRing({ x: 1, y: 1 }, { x: 2, y: 2 })
-    const inters = [{ x: 1, y: 1 }, { x: 2, y: 2 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    const inter = { x: 1, y: 1 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
   })
 
   test('colinear, one encloses other 2', () => {
     const a = Segment.fromRing({ x: 4, y: 0 }, { x: 0, y: 4 })
     const b = Segment.fromRing({ x: 3, y: 1 }, { x: 1, y: 3 })
-    const inters = [{ x: 1, y: 3 }, { x: 3, y: 1 }]
-    expect(a.getIntersections(b)).toEqual(inters)
-    expect(b.getIntersections(a)).toEqual(inters)
+    const inter = { x: 1, y: 3 }
+    expect(a.getIntersection(b)).toMatchObject(inter)
+    expect(b.getIntersection(a)).toMatchObject(inter)
   })
 
   test('colinear, no overlap', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({ x: 2, y: 2 }, { x: 4, y: 4 })
-    expect(a.getIntersections(b)).toEqual([])
-    expect(b.getIntersections(a)).toEqual([])
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('parallel', () => {
     const a = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
     const b = Segment.fromRing({ x: 0, y: -1 }, { x: 1, y: 0 })
-    expect(a.getIntersections(b)).toEqual([])
-    expect(b.getIntersections(a)).toEqual([])
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('parallel, orientation', () => {
     const a = Segment.fromRing({ x: 1, y: 1 }, { x: 0, y: 0 })
     const b = Segment.fromRing({ x: 0, y: -1 }, { x: 1, y: 0 })
-    expect(a.getIntersections(b)).toEqual([])
-    expect(b.getIntersections(a)).toEqual([])
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('parallel, position', () => {
     const a = Segment.fromRing({ x: 0, y: -1 }, { x: 1, y: 0 })
     const b = Segment.fromRing({ x: 0, y: 0 }, { x: 1, y: 1 })
-    expect(a.getIntersections(b)).toEqual([])
-    expect(b.getIntersections(a)).toEqual([])
+    expect(a.getIntersection(b)).toBeNull()
+    expect(b.getIntersection(a)).toBeNull()
   })
 
   test('endpoint intersections should be consistent - issue 60', () => {
@@ -549,11 +489,10 @@ describe('get intersections 2', () => {
       { x: -91.41352785864918, y: 29.53115 }
     )
 
-    const otherInter = { x: -91.41352785864918, y: 29.53115 }
-    expect(segA1.getIntersections(segB)).toEqual([{x: x, y: y}, otherInter])
-    expect(segA2.getIntersections(segB)).toEqual([{x: x, y: y}])
-    expect(segB.getIntersections(segA1)).toEqual([{x: x, y: y}, otherInter])
-    expect(segB.getIntersections(segA2)).toEqual([{x: x, y: y}])
+    expect(segA1.getIntersection(segB)).toMatchObject({x: x, y: y})
+    expect(segA2.getIntersection(segB)).toMatchObject({x: x, y: y})
+    expect(segB.getIntersection(segA1)).toMatchObject({x: x, y: y})
+    expect(segB.getIntersection(segA2)).toMatchObject({x: x, y: y})
   })
 })
 

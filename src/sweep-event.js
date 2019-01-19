@@ -89,12 +89,9 @@ export default class SweepEvent {
       const evt = otherEvents[i]
       this.point.events.push(evt)
       evt.point = this.point
-      for (let j = 0, jMax = numOriginalEvents; j < jMax; j++) {
-        if (this.point.events[j].otherSE.point === evt.otherSE.point) {
-          this.point.events[j].segment.consume(evt.segment)
-        }
-      }
     }
+    this.segment.checkForConsuming()
+    other.segment.checkForConsuming()
   }
 
   getAvailableLinkedEvents () {
