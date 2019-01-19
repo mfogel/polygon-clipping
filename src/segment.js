@@ -148,23 +148,8 @@ export default class Segment {
     this.rightSE.segment = this
     this.rightSE.otherSE = this.leftSE
     this.leftSE.otherSE = this.rightSE
-
-    // TODO: tests don't catch this anymore. remove it?
-    // because of rounding errors, non-vertical segments that point downward
-    // can be split into a vertical segment and a non-vertical one. The sweep
-    // events of the vertical one can be backwards - right should be on the
-    // upper point, left on the lower point.
-    if (cmpPoints(this.leftSE.point, this.rightSE.point) > 0) {
-      // swap the events
-      const tmp = this.leftSE
-      this.leftSE = this.rightSE
-      this.leftSE.isLeft = true
-      this.rightSE = tmp
-      this.rightSE.isLeft = false
-    }
   }
 
-  // TODO: make into pre-calculated constant?
   bbox () {
     const y1 = this.leftSE.point.y
     const y2 = this.rightSE.point.y
@@ -342,6 +327,7 @@ export default class Segment {
       const point = points[i]
       // skip repeated points
       if (prevPoint && cmpPoints(prevPoint, point) === 0) continue
+      const alreadyLinked = point.events !== undefined
 
       const newLeftSE = new SweepEvent(point, true)
       const newRightSE = new SweepEvent(point, false)
@@ -351,10 +337,35 @@ export default class Segment {
       newEvents.push(newLeftSE)
 
       prevSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+
+      // in the point we just used to create new sweep events with was already
+      // linked to other events, we need to check if either of the affected
+      // segments should be consumed
+      if (alreadyLinked) {
+        newLeftSE.segment.checkForConsuming()
+        newRightSE.segment.checkForConsuming()
+      }
+
       prevPoint = point
     }
 
     return newEvents
+  }
+
+  /* Do a pass over the linked events and to see if any segments
+   * should be consumed. If so, do it. */
+  checkForConsuming () {
+    if (this.leftSE.point.events.length === 1) return
+    if (this.rightSE.point.events.length === 1) return
+    for (let i = 0, iMax = this.leftSE.point.events.length; i < iMax; i++) {
+      const le = this.leftSE.point.events[i]
+      if (le === this.leftSE) continue
+      for (let j = 0, jMax = this.rightSE.point.events.length; j < jMax; j++) {
+        const re = this.rightSE.point.events[j]
+        if (re === this.rightSE) continue
+        if (le.segment === re.segment) this.consume(le.segment)
+      }
+    }
   }
 
   /* Consume another segment. We take their ringsIn under our wing
