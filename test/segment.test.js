@@ -219,6 +219,13 @@ describe('comparison with point', () => {
     const pt = { x: 2, y: 1 + Number.EPSILON * 3 / 2 }
     expect(s1.comparePoint(pt)).toBe(1)
   })
+
+  // harvested from #37
+  test('downward-slopping segment with nearly touching point', () => {
+    const seg = Segment.fromRing({ x: 0.523985, y: 51.281651 }, { x: 0.5241, y: 51.2816 })
+    const pt = { x: 0.5239850000000027, y: 51.281651000000004 }
+    expect(seg.comparePoint(pt)).toBe(1)
+  })
 })
 
 describe('get intersections 2', () => {
@@ -739,5 +746,12 @@ describe('compare segments', () => {
     const result = Segment.compare(seg1, seg2)
     expect(Segment.compare(seg1, seg2)).toBe(result)
     expect(Segment.compare(seg2, seg1)).toBe(result * -1)
+  })
+
+  test('segment consistency - from #60', () => {
+    const seg1 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.571478, y: 55.0187174 })
+    const seg2 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.57152375603846, y: 55.01943125 })
+    expect(Segment.compare(seg1, seg2)).toBe(-1)
+    expect(Segment.compare(seg2, seg1)).toBe(1)
   })
 })

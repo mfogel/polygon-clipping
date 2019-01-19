@@ -184,15 +184,21 @@ export default class Segment {
    *    -1: point is below or to the right of segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    const v1 = this.vector()
-    const v2 = perpendicular(v1)
-    const interPt = intersection(this.leftSE.point, v1, point, v2)
+    const interPt = closestPoint(this.leftSE.point, this.vector(), point)
 
-    // Trying to be as exact as possible here, hence not using flp comparisons
-    if (point.y < interPt.y) return -1
-    if (point.y > interPt.y) return 1
-    if (point.x > interPt.x) return -1
-    if (point.x < interPt.x) return 1
+    const cmpY = cmp(point.y, interPt.y)
+    if (cmpY !== 0) return cmpY
+
+    const cmpX = cmp(point.x, interPt.x)
+    const segCmpX = cmp(this.leftSE.point.y, this.rightSE.point.y)
+
+    // depending on if our segment angles up or down,
+    // the x coord comparison means oppposite things
+    if (cmpX > 0) return segCmpX
+    if (cmpX < 0) {
+      if (segCmpX > 0) return -1
+      if (segCmpX < 0) return 1
+    }
     return 0
   }
 
