@@ -55,7 +55,7 @@
     "vue-template-compiler": "^2.5.16",
     "webpack": "^4.10.2",
     "webpack-cli": "^2.1.4",
-    "webpack-dev-server": "^3.1.4"
+    "webpack-dev-server": "^3.1.14"
   },
   "dependencies": {
     "splaytree": "^2.0.3"
