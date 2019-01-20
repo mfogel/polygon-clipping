@@ -342,7 +342,7 @@ export default class Segment {
       newEvents.push(newRightSE)
       newEvents.push(newLeftSE)
 
-      prevSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+      prevSeg = new Segment(newLeftSE, oldRightSE, prevSeg.ringsIn.slice())
 
       // in the point we just used to create new sweep events with was already
       // linked to other events, we need to check if either of the affected
