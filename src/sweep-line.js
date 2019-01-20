@@ -138,16 +138,22 @@ export default class SweepLine {
   /* Safely split a segment that is currently in the datastructures
    * IE - a segment other than the one that is currently being processed. */
   _splitSafely(segment, pt) {
+    // Since we're not proactively purging consumed segments from the tree,
+    // we have to avoid splitting a dead segment.
+    // Instead, split the one that consumed it.
+    let seg = segment
+    while (seg.consumedBy) seg = seg.consumedBy
+
     // Rounding errors can cause changes in ordering,
     // so remove afected segments and right sweep events before splitting
     // removeNode() doesn't work, so have re-find the seg
     // https://github.com/w8r/splay-tree/pull/5
-    this.tree.remove(segment)
-    const rightSE = segment.rightSE
+    this.tree.remove(seg)
+    const rightSE = seg.rightSE
     this.queue.remove(rightSE)
-    const newEvents = segment.split([pt])
+    const newEvents = seg.split([pt])
     newEvents.push(rightSE)
-    this.tree.insert(segment)
+    this.tree.insert(seg)
     return newEvents
   }
 }
