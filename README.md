@@ -144,6 +144,12 @@ The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the resul
 * [Alexander Milevski](https://github.com/w8r)
 * [Vladimir Ovsyannikov](https://github.com/sh1ng)
 
+## Sponsors
+
+ * [EasyTerritory](https://www.easyterritory.com/)
+
+Please contact [Mike Fogel](https://github.com/mfogel) if you or your company is interested in sponsoring work on specific bug fixes or feature requests.
+
 ## Based on
 
 * [A new algorithm for computing Boolean operations on polygons](paper.pdf) by Francisco Martinez, Antonio Jesus Rueda, Francisco Ramon Feito (2009)
