@@ -41,11 +41,24 @@ export default class SweepLine {
       `in SweepLine tree. Please submit a bug report.`
     )
 
-    const prevNode = this.tree.prev(node)
-    const prevSeg = prevNode ? prevNode.key : null
+    let prevNode = node
+    let nextNode = node
+    let prevSeg = undefined
+    let nextSeg = undefined
 
-    const nextNode = this.tree.next(node)
-    const nextSeg = nextNode ? nextNode.key : null
+    // skip consumed segments still in tree
+    while (prevSeg === undefined) {
+      prevNode = this.tree.prev(prevNode)
+      if (prevNode === null) prevSeg = null
+      else if (prevNode.key.consumedBy === undefined) prevSeg = prevNode.key
+    }
+
+    // skip consumed segments still in tree
+    while (nextSeg === undefined) {
+      nextNode = this.tree.next(nextNode)
+      if (nextNode === null) nextSeg = null
+      else if (nextNode.key.consumedBy === undefined) nextSeg = nextNode.key
+    }
 
     if (event.isLeft) {
       // TODO: would it make sense to just stop and bail out at the first time we're split?
@@ -137,13 +150,7 @@ export default class SweepLine {
 
   /* Safely split a segment that is currently in the datastructures
    * IE - a segment other than the one that is currently being processed. */
-  _splitSafely(segment, pt) {
-    // Since we're not proactively purging consumed segments from the tree,
-    // we have to avoid splitting a dead segment.
-    // Instead, split the one that consumed it.
-    let seg = segment
-    while (seg.consumedBy) seg = seg.consumedBy
-
+  _splitSafely(seg, pt) {
     // Rounding errors can cause changes in ordering,
     // so remove afected segments and right sweep events before splitting
     // removeNode() doesn't work, so have re-find the seg
