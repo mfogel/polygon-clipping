@@ -1,4 +1,6 @@
 var webpack = require('webpack')
+var VueLoaderPlugin = require('vue-loader/lib/plugin')
+
 
 module.exports = {
   entry: './docs/src/main.js',
@@ -39,6 +41,9 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+    new VueLoaderPlugin()
+  ],
   resolve: {
     alias: {
       'splaytree$': 'splaytree/dist/splay.js',
