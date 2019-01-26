@@ -40,15 +40,15 @@ export class Operation {
 
     /* Pass the sweep line over those endpoints */
     const sweepLine = new SweepLine(queue)
-    let node
     let prevQueueSize = queue.size
-    while (node = queue.pop()) {
+    let node = queue.pop()
+    while (node) {
       const evt = node.key
       if (queue.size === prevQueueSize) {
         // prevents an infinite loop, an otherwise common manifestation of bugs
         throw new Error(
           `Unable to pop() SweepEvent #${evt.id} [${evt.point.x}, ${evt.point.y}] ` +
-          `from queue. Please file a bug report.`
+          'from queue. Please file a bug report.'
         )
       }
       const newEvents = sweepLine.process(evt)
@@ -56,6 +56,7 @@ export class Operation {
         queue.insert(newEvents[i])
       }
       prevQueueSize = queue.size
+      node = queue.pop()
     }
 
     /* Collect and compile segments we're keeping into a multipolygon */

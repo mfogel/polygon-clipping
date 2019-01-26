@@ -14,10 +14,11 @@
         </div>
 
         <h4>Performance</h4>
-        <p>polygon-clipping {{performance}} m/s  </br>
-        martinez {{martinezPerf}} m/s  </br>
-        jsts {{jstsPerf}} m/s  </br>
-        </p>      
+        <p>
+          polygon-clipping {{performance}} m/s<br>
+          martinez {{martinezPerf}} m/s<br>
+          jsts {{jstsPerf}} m/s<br>
+        </p>
 
       </div>
     </div>

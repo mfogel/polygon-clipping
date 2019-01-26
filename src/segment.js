@@ -2,7 +2,7 @@ import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
 import { cmp, cmpPoints, touchPoints } from './flp'
-import { closestPoint, intersection, perpendicular, verticalIntersection } from './vector'
+import { closestPoint, intersection, verticalIntersection } from './vector'
 
 export default class Segment {
   static compare (a, b) {
@@ -102,11 +102,11 @@ export default class Segment {
     }
 
     throw new Error(
-      `Segment comparison of ` +
+      'Segment comparison of ' +
       `[${a.leftSE.point.x}, ${a.leftSE.point.y}] -> [${a.rightSE.point.x}, ${a.rightSE.point.y}] ` +
-      `against ` +
+      'against ' +
       `[${b.leftSE.point.x}, ${b.leftSE.point.y}] -> [${b.rightSE.point.x}, ${b.rightSE.point.y}] ` +
-      `failed. Please submit a bug report.`
+      'failed. Please submit a bug report.'
     )
   }
 
@@ -508,15 +508,16 @@ export default class Segment {
     const mpsAfter = this.multiPolysAfter()
 
     switch (operation.type) {
-      case 'union':
+      case 'union': {
         // UNION - included iff:
         //  * On one side of us there is 0 poly interiors AND
         //  * On the other side there is 1 or more.
         const noBefores = mpsBefore.length === 0
         const noAfters = mpsAfter.length === 0
         return noBefores !== noAfters
+      }
 
-      case 'intersection':
+      case 'intersection': {
         // INTERSECTION - included iff:
         //  * on one side of us all multipolys are rep. with poly interiors AND
         //  * on the other side of us, not all multipolys are repsented
@@ -531,19 +532,22 @@ export default class Segment {
           most = mpsBefore.length
         }
         return most === operation.numMultiPolys && least < most
+      }
 
-      case 'xor':
+      case 'xor': {
         // XOR - included iff:
         //  * the difference between the number of multipolys represented
         //    with poly interiors on our two sides is an odd number
         const diff = Math.abs(mpsBefore.length - mpsAfter.length)
         return diff % 2 === 1
+      }
 
-      case 'difference':
+      case 'difference': {
         // DIFFERENCE included iff:
         //  * on exactly one side, we have just the subject
         const isJustSubject = mps => mps.length === 1 && mps[0].isSubject
         return isJustSubject(mpsBefore) !== isJustSubject(mpsAfter)
+      }
 
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)

@@ -35,11 +35,11 @@ export const touchesBbox = (bbox, point) => {
 export const getBboxOverlap = (b1, b2) => {
   // check if the bboxes overlap at all
   if (
-      cmp(b2.ur.x, b1.ll.x) < 0 ||
-      cmp(b1.ur.x, b2.ll.x) < 0 ||
-      cmp(b2.ur.y, b1.ll.y) < 0 ||
-      cmp(b1.ur.y, b2.ll.y) < 0
-    ) return null
+    cmp(b2.ur.x, b1.ll.x) < 0 ||
+    cmp(b1.ur.x, b2.ll.x) < 0 ||
+    cmp(b2.ur.y, b1.ll.y) < 0 ||
+    cmp(b1.ur.y, b2.ll.y) < 0
+  ) return null
 
   // find the middle two X values
   const lowerX = b1.ll.x < b2.ll.x ? b2.ll.x : b1.ll.x
