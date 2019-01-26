@@ -476,10 +476,10 @@ export default class Segment {
     for (let i = 0, iMax = ringsAfter.length; i < iMax; i++) {
       const ring = ringsAfter[i]
       const poly = ring.poly
-      if (polysExclude.includes(poly)) continue
+      if (polysExclude.indexOf(poly) !== -1) continue
       if (ring.isExterior) polysAfter.push(poly)
       else {
-        if (! polysExclude.includes(poly)) polysExclude.push(poly)
+        if (polysExclude.indexOf(poly) === -1) polysExclude.push(poly)
         const index = polysAfter.indexOf(ring.poly)
         if (index !== -1) polysAfter.splice(index, 1)
       }
@@ -488,7 +488,7 @@ export default class Segment {
     const mps = []
     for (let i = 0, iMax = polysAfter.length; i < iMax; i++) {
       const mp = polysAfter[i].multiPoly
-      if (!mps.includes(mp)) mps.push(mp)
+      if (mps.indexOf(mp) === -1) mps.push(mp)
     }
     return mps
   }
