@@ -5,6 +5,7 @@
   "main": "dist/polygon-clipping.js",
   "module": "src/index.js",
   "scripts": {
+    "build": "npm run build:docs && npm run build:lib && npm run build:min",
     "build:docs": "cross-env NODE_ENV=production webpack --config docs/webpack.config.js --mode production --progress --hide-modules",
     "build:lib": "webpack --mode development --progress --hide-modules",
     "build:min": "webpack --mode production --output-filename polygon-clipping.min.js --progress --hide-modules",
@@ -13,7 +14,7 @@
     "test": "jest",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "bench": "node bench/bench.js",
-    "prepublishOnly": "npm test && npm run build:docs && npm run build:lib && npm run build:min"
+    "prepublishOnly": "npm run lint && npm run test && npm run build && npm run bench"
   },
   "browserslist": [
     "> 0.25% or not dead"
