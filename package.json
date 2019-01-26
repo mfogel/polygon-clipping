@@ -34,7 +34,7 @@
   "author": "Mike Fogel <mike@fogel.ca>",
   "license": "MIT",
   "devDependencies": {
-    "@turf/union": "^4.6.0",
+    "@turf/union": "^5.1.5",
     "babel-jest": "^23.6.0",
     "babel-loader": "^7.1.5",
     "babel-plugin-add-module-exports": "^1.0.0",
