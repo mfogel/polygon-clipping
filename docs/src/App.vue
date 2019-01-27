@@ -27,24 +27,32 @@
 
 <script>
 
-var pc = require('../../src')
-var martinez = require('martinez-polygon-clipping')
+import pc from '../..'
+
+// the martinez packaging is somewhat broken
+import martinezBool from 'martinez-polygon-clipping'
+var martinezUnion = (p1, p2) => martinezBool(p1, p2, 1)
+var martinezIntersection = (p1, p2) => martinezBool(p1, p2, 0)
+var martinezDifference = (p1, p2) => martinezBool(p1, p2, 2)
+var martinezXor = (p1, p2) => martinezBool(p1, p2, 3)
+
+// turf v5 runs off of jsts under the hood
+import jstsUnion from '@turf/union'
+import jstsIntersection from '@turf/intersect'
+import jstsDifference from '@turf/difference'
+var jstsXor = null
 
 var operation = pc.intersection
-var martinezOp = martinez.intersection
-var turfOperation = turf.intersect
+var martinezOp = martinezUnion
+var jstsOp = jstsUnion
 var inData = null
 var inLayer = null
 var outLayer = null
 var map = null
 
-import asia from '../../test/fixtures/asia-with-poly.geojson'
-import parallel from '../../test/end-to-end/almost-parrallel-segments/args.geojson'
-import cheese from '../../test/end-to-end/saw-and-cheese/args.geojson'
-
-const fc = JSON.parse(asia)
-const fc2 = JSON.parse(parallel)
-const fc3 = JSON.parse(cheese)
+import asia from '../geojson/asia-with-poly.json'
+import parallel from '../geojson/parallel.json'
+import cheese from '../geojson/cheese.json'
 
 export default {
   name: 'app',
@@ -61,9 +69,9 @@ export default {
     setInput (e) {
       inLayer.clearLayers()
       outLayer.clearLayers()
-      if (e.target.value === 'Asia') inData = fc
-      if (e.target.value === 'Almost Parallel Segments') inData = fc2
-      if (e.target.value === 'Saw & Cheese') inData = fc3
+      if (e.target.value === 'Asia') inData = asia
+      if (e.target.value === 'Almost Parallel Segments') inData = parallel
+      if (e.target.value === 'Saw & Cheese') inData = cheese
       inLayer.addData(inData)
       map.fitBounds(inLayer.getBounds(), {
         padding: [20, 20]
@@ -76,23 +84,23 @@ export default {
 
       if (this.selectedOperation === 'Union') {
         operation = pc.union
-        martinezOp = martinez.union
-        turfOperation = turf.union
+        martinezOp = martinezUnion
+        jstsOp = jstsUnion
       }
       if (this.selectedOperation === 'Intersection') {
         operation = pc.intersection
-        martinezOp = martinez.intersection
-        turfOperation = turf.intersect
+        martinezOp = martinezIntersection
+        jstsOp = jstsIntersection
       }
       if (this.selectedOperation === 'XOR') {
         operation = pc.xor
-        martinezOp = martinez.xor
-        turfOperation = null
+        martinezOp = martinezXor
+        jstsOp = jstsXor
       }
       if (this.selectedOperation === 'Difference') {
         operation = pc.difference
-        martinezOp = martinez.diff
-        turfOperation = turf.difference
+        martinezOp = martinezDifference
+        jstsOp = jstsDifference
       }
 
       this.runOperation()
@@ -111,9 +119,9 @@ export default {
       martinezOp(inData.features[0].geometry.coordinates, inData.features[1].geometry.coordinates)
       this.martinezPerf = (performance.now() - m0).toFixed(2)
 
-      if (turfOperation !== null) {
+      if (jstsOp !== null) {
         var j0 = performance.now()
-        turfOperation(inData.features[0], inData.features[1])
+        jstsOp(inData.features[0], inData.features[1])
         this.jstsPerf = (performance.now() - j0).toFixed(2)
       } else {
         this.jstsPerf = 'N/A'
@@ -121,7 +129,7 @@ export default {
     }
   },
   mounted () {
-    inData = fc
+    inData = asia
     map = window.map = L.map('map', {
       minZoom: 1,
       maxZoom: 20,
@@ -130,7 +138,7 @@ export default {
       crs: L.CRS.Simple
     })
 
-    inLayer = L.geoJson(fc).addTo(map)
+    inLayer = L.geoJson(asia).addTo(map)
 
     map.fitBounds(inLayer.getBounds(), {
       padding: [20, 20]
