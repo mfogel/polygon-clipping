@@ -23,7 +23,7 @@ export default {
     vue(),
     babel({
       extensions: ['.js', '.vue'],
-      presets: [['@babel/preset-env']]
+      configFile: '../babel.config.js'
     }),
     terser()
   ],
