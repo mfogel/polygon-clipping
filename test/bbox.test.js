@@ -1,7 +1,6 @@
 /* eslint-env jest */
 
 import {
-  doBboxesOverlap,
   getBboxOverlap,
   isInBbox,
   touchesBbox

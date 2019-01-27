@@ -1,8 +1,10 @@
+/* eslint no-console: "off" */
+
 const load = require('load-json-file')
 const Benchmark = require('benchmark')
 const jstsUnion = require('@turf/union')
 const w8r = require('martinez-polygon-clipping')
-const mfogel = require('../dist/polygon-clipping.js')
+const mfogel = require('..')
 
 /**
  * Benchmark results ( c9b02e5 )
@@ -27,7 +29,7 @@ const mfogel = require('../dist/polygon-clipping.js')
  */
 
 const options = {
-  onStart (event) {
+  onStart () {
     console.log(this.name)
   },
   onError (event) {

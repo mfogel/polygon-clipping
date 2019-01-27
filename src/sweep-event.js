@@ -1,4 +1,4 @@
-import { cmp, cmpPoints } from './flp'
+import { cmp } from './flp'
 import { cosineOfAngle, sineOfAngle } from './vector'
 
 // Give sweep events unique ID's to get consistent sorting of
@@ -81,9 +81,8 @@ export default class SweepEvent {
 
   link (other) {
     if (other.point === this.point) {
-      throw new Error(`Tried to link already linked events`)
+      throw new Error('Tried to link already linked events')
     }
-    const numOriginalEvents = this.point.events.length
     const otherEvents = other.point.events
     for (let i = 0, iMax = otherEvents.length; i < iMax; i++) {
       const evt = otherEvents[i]

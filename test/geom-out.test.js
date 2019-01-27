@@ -4,7 +4,6 @@
 // do is operate off of the result of the sweep line sweep
 
 import Segment from '../src/segment'
-import SweepEvent from '../src/sweep-event'
 import { RingOut, PolyOut, MultiPolyOut } from '../src/geom-out'
 
 describe('ring', () => {

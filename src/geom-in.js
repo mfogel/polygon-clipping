@@ -1,5 +1,4 @@
 import Segment from './segment'
-import SweepEvent from './sweep-event'
 
 export class RingIn {
   constructor (geomRing, poly, isExterior) {
