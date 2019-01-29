@@ -7,7 +7,7 @@ export default [
   {
     input: 'src/index.js',
     output: {
-      name: 'polygon-clipping',
+      name: 'polygonClipping',
       file: pkg.browser,
       format: 'umd',
       sourcemap: true,
