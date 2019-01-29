@@ -10,6 +10,18 @@ export default [
       name: 'polygonClipping',
       file: pkg.browser,
       format: 'umd',
+    },
+    plugins: [
+      resolve(),
+      babel(),
+    ]
+  },
+  {
+    input: 'src/index.js',
+    output: {
+      name: 'polygonClipping',
+      file: pkg.browser.replace(/.js$/, '.min.js'),
+      format: 'umd',
       sourcemap: true,
     },
     plugins: [
