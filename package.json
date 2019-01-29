@@ -18,6 +18,11 @@
     "bench": "node bench/bench.js",
     "prepublishOnly": "npm-run-all --serial lint docs:lint test build docs:build bench"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
   "browserslist": [
     "> 0.25% or not dead"
   ],
