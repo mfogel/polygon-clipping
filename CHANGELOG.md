@@ -2,6 +2,11 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.12.2 (2019-01-29)
+
+ * Add an unminified UMD to builds
+ * Minimize builds to only required files
+
 ## v0.12.1 (2019-01-29)
 
  * Fix error in release process of v0.12.0
