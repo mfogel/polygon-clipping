@@ -30,14 +30,26 @@ export const cosineOfAngle = (pShared, pBase, pAngle) => {
   return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase)
 }
 
-/* Get the closest point on an line (defined by a point and a vector)
+/* Get the closest point on an line (defined by two points)
  * to another point. */
-export const closestPoint = (pt1, v1, pt2) => {
-  if (v1.x === 0) return { x: pt1.x, y: pt2.y } // vertical vector
-  if (v1.y === 0) return { x: pt2.x, y: pt1.y } // horizontal vector
-  const v2 = { x: pt2.x - pt1.x, y: pt2.y - pt1.y }
-  const dist = dotProduct(v1, v2) / dotProduct(v1, v1)
-  return { x: pt1.x + dist * v1.x, y: pt1.y + dist * v1.y }
+export const closestPoint = (ptA1, ptA2, ptB) => {
+  if (ptA1.x === ptA2.x) return { x: ptA1.x, y: ptB.y } // vertical vector
+  if (ptA1.y === ptA2.y) return { x: ptB.x, y: ptA1.y } // horizontal vector
+
+  // use the closer point as a base for calcuation
+  const v1 = { x: ptA1.x - ptB.x, y: ptA1.y - ptB.y }
+  const v2 = { x: ptA2.x - ptB.x, y: ptA2.y - ptB.y }
+  let basePt = ptA1
+  let awayPt = ptA2
+  if (dotProduct(v1, v1) > dotProduct(v2, v2)) {
+    awayPt = ptA1
+    basePt = ptA2
+  }
+
+  const vA = { x: awayPt.x - basePt.x, y: awayPt.y - basePt.y }
+  const vB = { x: ptB.x - basePt.x, y: ptB.y - basePt.y }
+  const dist = dotProduct(vA, vB) / dotProduct(vA, vA)
+  return { x: basePt.x + dist * vA.x, y: basePt.y + dist * vA.y }
 }
 
 /* Get the x coordinate where the given line (defined by a point and vector)

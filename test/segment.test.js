@@ -501,6 +501,16 @@ describe('get intersections 2', () => {
     expect(segB.getIntersection(segA1)).toMatchObject({x: x, y: y})
     expect(segB.getIntersection(segA2)).toMatchObject({x: x, y: y})
   })
+
+  test('endpoint intersection takes priority - issue 60-5', () => {
+    const endX = 55.31
+    const endY = -0.23544126113
+    const segA = Segment.fromRing({ x: 18.60315316392773, y: 10.491431056669754 }, { x: endX, y: endY })
+    const segB = Segment.fromRing({ x: -32.42, y: 55.26 }, { x: endX, y: endY })
+
+    expect(segA.getIntersection(segB)).toBeNull()
+    expect(segB.getIntersection(segA)).toBeNull()
+  })
 })
 
 describe('compare segments', () => {

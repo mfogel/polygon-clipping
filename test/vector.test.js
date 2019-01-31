@@ -201,66 +201,71 @@ describe('perpendicular()', () => {
 
 describe('closestPoint()', () => {
   test('on line', () => {
-    const p1 = { x: 2, y: 2 }
-    const v1 = { x: 1, y: 1}
-    const p2 = { x: -1, y: -1 }
-    const cp = closestPoint(p1, v1, p2)
-    expect(cp).toEqual(p2)
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 3}
+    const pB = { x: -1, y: -1 }
+    const cp = closestPoint(pA1, pA2, pB)
+    expect(cp).toEqual(pB)
   })
 
   test('on first point', () => {
-    const p1 = { x: 2, y: 2 }
-    const v1 = { x: 1, y: 1}
-    const p2 = { x: 2, y: 2 }
-    const cp = closestPoint(p1, v1, p2)
-    expect(cp).toEqual(p2)
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 3}
+    const pB = { x: 2, y: 2 }
+    const cp = closestPoint(pA1, pA2, pB)
+    expect(cp).toEqual(pB)
   })
 
   test('off line above', () => {
-    const p1 = { x: 2, y: 2 }
-    const v1 = { x: 1, y: -1}
-    const v1R = { x: -1, y: 1}
-    const p2 = { x: 3, y: 7 }
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 1}
+    const pB = { x: 3, y: 7 }
     const expected = { x: 0, y: 4 }
-    expect(closestPoint(p1, v1, p2)).toEqual(expected)
-    expect(closestPoint(p1, v1R, p2)).toEqual(expected)
+    expect(closestPoint(pA1, pA2, pB)).toEqual(expected)
+    expect(closestPoint(pA2, pA1, pB)).toEqual(expected)
   })
 
   test('off line below', () => {
-    const p1 = { x: 2, y: 2 }
-    const v1 = { x: 1, y: -1}
-    const v1R = { x: -1, y: 1}
-    const p2 = { x: 0, y: 2 }
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 1}
+    const pB = { x: 0, y: 2 }
     const expected = { x: 1, y: 3 }
-    expect(closestPoint(p1, v1, p2)).toEqual(expected)
-    expect(closestPoint(p1, v1R, p2)).toEqual(expected)
+    expect(closestPoint(pA1, pA2, pB)).toEqual(expected)
+    expect(closestPoint(pA2, pA1, pB)).toEqual(expected)
   })
 
   test('off line perpendicular to first point', () => {
-    const p1 = { x: 2, y: 2 }
-    const v1 = { x: 1, y: 1}
-    const p2 = { x: 1, y: 3 }
-    const cp = closestPoint(p1, v1, p2)
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 3 }
+    const pB = { x: 1, y: 3 }
+    const cp = closestPoint(pA1, pA2, pB)
     const expected = { x: 2, y: 2 }
     expect(cp).toEqual(expected)
   })
 
   test('horizontal vector', () => {
-    const p1 = { x: 2, y: 2 }
-    const v1 = { x: 1, y: 0}
-    const p2 = { x: 1, y: 3 }
-    const cp = closestPoint(p1, v1, p2)
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 2}
+    const pB = { x: 1, y: 3 }
+    const cp = closestPoint(pA1, pA2, pB)
     const expected = { x: 1, y: 2 }
     expect(cp).toEqual(expected)
   })
 
   test('vertical vector', () => {
-    const p1 = { x: 2, y: 2 }
-    const v1 = { x: 0, y: 1}
-    const p2 = { x: 1, y: 3 }
-    const cp = closestPoint(p1, v1, p2)
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 2, y: 3}
+    const pB = { x: 1, y: 3 }
+    const cp = closestPoint(pA1, pA2, pB)
     const expected = { x: 2, y: 3 }
     expect(cp).toEqual(expected)
+  })
+
+  test('use closest point as base - issue 60-5', () => {
+    const pt = { x: 55.31, y: -0.23544126113 }
+    const ptA = { x: 18.60315316392773, y: 10.491431056669754 }
+    const cp = closestPoint(ptA, pt, pt)
+    expect(cp).toEqual(pt)
   })
 })
 

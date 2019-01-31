@@ -184,7 +184,7 @@ export default class Segment {
    *    -1: point is below or to the right of segment */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    const interPt = closestPoint(this.leftSE.point, this.vector(), point)
+    const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
 
     const cmpY = cmp(point.y, interPt.y)
     if (cmpY !== 0) return cmpY
@@ -224,9 +224,11 @@ export default class Segment {
    * point and the segment, we say the point 'touches' the segment. */
   touches (point) {
     if (!touchesBbox(this.bbox(), point)) return false
-    const cPt = closestPoint(this.leftSE.point, this.vector(), point)
-    const avgPt = { x: (cPt.x + point.x) / 2, y: (cPt.y + point.y) / 2 }
-    return touchPoints(avgPt, cPt) || touchPoints(avgPt, point)
+    // if the points have been linked already, performance boost use that
+    if (point === this.leftSE.point || point === this.rightSE.point) return true
+    const cPt1 = closestPoint(this.leftSE.point, this.rightSE.point, point)
+    const avgPt1 = { x: (cPt1.x + point.x) / 2, y: (cPt1.y + point.y) / 2 }
+    return touchPoints(avgPt1, cPt1) || touchPoints(avgPt1, point)
   }
 
   /**
