@@ -53,7 +53,8 @@ export class Operation {
       }
       const newEvents = sweepLine.process(evt)
       for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
-        queue.insert(newEvents[i])
+        const evt = newEvents[i]
+        if (evt.segment.consumedBy === undefined) queue.insert(evt)
       }
       prevQueueSize = queue.size
       node = queue.pop()

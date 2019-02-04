@@ -160,7 +160,8 @@ export default class SweepLine {
     this.queue.remove(rightSE)
     const newEvents = seg.split([pt])
     newEvents.push(rightSE)
-    this.tree.insert(seg)
+    // splitting can trigger consumption
+    if (seg.consumedBy === undefined) this.tree.insert(seg)
     return newEvents
   }
 }
