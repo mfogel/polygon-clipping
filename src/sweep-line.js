@@ -93,24 +93,25 @@ export default class SweepLine {
         }
       }
 
-      // did we get some intersections? split ourselves if need be
-      if (newEvents.length > 0 || mySplitters.length > 0) {
+      // split ourselves if need be
+      if (mySplitters.length > 0) {
 
         // Rounding errors can cause changes in ordering,
         // so remove afected segments and right sweep events before splitting
-        this.tree.remove(segment)
         this.queue.remove(segment.rightSE)
         newEvents.push(segment.rightSE)
 
-        if (mySplitters.length > 0) {
-          const newEventsFromSplit = segment.split(mySplitters)
-          for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-            newEvents.push(newEventsFromSplit[i])
-          }
+        const newEventsFromSplit = segment.split(mySplitters)
+        for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
+          newEvents.push(newEventsFromSplit[i])
         }
+      }
 
-        // Make sure sweep line ordering is totally consistent for later
-        // use with the segment 'prev' pointers - re-do the current event.
+      if (newEvents.length > 0) {
+        // We found some intersections, so re-do the current event to
+        // make sure sweep line ordering is totally consistent for later
+        // use with the segment 'prev' pointers
+        this.tree.remove(segment)
         newEvents.push(event)
 
       } else {
