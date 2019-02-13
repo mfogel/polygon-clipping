@@ -26,7 +26,8 @@ export default class SweepLine {
     // if we've already been consumed by another segment,
     // clean up our body parts and get out
     if (event.consumedBy) {
-      if (! event.isLeft) this.tree.remove(segment)
+      if (event.isLeft) this.queue.remove(event.otherSE)
+      else this.tree.remove(segment)
       return newEvents
     }
 
