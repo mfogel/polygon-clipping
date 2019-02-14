@@ -2,7 +2,7 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## vNext (unreleased)
+## v0.12.3 (2019-02-14)
 
  * Bug fixes ([#60](https://github.com/mfogel/polygon-clipping/issues/60) again, [#62](https://github.com/mfogel/polygon-clipping/issues/62) again, [#68](https://github.com/mfogel/polygon-clipping/issues/68))
 
