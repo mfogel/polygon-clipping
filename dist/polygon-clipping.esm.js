@@ -150,28 +150,49 @@ var cosineOfAngle = function cosineOfAngle(pShared, pBase, pAngle) {
   };
   return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase);
 };
-/* Get the closest point on an line (defined by a point and a vector)
+/* Get the closest point on an line (defined by two points)
  * to another point. */
 
-var closestPoint = function closestPoint(pt1, v1, pt2) {
-  if (v1.x === 0) return {
-    x: pt1.x,
-    y: pt2.y // vertical vector
+var closestPoint = function closestPoint(ptA1, ptA2, ptB) {
+  if (ptA1.x === ptA2.x) return {
+    x: ptA1.x,
+    y: ptB.y // vertical vector
 
   };
-  if (v1.y === 0) return {
-    x: pt2.x,
-    y: pt1.y // horizontal vector
+  if (ptA1.y === ptA2.y) return {
+    x: ptB.x,
+    y: ptA1.y // horizontal vector
+    // use the closer point as a base for calcuation
 
+  };
+  var v1 = {
+    x: ptA1.x - ptB.x,
+    y: ptA1.y - ptB.y
   };
   var v2 = {
-    x: pt2.x - pt1.x,
-    y: pt2.y - pt1.y
+    x: ptA2.x - ptB.x,
+    y: ptA2.y - ptB.y
   };
-  var dist = dotProduct(v1, v2) / dotProduct(v1, v1);
+  var basePt = ptA1;
+  var awayPt = ptA2;
+
+  if (dotProduct(v1, v1) > dotProduct(v2, v2)) {
+    awayPt = ptA1;
+    basePt = ptA2;
+  }
+
+  var vA = {
+    x: awayPt.x - basePt.x,
+    y: awayPt.y - basePt.y
+  };
+  var vB = {
+    x: ptB.x - basePt.x,
+    y: ptB.y - basePt.y
+  };
+  var dist = dotProduct(vA, vB) / dotProduct(vA, vA);
   return {
-    x: pt1.x + dist * v1.x,
-    y: pt1.y + dist * v1.y
+    x: basePt.x + dist * vA.x,
+    y: basePt.y + dist * vA.y
   };
 };
 /* Get the x coordinate where the given line (defined by a point and vector)
@@ -751,7 +772,7 @@ function () {
     key: "comparePoint",
     value: function comparePoint(point) {
       if (this.isAnEndpoint(point)) return 0;
-      var interPt = closestPoint(this.leftSE.point, this.vector(), point);
+      var interPt = closestPoint(this.leftSE.point, this.rightSE.point, point);
       var cmpY = cmp(point.y, interPt.y);
       if (cmpY !== 0) return cmpY;
       var cmpX = cmp(point.x, interPt.x);
@@ -793,13 +814,15 @@ function () {
   }, {
     key: "touches",
     value: function touches(point) {
-      if (!touchesBbox(this.bbox(), point)) return false;
-      var cPt = closestPoint(this.leftSE.point, this.vector(), point);
-      var avgPt = {
-        x: (cPt.x + point.x) / 2,
-        y: (cPt.y + point.y) / 2
+      if (!touchesBbox(this.bbox(), point)) return false; // if the points have been linked already, performance boost use that
+
+      if (point === this.leftSE.point || point === this.rightSE.point) return true;
+      var cPt1 = closestPoint(this.leftSE.point, this.rightSE.point, point);
+      var avgPt1 = {
+        x: (cPt1.x + point.x) / 2,
+        y: (cPt1.y + point.y) / 2
       };
-      return touchPoints(avgPt, cPt) || touchPoints(avgPt, point);
+      return touchPoints(avgPt1, cPt1) || touchPoints(avgPt1, point);
     }
     /**
      * Given another segment, returns the first non-trivial intersection
@@ -1603,7 +1626,7 @@ function () {
       // clean up our body parts and get out
 
       if (event.consumedBy) {
-        if (!event.isLeft) this.tree.remove(segment);
+        if (event.isLeft) this.queue.remove(event.otherSE);else this.tree.remove(segment);
         return newEvents;
       }
 
@@ -1661,26 +1684,27 @@ function () {
               }
             }
           }
-        } // did we get some intersections? split ourselves if need be
+        } // split ourselves if need be
 
 
-        if (newEvents.length > 0 || mySplitters.length > 0) {
+        if (mySplitters.length > 0) {
           // Rounding errors can cause changes in ordering,
           // so remove afected segments and right sweep events before splitting
-          this.tree.remove(segment);
           this.queue.remove(segment.rightSE);
           newEvents.push(segment.rightSE);
 
-          if (mySplitters.length > 0) {
-            var _newEventsFromSplit2 = segment.split(mySplitters);
+          var _newEventsFromSplit2 = segment.split(mySplitters);
 
-            for (var _i2 = 0, _iMax2 = _newEventsFromSplit2.length; _i2 < _iMax2; _i2++) {
-              newEvents.push(_newEventsFromSplit2[_i2]);
-            }
-          } // Make sure sweep line ordering is totally consistent for later
-          // use with the segment 'prev' pointers - re-do the current event.
+          for (var _i2 = 0, _iMax2 = _newEventsFromSplit2.length; _i2 < _iMax2; _i2++) {
+            newEvents.push(_newEventsFromSplit2[_i2]);
+          }
+        }
 
-
+        if (newEvents.length > 0) {
+          // We found some intersections, so re-do the current event to
+          // make sure sweep line ordering is totally consistent for later
+          // use with the segment 'prev' pointers
+          this.tree.remove(segment);
           newEvents.push(event);
         } else {
           // done with left event
@@ -1732,8 +1756,9 @@ function () {
       var rightSE = seg.rightSE;
       this.queue.remove(rightSE);
       var newEvents = seg.split([pt]);
-      newEvents.push(rightSE);
-      this.tree.insert(seg);
+      newEvents.push(rightSE); // splitting can trigger consumption
+
+      if (seg.consumedBy === undefined) this.tree.insert(seg);
       return newEvents;
     }
   }]);
@@ -1806,7 +1831,8 @@ function () {
         var newEvents = sweepLine.process(evt);
 
         for (var _i4 = 0, _iMax4 = newEvents.length; _i4 < _iMax4; _i4++) {
-          queue.insert(newEvents[_i4]);
+          var _evt = newEvents[_i4];
+          if (_evt.consumedBy === undefined) queue.insert(_evt);
         }
 
         prevQueueSize = queue.size;
