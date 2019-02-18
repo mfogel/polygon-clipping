@@ -4,6 +4,10 @@ import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
 import { cmp, cmpPoints, touchPoints } from './flp'
 import { closestPoint, intersection, verticalIntersection } from './vector'
 
+// Give segments unique ID's to get consistent sorting of
+// segments and sweep events when all else is identical
+let segmentId = 0
+
 export default class Segment {
   static compare (a, b) {
 
@@ -34,11 +38,9 @@ export default class Segment {
       if (a === b) return 0
 
       // colinear segments with matching left-endpoints, fall back
-      // on creation order of left sweep events as a tie-breaker
-      const aId = a.leftSE.id
-      const bId = b.leftSE.id
-      if (aId < bId) return -1
-      if (aId > bId) return 1
+      // on creation order as a tie-breaker
+      if (a.id < b.id) return -1
+      if (a.id > b.id) return 1
 
     } else if (
       // are a and b colinear?
@@ -58,11 +60,9 @@ export default class Segment {
       //       when segments are split their length changes
 
       // colinear segments with matching left-endpoints, fall back
-      // on creation order of left sweep events as a tie-breaker
-      const aId = a.leftSE.id
-      const bId = b.leftSE.id
-      if (aId < bId) return -1
-      if (aId > bId) return 1
+      // on creation order as a tie-breaker
+      if (a.id < b.id) return -1
+      if (a.id > b.id) return 1
 
     } else {
       // a & b are not colinear
@@ -113,6 +113,7 @@ export default class Segment {
   /* Warning: a reference to ringsIn input will be stored,
    *  and possibly will be later modified */
   constructor (leftSE, rightSE, ringsIn) {
+    this.id = ++segmentId
     this.leftSE = leftSE
     leftSE.segment = this
     leftSE.otherSE = rightSE
@@ -350,30 +351,14 @@ export default class Segment {
       // linked to other events, we need to check if either of the affected
       // segments should be consumed
       if (alreadyLinked) {
-        newLeftSE.segment.checkForConsuming()
-        newRightSE.segment.checkForConsuming()
+        newLeftSE.checkForConsuming()
+        newRightSE.checkForConsuming()
       }
 
       prevPoint = point
     }
 
     return newEvents
-  }
-
-  /* Do a pass over the linked events and to see if any segments
-   * should be consumed. If so, do it. */
-  checkForConsuming () {
-    if (this.leftSE.point.events.length === 1) return
-    if (this.rightSE.point.events.length === 1) return
-    for (let i = 0, iMax = this.leftSE.point.events.length; i < iMax; i++) {
-      const le = this.leftSE.point.events[i]
-      if (le === this.leftSE) continue
-      for (let j = 0, jMax = this.rightSE.point.events.length; j < jMax; j++) {
-        const re = this.rightSE.point.events[j]
-        if (re === this.rightSE) continue
-        if (le.segment === re.segment) this.consume(le.segment)
-      }
-    }
   }
 
   /* Consume another segment. We take their ringsIn under our wing

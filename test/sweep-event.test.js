@@ -110,12 +110,6 @@ describe('constructor', () => {
     expect(s1.point === p1)
     expect(s1.point.events === s2.point.events)
   })
-
-  test('sweep event Id increments', () => {
-    const s1 = new SweepEvent({x: 0, y: 0})
-    const s2 = new SweepEvent({x: 0, y: 1})
-    expect(s2.id - s1.id).toBe(1)
-  })
 })
 
 describe('sweep event link', () => {

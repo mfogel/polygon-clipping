@@ -36,9 +36,9 @@ export default class SweepLine {
       : this.tree.find(segment)
 
     if (! node) throw new Error(
-      'Unable to find segment ' +
-      `#${segment.leftSE.id} [${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> ` +
-      `#${segment.rightSE.id} [${segment.rightSE.point.x}, ${segment.rightSE.point.y}] ` +
+      `Unable to find segment #${segment.id} ` +
+      `[${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> ` +
+      `[${segment.rightSE.point.x}, ${segment.rightSE.point.y}] ` +
       'in SweepLine tree. Please submit a bug report.'
     )
 
