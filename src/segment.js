@@ -351,30 +351,14 @@ export default class Segment {
       // linked to other events, we need to check if either of the affected
       // segments should be consumed
       if (alreadyLinked) {
-        newLeftSE.segment.checkForConsuming()
-        newRightSE.segment.checkForConsuming()
+        newLeftSE.checkForConsuming()
+        newRightSE.checkForConsuming()
       }
 
       prevPoint = point
     }
 
     return newEvents
-  }
-
-  /* Do a pass over the linked events and to see if any segments
-   * should be consumed. If so, do it. */
-  checkForConsuming () {
-    if (this.leftSE.point.events.length === 1) return
-    if (this.rightSE.point.events.length === 1) return
-    for (let i = 0, iMax = this.leftSE.point.events.length; i < iMax; i++) {
-      const le = this.leftSE.point.events[i]
-      if (le === this.leftSE) continue
-      for (let j = 0, jMax = this.rightSE.point.events.length; j < jMax; j++) {
-        const re = this.rightSE.point.events[j]
-        if (re === this.rightSE) continue
-        if (le.segment === re.segment) this.consume(le.segment)
-      }
-    }
   }
 
   /* Consume another segment. We take their ringsIn under our wing

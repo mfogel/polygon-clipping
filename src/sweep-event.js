@@ -84,8 +84,29 @@ export default class SweepEvent {
       this.point.events.push(evt)
       evt.point = this.point
     }
-    this.segment.checkForConsuming()
-    other.segment.checkForConsuming()
+    this.checkForConsuming()
+  }
+
+  /* Do a pass over our linked events and check to see if any pair
+   * of segments match, and should be consumed. */
+  checkForConsuming () {
+    // FIXME: The loops in this method run O(n^2) => no good.
+    //        Maintain little ordered sweep event trees?
+    //        Can we maintaining an ordering that avoids the need
+    //        for the re-sorting with getLeftmostComparator in geom-out?
+
+    // Compare each pair of events to see if other events also match
+    const numEvents = this.point.events.length
+    for (let i = 0; i < numEvents; i++) {
+      const evt1 = this.point.events[i]
+      if (evt1.segment.consumedBy !== undefined) continue
+      for (let j = i + 1; j < numEvents; j++) {
+        const evt2 = this.point.events[j]
+        if (evt2.consumedBy !== undefined) continue
+        if (evt1.otherSE.point.events !== evt2.otherSE.point.events) continue
+        evt1.segment.consume(evt2.segment)
+      }
+    }
   }
 
   getAvailableLinkedEvents () {
