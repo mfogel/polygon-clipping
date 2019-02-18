@@ -19,6 +19,14 @@ describe('constructor', () => {
     expect(seg.prev).toBe(undefined)
     expect(seg.consumedBy).toBe(undefined)
   })
+
+  test('segment Id increments', () => {
+    const leftSE = new SweepEvent({x: 0, y: 0})
+    const rightSE = new SweepEvent({x: 1, y: 1})
+    const seg1 = new Segment(leftSE, rightSE, [])
+    const seg2 = new Segment(leftSE, rightSE, [])
+    expect(seg2.id - seg1.id).toBe(1)
+  })
 })
 
 describe('fromRing', () => {

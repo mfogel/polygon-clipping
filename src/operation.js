@@ -47,8 +47,8 @@ export class Operation {
       if (queue.size === prevQueueSize) {
         // prevents an infinite loop, an otherwise common manifestation of bugs
         throw new Error(
-          `Unable to pop() SweepEvent #${evt.id} [${evt.point.x}, ${evt.point.y}] ` +
-          'from queue. Please file a bug report.'
+          `Unable to pop() SweepEvent [${evt.point.x}, ${evt.point.y}] from ` +
+          `segment #${evt.segment.id} from queue. Please file a bug report.`
         )
       }
       const newEvents = sweepLine.process(evt)

@@ -1,10 +1,6 @@
 import { cmp } from './flp'
 import { cosineOfAngle, sineOfAngle } from './vector'
 
-// Give sweep events unique ID's to get consistent sorting of
-// segments and sweep events when all else is identical
-let sweepEventId = 0
-
 export default class SweepEvent {
 
   static compare (a, b) {
@@ -60,9 +56,9 @@ export default class SweepEvent {
       //        as segments are divided.
     }
 
-    // as a tie-breaker, favor lower creation id
-    if (a.id < b.id) return -1
-    if (a.id > b.id) return 1
+    // as a tie-breaker, favor lower segment creation id
+    if (a.segment.id < b.segment.id) return -1
+    if (a.segment.id > b.segment.id) return 1
 
     throw new Error(
       `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]`
@@ -75,7 +71,6 @@ export default class SweepEvent {
     else point.events.push(this)
     this.point = point
     this.isLeft = isLeft
-    this.id = ++sweepEventId
     // this.segment, this.otherSE set by factory
   }
 
