@@ -1,4 +1,3 @@
-import { cmpPoints } from './flp'
 import { compareVectorAngles } from './vector'
 import rounder from './rounder'
 
@@ -117,11 +116,13 @@ export const cleanMultiPoly = multipoly => {
  * WARN: input modified directly */
 export const cleanRing = ring => {
   if (ring.length === 0) return
-  if (cmpPoints(ring[0], ring[ring.length - 1]) === 0) ring.pop()
+  const firstPt = ring[0]
+  const lastPt = ring[ring.length - 1]
+  if (firstPt.x === lastPt.x && firstPt.y === lastPt.y) ring.pop()
 
   const isPointUncessary = (prevPt, pt, nextPt) =>
-    cmpPoints(prevPt, pt) === 0 ||
-    cmpPoints(pt, nextPt) === 0 ||
+    (prevPt.x === pt.x && prevPt.y === pt.y) ||
+    (nextPt.x === pt.x && nextPt.y === pt.y) ||
     compareVectorAngles(pt, prevPt, nextPt) === 0
 
   let i = 0

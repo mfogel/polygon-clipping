@@ -26,9 +26,9 @@ describe('is in bbox', () => {
 
   test('barely inside & outside', () => {
     const bbox = { ll: { x: 1, y: 0.8 }, ur: { x: 1.2, y: 6 } }
-    expect(isInBbox(bbox, { x: 1.2 + Number.EPSILON, y: 6 })).toBeTruthy()
-    expect(isInBbox(bbox, { x: 1.2 + 2 * Number.EPSILON, y: 6 })).toBeFalsy()
-    expect(isInBbox(bbox, { x: 1, y: 0.8 - Number.EPSILON / 2 })).toBeTruthy()
+    expect(isInBbox(bbox, { x: 1.2 - Number.EPSILON, y: 6 })).toBeTruthy()
+    expect(isInBbox(bbox, { x: 1.2 + Number.EPSILON, y: 6 })).toBeFalsy()
+    expect(isInBbox(bbox, { x: 1, y: 0.8 + Number.EPSILON })).toBeTruthy()
     expect(isInBbox(bbox, { x: 1, y: 0.8 - Number.EPSILON })).toBeFalsy()
   })
 })

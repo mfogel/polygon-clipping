@@ -142,20 +142,34 @@ export default class Segment {
     // this.ringOut, this.consumedBy, this.prev
   }
 
-  static fromRing(point1, point2, ring) {
-    let leftSE, rightSE
-    const ptCmp = cmpPoints(point1, point2)
-    if (ptCmp < 0) {
-      leftSE = new SweepEvent(point1, true)
-      rightSE = new SweepEvent(point2, false)
-    } else if (ptCmp > 0) {
-      leftSE = new SweepEvent(point2, true)
-      rightSE = new SweepEvent(point1, false)
-    } else {
-      throw new Error(
-        `Tried to create degenerate segment at [${point1.x}, ${point2.y}]`
+  static fromRing(pt1, pt2, ring) {
+    let leftPt, rightPt
+
+    // ordering the two points according to sweep line ordering
+    // TODO: should probably break this logic out into it's own func
+    if (pt1.x < pt2.x) {
+      leftPt = pt1
+      rightPt = pt2
+    }
+    else if (pt1.x > pt2.x) {
+      leftPt = pt2
+      rightPt = pt1
+    }
+    else { // pt1.x === pt2.x
+      if (pt1.y < pt2.y) {
+        leftPt = pt1
+        rightPt = pt2
+      }
+      else if (pt1.y > pt2.y) {
+        leftPt = pt2
+        rightPt = pt1
+      }
+      else throw new Error(
+        `Tried to create degenerate segment at [${pt1.x}, ${pt1.y}]`
       )
     }
+    const leftSE = new SweepEvent(leftPt, true)
+    const rightSE = new SweepEvent(rightPt, false)
     return new Segment(leftSE, rightSE, [ring])
   }
 
@@ -184,10 +198,10 @@ export default class Segment {
     }
   }
 
-  isAnEndpoint (point) {
+  isAnEndpoint (pt) {
     return (
-      cmpPoints(point, this.leftSE.point) === 0 ||
-      cmpPoints(point, this.rightSE.point) === 0
+      (pt.x === this.leftSE.point.x && pt.y === this.leftSE.point.y) ||
+      (pt.x === this.rightSE.point.x && pt.y === this.rightSE.point.y)
     )
   }
 

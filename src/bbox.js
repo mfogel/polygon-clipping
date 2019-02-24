@@ -1,4 +1,4 @@
-import { cmp, touch } from './flp'
+import { touch } from './flp'
 
 /**
  * A bounding box has the format:
@@ -9,10 +9,10 @@ import { cmp, touch } from './flp'
 
 export const isInBbox = (bbox, point) => {
   return (
-    cmp(bbox.ll.x, point.x) <= 0 &&
-    cmp(point.x, bbox.ur.x) <= 0 &&
-    cmp(bbox.ll.y, point.y) <= 0 &&
-    cmp(point.y, bbox.ur.y) <= 0
+    (bbox.ll.x <= point.x) &&
+    (point.x <= bbox.ur.x) &&
+    (bbox.ll.y <= point.y) &&
+    (point.y <= bbox.ur.y)
   )
 }
 
@@ -22,10 +22,10 @@ export const isInBbox = (bbox, point) => {
  *  - it 'touches' one of the sides (another greedy comparison) */
 export const touchesBbox = (bbox, point) => {
   return (
-    (cmp(bbox.ll.x, point.x) <= 0 || touch(bbox.ll.x, point.x)) &&
-    (cmp(point.x, bbox.ur.x) <= 0 || touch(point.x, bbox.ur.x)) &&
-    (cmp(bbox.ll.y, point.y) <= 0 || touch(bbox.ll.y, point.y)) &&
-    (cmp(point.y, bbox.ur.y) <= 0 || touch(point.y, bbox.ur.y))
+    ((bbox.ll.x <= point.x) || touch(bbox.ll.x, point.x)) &&
+    ((point.x <= bbox.ur.x) || touch(point.x, bbox.ur.x)) &&
+    ((bbox.ll.y <= point.y) || touch(bbox.ll.y, point.y)) &&
+    ((point.y <= bbox.ur.y) || touch(point.y, bbox.ur.y))
   )
 }
 
@@ -35,10 +35,10 @@ export const touchesBbox = (bbox, point) => {
 export const getBboxOverlap = (b1, b2) => {
   // check if the bboxes overlap at all
   if (
-    cmp(b2.ur.x, b1.ll.x) < 0 ||
-    cmp(b1.ur.x, b2.ll.x) < 0 ||
-    cmp(b2.ur.y, b1.ll.y) < 0 ||
-    cmp(b1.ur.y, b2.ll.y) < 0
+    b2.ur.x < b1.ll.x ||
+    b1.ur.x < b2.ll.x ||
+    b2.ur.y < b1.ll.y ||
+    b1.ur.y < b2.ll.y
   ) return null
 
   // find the middle two X values

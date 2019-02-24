@@ -7,11 +7,11 @@ export default class SweepEvent {
   static compare (a, b) {
 
     // favor event with a point that the sweep line hits first
-    const cmpX = cmp(a.point.x, b.point.x)
-    if (cmpX !== 0) return cmpX
+    if (a.point.x < b.point.x) return -1
+    if (a.point.x > b.point.x) return 1
 
-    const cmpY = cmp(a.point.y, b.point.y)
-    if (cmpY !== 0) return cmpY
+    if (a.point.y < b.point.y) return -1
+    if (a.point.y > b.point.y) return 1
 
     // the points are the same, so link them if needed
     if (a.point !== b.point) a.link(b)
