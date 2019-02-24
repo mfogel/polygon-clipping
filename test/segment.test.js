@@ -628,15 +628,15 @@ describe('compare segments', () => {
     test('intersect on left from above', () => {
       const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 0 })
       const seg2 = Segment.fromRing({ x: -2, y: 2 }, { x: 2, y: -2 })
-      expect(Segment.compare(seg1, seg2)).toBe(-1)
-      expect(Segment.compare(seg2, seg1)).toBe(1)
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
 
     test('intersect on left from below', () => {
       const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 0 })
       const seg2 = Segment.fromRing({ x: -2, y: -2 }, { x: 2, y: 2 })
-      expect(Segment.compare(seg1, seg2)).toBe(1)
-      expect(Segment.compare(seg2, seg1)).toBe(-1)
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
     })
 
     test('intersect on left from vertical', () => {
@@ -709,8 +709,8 @@ describe('compare segments', () => {
     test('one segment thinks theyre colinear, but the other says no', () => {
       const seg1 = Segment.fromRing({ x: -60.6876, y: -40.83428174062278 }, { x: -60.6841701, y: -40.83491 })
       const seg2 = Segment.fromRing({ x: -60.6876, y: -40.83428174062278 }, { x: -60.6874, y: -40.83431837489067 })
-      expect(Segment.compare(seg1, seg2)).toBe(-1)
-      expect(Segment.compare(seg2, seg1)).toBe(1)
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
   })
 
@@ -736,12 +736,12 @@ describe('compare segments', () => {
       expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
 
-    test('left endpoints match - should be sorted by ring id', () => {
+    test('left endpoints match - should be length', () => {
       const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 })
       const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 3, y: 3 }, { id: 2 })
       const seg3 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 3 })
-      expect(Segment.compare(seg1, seg2)).toBe(-1)
-      expect(Segment.compare(seg2, seg1)).toBe(1)
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
 
       expect(Segment.compare(seg2, seg3)).toBe(-1)
       expect(Segment.compare(seg3, seg2)).toBe(1)
@@ -769,8 +769,8 @@ describe('compare segments', () => {
   test('segment consistency - from #60', () => {
     const seg1 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.571478, y: 55.0187174 })
     const seg2 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.57152375603846, y: 55.01943125 })
-    expect(Segment.compare(seg1, seg2)).toBe(-1)
-    expect(Segment.compare(seg2, seg1)).toBe(1)
+    expect(Segment.compare(seg1, seg2)).toBe(1)
+    expect(Segment.compare(seg2, seg1)).toBe(-1)
   })
 
   test('ensure transitive - part of issue 60', () => {
