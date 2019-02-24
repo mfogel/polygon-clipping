@@ -1,7 +1,7 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
-import { cmp, cmpPoints, touchPoints } from './flp'
+import { cmpPoints, touchPoints } from './flp'
 import { closestPoint, intersection } from './vector'
 import rounder from './rounder'
 
@@ -213,19 +213,21 @@ export default class Segment {
     if (this.isAnEndpoint(point)) return 0
     const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
 
-    const cmpY = cmp(point.y, interPt.y)
-    if (cmpY !== 0) return cmpY
-
-    const cmpX = cmp(point.x, interPt.x)
-    const segCmpX = cmp(this.leftSE.point.y, this.rightSE.point.y)
+    if (point.y < interPt.y) return -1
+    if (point.y > interPt.y) return 1
 
     // depending on if our segment angles up or down,
     // the x coord comparison means oppposite things
-    if (cmpX > 0) return segCmpX
-    if (cmpX < 0) {
-      if (segCmpX > 0) return -1
-      if (segCmpX < 0) return 1
+    if (point.x < interPt.x) {
+      if (this.leftSE.point.y < this.rightSE.point.y) return 1
+      if (this.leftSE.point.y > this.rightSE.point.y) return -1
     }
+    if (point.x > interPt.x) {
+      if (this.leftSE.point.y < this.rightSE.point.y) return -1
+      if (this.leftSE.point.y > this.rightSE.point.y) return 1
+    }
+
+    // on the line
     return 0
   }
 
