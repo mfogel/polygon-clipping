@@ -109,26 +109,23 @@ describe('split', () => {
   })
 })
 
-describe('simple properties - bbox, vector, points, isVertical', () => {
+describe('simple properties - bbox, vector', () => {
   test('general', () => {
     const seg = Segment.fromRing({ x: 1, y: 2 }, { x: 3, y: 4 })
     expect(seg.bbox()).toEqual({ ll: { x: 1, y: 2 }, ur: { x: 3, y: 4 } })
     expect(seg.vector()).toEqual({ x: 2, y: 2 })
-    expect(seg.isVertical()).toBeFalsy()
   })
 
   test('horizontal', () => {
     const seg = Segment.fromRing({ x: 1, y: 4 }, { x: 3, y: 4 })
     expect(seg.bbox()).toEqual({ ll: { x: 1, y: 4 }, ur: { x: 3, y: 4 } })
     expect(seg.vector()).toEqual({ x: 2, y: 0 })
-    expect(seg.isVertical()).toBeFalsy()
   })
 
   test('vertical', () => {
     const seg = Segment.fromRing({ x: 3, y: 2 }, { x: 3, y: 4 })
     expect(seg.bbox()).toEqual({ ll: { x: 3, y: 2 }, ur: { x: 3, y: 4 } })
     expect(seg.vector()).toEqual({ x: 0, y: 2 })
-    expect(seg.isVertical()).toBeTruthy()
   })
 })
 

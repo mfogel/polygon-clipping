@@ -2,7 +2,7 @@ import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
 import { cmp, cmpPoints, touchPoints } from './flp'
-import { closestPoint, intersection, verticalIntersection } from './vector'
+import { closestPoint, intersection } from './vector'
 
 // Give segments unique ID's to get consistent sorting of
 // segments and sweep events when all else is identical
@@ -183,10 +183,6 @@ export default class Segment {
     }
   }
 
-  isVertical () {
-    return cmp(this.leftSE.point.x, this.rightSE.point.x) === 0
-  }
-
   isAnEndpoint (point) {
     return (
       cmpPoints(point, this.leftSE.point) === 0 ||
@@ -214,22 +210,6 @@ export default class Segment {
     if (cmpX < 0) {
       if (segCmpX > 0) return -1
       if (segCmpX < 0) return 1
-    }
-    return 0
-  }
-
-  /* Compare point vertically with segment.
-   *    1: point is below segment
-   *    0: segment appears to be vertical
-   *   -1: point is above segment */
-  compareVertically (point) {
-    if (this.isAnEndpoint(point)) return 0
-    const interPt = verticalIntersection(this.leftSE.point, this.vector(), point.x)
-
-    // Trying to be as exact as possible here, hence not using flp comparisons
-    if (interPt !== null) {
-      if (point.y < interPt.y) return -1
-      if (point.y > interPt.y) return 1
     }
     return 0
   }

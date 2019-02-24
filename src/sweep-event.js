@@ -1,68 +1,27 @@
 import { cmp } from './flp'
+import Segment from './segment'
 import { cosineOfAngle, sineOfAngle } from './vector'
 
 export default class SweepEvent {
 
   static compare (a, b) {
 
-    // if the events are already linked, then we know the points are equal
-    if (a.point !== b.point) {
+    // favor event with a point that the sweep line hits first
+    const cmpX = cmp(a.point.x, b.point.x)
+    if (cmpX !== 0) return cmpX
 
-      // favor event with a point that the sweep line hits first
-      const cmpX = cmp(a.point.x, b.point.x)
-      if (cmpX !== 0) return cmpX
+    const cmpY = cmp(a.point.y, b.point.y)
+    if (cmpY !== 0) return cmpY
 
-      const cmpY = cmp(a.point.y, b.point.y)
-      if (cmpY !== 0) return cmpY
-
-      // Points are equal, so go ahead and link these events.
-      a.link(b)
-    }
+    // the points are the same, so link them if needed
+    if (a.point !== b.point) a.link(b)
 
     // favor right events over left
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
 
-    // are they identical?
-    if (a === b) return 0
-
-    // The calcuations of relative segment angle below can give different
-    // results after segment splitting due to rounding errors.
-    // To maintain sweep event queue ordering, we thus skip these calculations
-    // if we already know the segements to be colinear (one of the requirements
-    // of the 'consumedBy' relationship).
-    let aConsumedBy = a
-    let bConsumedBy = b
-    while (aConsumedBy.consumedBy) aConsumedBy = aConsumedBy.consumedBy
-    while (bConsumedBy.consumedBy) bConsumedBy = bConsumedBy.consumedBy
-    if (aConsumedBy !== bConsumedBy) {
-
-      // favor vertical segments for left events, and non-vertical for right
-      // https://github.com/mfogel/polygon-clipping/issues/29
-      const aVert = a.segment.isVertical()
-      const bVert = b.segment.isVertical()
-      if (aVert && ! bVert) return a.isLeft ? 1 : -1
-      if (! aVert && bVert) return a.isLeft ? -1 : 1
-
-      // Favor events where the line segment is lower.
-      // Sometimes, because one segment is longer than the other,
-      // one of these comparisons will return 0 and the other won't.
-      const pointSegCmp = a.segment.compareVertically(b.otherSE.point)
-      if (pointSegCmp === 1) return -1
-      if (pointSegCmp === -1) return 1
-      const otherPointSegCmp = b.segment.compareVertically(a.otherSE.point)
-      if (otherPointSegCmp !== 0) return otherPointSegCmp
-
-      // NOTE:  We don't sort on segment length because that changes
-      //        as segments are divided.
-    }
-
-    // as a tie-breaker, favor lower segment creation id
-    if (a.segment.id < b.segment.id) return -1
-    if (a.segment.id > b.segment.id) return 1
-
-    throw new Error(
-      `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]`
-    )
+    // we have two matching left or right endpoints
+    // ordering of this case is the same as for their segments
+    return Segment.compare(a.segment, b.segment)
   }
 
   // Warning: 'point' input will be modified and re-used (for performance)
