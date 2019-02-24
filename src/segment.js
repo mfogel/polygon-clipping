@@ -3,6 +3,7 @@ import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
 import { cmp, cmpPoints, touchPoints } from './flp'
 import { closestPoint, intersection } from './vector'
+import rounder from './rounder'
 
 // Give segments unique ID's to get consistent sorting of
 // segments and sweep events when all else is identical
@@ -305,9 +306,8 @@ export default class Segment {
     // is the intersection found between the lines not on the segments?
     if (!isInBbox(bboxOverlap, pt)) return null
 
-    // We don't need to check if we need to 'snap' to an endpoint,
-    // because the endpoint cmps we did eariler were greedy
-    return pt
+    // round the the computed point if needed
+    return rounder.round(pt.x, pt.y)
   }
 
   /**

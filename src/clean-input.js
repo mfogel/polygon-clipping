@@ -1,5 +1,6 @@
 import { cmpPoints } from './flp'
 import { compareVectorAngles } from './vector'
+import rounder from './rounder'
 
 /* Given input geometry as a standard array-of-arrays geojson-style
  * geometry, return one that uses objects as points, for better perf */
@@ -30,7 +31,7 @@ export const pointsAsObjects = geom => {
               'Only 2-dimensional polygons supported.'
             )
           }
-          output[i][j].push({ x: geom[i][j][k][0], y: geom[i][j][k][1] })
+          output[i][j].push(rounder.round(geom[i][j][k][0], geom[i][j][k][1]))
         }
       } else { // polygon
         if (geom[i][j].length < 2) {
@@ -42,7 +43,7 @@ export const pointsAsObjects = geom => {
             'Only 2-dimensional polygons supported.'
           )
         }
-        output[i].push({ x: geom[i][j][0], y: geom[i][j][1] })
+        output[i].push(rounder.round(geom[i][j][0], geom[i][j][1]))
       }
     }
   }
