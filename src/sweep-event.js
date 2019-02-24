@@ -1,4 +1,3 @@
-import { cmp } from './flp'
 import Segment from './segment'
 import { cosineOfAngle, sineOfAngle } from './vector'
 
@@ -108,12 +107,24 @@ export default class SweepEvent {
       const { sine: asine, cosine: acosine } = cache.get(a)
       const { sine: bsine, cosine: bcosine } = cache.get(b)
 
-      const cmpZeroASine = cmp(asine, 0)
-      const cmpZeroBSine = cmp(bsine, 0)
+      // both on or above x-axis
+      if (asine >= 0 && bsine >= 0) {
+        if (acosine < bcosine) return 1
+        if (acosine > bcosine) return -1
+        return 0
+      }
 
-      if (cmpZeroASine >= 0 && cmpZeroBSine >= 0) return cmp(bcosine, acosine)
-      if (cmpZeroASine < 0 && cmpZeroBSine < 0) return cmp(acosine, bcosine)
-      return cmp(bsine, asine)
+      // both below x-axis
+      if (asine < 0 && bsine < 0) {
+        if (acosine < bcosine) return -1
+        if (acosine > bcosine) return 1
+        return 0
+      }
+
+      // one above x-axis, one below
+      if (bsine < asine) return -1
+      if (bsine > asine) return 1
+      return 0
     }
   }
 }
