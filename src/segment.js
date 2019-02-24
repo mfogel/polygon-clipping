@@ -227,6 +227,9 @@ export default class Segment {
     if (!touchesBbox(this.bbox(), point)) return false
     // if the points have been linked already, performance boost use that
     if (point === this.leftSE.point || point === this.rightSE.point) return true
+    // avoid doing vector math on tiny vectors
+    if (touchPoints(this.leftSE.point, point)) return true
+    if (touchPoints(this.rightSE.point, point)) return true
     const cPt1 = closestPoint(this.leftSE.point, this.rightSE.point, point)
     const avgPt1 = { x: (cPt1.x + point.x) / 2, y: (cPt1.y + point.y) / 2 }
     return touchPoints(avgPt1, cPt1) || touchPoints(avgPt1, point)

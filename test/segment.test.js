@@ -772,4 +772,13 @@ describe('compare segments', () => {
     expect(Segment.compare(seg1, seg2)).toBe(-1)
     expect(Segment.compare(seg2, seg1)).toBe(1)
   })
+
+  test('ensure transitive - part of issue 60', () => {
+    const seg2 = Segment.fromRing({ x: -10.000000000000018, y: -9.17 }, { x: -10.000000000000004, y: -8.79 })
+    const seg6 = Segment.fromRing({ x: -10.000000000000016, y: 1.44 }, { x: -9, y: 1.5 })
+    const seg4 = Segment.fromRing({ x: -10.00000000000001, y: 1.75 }, { x: -9, y: 1.5 })
+    expect(Segment.compare(seg2, seg6)).toBe(-1)
+    expect(Segment.compare(seg6, seg4)).toBe(-1)
+    expect(Segment.compare(seg2, seg4)).toBe(-1)
+  })
 })

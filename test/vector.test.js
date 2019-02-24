@@ -260,13 +260,6 @@ describe('closestPoint()', () => {
     const expected = { x: 2, y: 3 }
     expect(cp).toEqual(expected)
   })
-
-  test('use closest point as base - issue 60-5', () => {
-    const pt = { x: 55.31, y: -0.23544126113 }
-    const ptA = { x: 18.60315316392773, y: 10.491431056669754 }
-    const cp = closestPoint(ptA, pt, pt)
-    expect(cp).toEqual(pt)
-  })
 })
 
 describe('verticalIntersection()', () => {

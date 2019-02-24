@@ -36,20 +36,22 @@ export const closestPoint = (ptA1, ptA2, ptB) => {
   if (ptA1.x === ptA2.x) return { x: ptA1.x, y: ptB.y } // vertical vector
   if (ptA1.y === ptA2.y) return { x: ptB.x, y: ptA1.y } // horizontal vector
 
-  // use the closer point as a base for calcuation
+  // determinne which point is further away
   const v1 = { x: ptA1.x - ptB.x, y: ptA1.y - ptB.y }
   const v2 = { x: ptA2.x - ptB.x, y: ptA2.y - ptB.y }
-  let basePt = ptA1
-  let awayPt = ptA2
+  let nearPt = ptA1
+  let farPt = ptA2
   if (dotProduct(v1, v1) > dotProduct(v2, v2)) {
-    awayPt = ptA1
-    basePt = ptA2
+    farPt = ptA1
+    nearPt = ptA2
   }
 
-  const vA = { x: awayPt.x - basePt.x, y: awayPt.y - basePt.y }
-  const vB = { x: ptB.x - basePt.x, y: ptB.y - basePt.y }
+  // use the further point as our base in the calculation, so that the
+  // vectors are more parallel, providing more accurate dot product
+  const vA = { x: nearPt.x - farPt.x, y: nearPt.y - farPt.y }
+  const vB = { x: ptB.x - farPt.x, y: ptB.y - farPt.y }
   const dist = dotProduct(vA, vB) / dotProduct(vA, vA)
-  return { x: basePt.x + dist * vA.x, y: basePt.y + dist * vA.y }
+  return { x: farPt.x + dist * vA.x, y: farPt.y + dist * vA.y }
 }
 
 /* Get the x coordinate where the given line (defined by a point and vector)
