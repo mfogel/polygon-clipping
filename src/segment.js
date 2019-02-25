@@ -1,7 +1,7 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
-import { touchPoints } from './flp'
+import { touch, touchPoints } from './flp'
 import { closestPoint, intersection } from './vector'
 import rounder from './rounder'
 
