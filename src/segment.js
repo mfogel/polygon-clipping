@@ -291,7 +291,7 @@ export default class Segment {
     // does this left endpoint matches (other doesn't)
     if (touchesThisLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesOtherRSE && cmpPoints(this.leftSE.point, other.rightSE.point) === 0) return null
+      if (touchesOtherRSE && touchPoints(this.leftSE.point, other.rightSE.point)) return null
       // t-intersection on left endpoint
       return this.leftSE.point
     }
@@ -299,7 +299,7 @@ export default class Segment {
     // does other left endpoint matches (this doesn't)
     if (touchesOtherLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesThisRSE && cmpPoints(this.rightSE.point, other.leftSE.point) === 0) return null
+      if (touchesThisRSE && touchPoints(this.rightSE.point, other.leftSE.point)) return null
       // t-intersection on left endpoint
       return other.leftSE.point
     }
@@ -349,7 +349,7 @@ export default class Segment {
     for (let i = 0, iMax = points.length; i < iMax; i++) {
       const point = points[i]
       // skip repeated points
-      if (prevPoint && cmpPoints(prevPoint, point) === 0) continue
+      if (prevPoint && prevPoint.x === point.x && prevPoint.y === point.y) continue
       const alreadyLinked = point.events !== undefined
 
       const newLeftSE = new SweepEvent(point, true)
