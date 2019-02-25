@@ -40,4 +40,12 @@ describe('rounder.round()', () => {
     expect(rounder.round(pt1.x, pt1.y)).toEqual(pt1)
     expect(rounder.round(pt2.x, pt2.y)).toEqual(pt1)
   })
+
+  test('preseed with 0', () => {
+    rounder.reset()
+    const pt1 = { x: Number.EPSILON / 2, y: -Number.EPSILON / 2 }
+    expect(pt1.x).not.toEqual(0)
+    expect(pt1.y).not.toEqual(0)
+    expect(rounder.round(pt1.x, pt1.y)).toEqual({ x: 0, y: 0 })
+  })
 })
