@@ -1,7 +1,7 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
-import { touch, touchPoints } from './flp'
+import { touchPoints } from './flp'
 import { closestPoint, intersection } from './vector'
 import rounder from './rounder'
 
@@ -146,28 +146,19 @@ export default class Segment {
     let leftPt, rightPt
 
     // ordering the two points according to sweep line ordering
-    // TODO: should probably break this logic out into it's own func
-    if (pt1.x < pt2.x) {
+    const cmpPts = SweepEvent.comparePoints(pt1, pt2)
+    if (cmpPts < 0) {
       leftPt = pt1
       rightPt = pt2
     }
-    else if (pt1.x > pt2.x) {
+    else if (cmpPts > 0) {
       leftPt = pt2
       rightPt = pt1
     }
-    else { // pt1.x === pt2.x
-      if (pt1.y < pt2.y) {
-        leftPt = pt1
-        rightPt = pt2
-      }
-      else if (pt1.y > pt2.y) {
-        leftPt = pt2
-        rightPt = pt1
-      }
-      else throw new Error(
-        `Tried to create degenerate segment at [${pt1.x}, ${pt1.y}]`
-      )
-    }
+    else throw new Error(
+      `Tried to create degenerate segment at [${pt1.x}, ${pt1.y}]`
+    )
+
     const leftSE = new SweepEvent(leftPt, true)
     const rightSE = new SweepEvent(rightPt, false)
     return new Segment(leftSE, rightSE, [ring])

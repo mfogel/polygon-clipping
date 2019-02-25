@@ -3,14 +3,12 @@ import { cosineOfAngle, sineOfAngle } from './vector'
 
 export default class SweepEvent {
 
+  // for ordering sweep events in the sweep event queue
   static compare (a, b) {
 
     // favor event with a point that the sweep line hits first
-    if (a.point.x < b.point.x) return -1
-    if (a.point.x > b.point.x) return 1
-
-    if (a.point.y < b.point.y) return -1
-    if (a.point.y > b.point.y) return 1
+    const ptCmp = SweepEvent.comparePoints(a.point, b.point)
+    if (ptCmp !== 0) return ptCmp
 
     // the points are the same, so link them if needed
     if (a.point !== b.point) a.link(b)
@@ -21,6 +19,17 @@ export default class SweepEvent {
     // we have two matching left or right endpoints
     // ordering of this case is the same as for their segments
     return Segment.compare(a.segment, b.segment)
+  }
+
+  // for ordering points in sweep line order
+  static comparePoints (aPt, bPt) {
+    if (aPt.x < bPt.x) return -1
+    if (aPt.x > bPt.x) return 1
+
+    if (aPt.y < bPt.y) return -1
+    if (aPt.y > bPt.y) return 1
+
+    return 0
   }
 
   // Warning: 'point' input will be modified and re-used (for performance)

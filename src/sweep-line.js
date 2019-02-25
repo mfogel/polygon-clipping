@@ -1,5 +1,6 @@
 import SplayTree from 'splaytree'
 import Segment from './segment'
+import SweepEvent from './sweep-event'
 
 /**
  * NOTE:  We must be careful not to change any segments while
@@ -98,23 +99,15 @@ export default class SweepLine {
       // The other intersection will be handled in a future process().
       if (prevMySplitter !== null || nextMySplitter !== null) {
 
-        // TODO: this sweep-line ordering logic should be pulled
-        //       out to it's own module. Overlaps with sweep event ordering
         let mySplitter = null
         if (prevMySplitter === null) mySplitter = nextMySplitter
         else if (nextMySplitter === null) mySplitter = prevMySplitter
         else {
-          // choose the ealiest in the sweep line pass
-          if (nextMySplitter.x < prevMySplitter.x) mySplitter = nextMySplitter
-          else if (nextMySplitter.x > prevMySplitter.x) mySplitter = prevMySplitter
-          else {
-            if (nextMySplitter.y < prevMySplitter.y) mySplitter = nextMySplitter
-            else if (nextMySplitter.y > prevMySplitter.y) mySplitter = prevMySplitter
-            else {
-              // the two splitters are the exact same point
-              mySplitter = prevMySplitter
-            }
-          }
+          const cmpSplitters = SweepEvent.comparePoints(prevMySplitter, nextMySplitter)
+          if (cmpSplitters < 0) mySplitter = prevMySplitter
+          if (cmpSplitters > 0) mySplitter = nextMySplitter
+          // the two splitters are the exact same point
+          mySplitter = prevMySplitter
         }
 
         // Rounding errors can cause changes in ordering,
