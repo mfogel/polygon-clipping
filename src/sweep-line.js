@@ -1,5 +1,6 @@
 import SplayTree from 'splaytree'
 import Segment from './segment'
+import SweepEvent from './sweep-event'
 
 /**
  * NOTE:  We must be careful not to change any segments while
@@ -62,15 +63,13 @@ export default class SweepLine {
     }
 
     if (event.isLeft) {
-      // TODO: would it make sense to just stop and bail out at the first time we're split?
-      //       rather than split ourselves multiple times?
-      const mySplitters = []
 
       // Check for intersections against the previous segment in the sweep line
+      let prevMySplitter = null
       if (prevSeg) {
         const prevInter = prevSeg.getIntersection(segment)
         if (prevInter !== null) {
-          if (!segment.isAnEndpoint(prevInter)) mySplitters.push(prevInter)
+          if (!segment.isAnEndpoint(prevInter)) prevMySplitter = prevInter
           if (!prevSeg.isAnEndpoint(prevInter)) {
             const newEventsFromSplit = this._splitSafely(prevSeg, prevInter)
             for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
@@ -81,10 +80,11 @@ export default class SweepLine {
       }
 
       // Check for intersections against the next segment in the sweep line
+      let nextMySplitter = null
       if (nextSeg) {
         const nextInter = nextSeg.getIntersection(segment)
         if (nextInter !== null) {
-          if (!segment.isAnEndpoint(nextInter)) mySplitters.push(nextInter)
+          if (!segment.isAnEndpoint(nextInter)) nextMySplitter = nextInter
           if (!nextSeg.isAnEndpoint(nextInter))  {
             const newEventsFromSplit = this._splitSafely(nextSeg, nextInter)
             for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
@@ -94,15 +94,28 @@ export default class SweepLine {
         }
       }
 
-      // split ourselves if need be
-      if (mySplitters.length > 0) {
+      // For simplicity, even if we find more than one intersection we only
+      // spilt on the 'earliest' (sweep-line style) of the intersections.
+      // The other intersection will be handled in a future process().
+      if (prevMySplitter !== null || nextMySplitter !== null) {
+
+        let mySplitter = null
+        if (prevMySplitter === null) mySplitter = nextMySplitter
+        else if (nextMySplitter === null) mySplitter = prevMySplitter
+        else {
+          const cmpSplitters = SweepEvent.comparePoints(prevMySplitter, nextMySplitter)
+          if (cmpSplitters < 0) mySplitter = prevMySplitter
+          if (cmpSplitters > 0) mySplitter = nextMySplitter
+          // the two splitters are the exact same point
+          mySplitter = prevMySplitter
+        }
 
         // Rounding errors can cause changes in ordering,
         // so remove afected segments and right sweep events before splitting
         this.queue.remove(segment.rightSE)
         newEvents.push(segment.rightSE)
 
-        const newEventsFromSplit = segment.split(mySplitters)
+        const newEventsFromSplit = segment.split(mySplitter)
         for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
           newEvents.push(newEventsFromSplit[i])
         }
@@ -160,7 +173,7 @@ export default class SweepLine {
     this.tree.remove(seg)
     const rightSE = seg.rightSE
     this.queue.remove(rightSE)
-    const newEvents = seg.split([pt])
+    const newEvents = seg.split(pt)
     newEvents.push(rightSE)
     // splitting can trigger consumption
     if (seg.consumedBy === undefined) this.tree.insert(seg)

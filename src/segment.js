@@ -1,113 +1,129 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
-import { cmp, cmpPoints, touchPoints } from './flp'
-import { closestPoint, intersection, verticalIntersection } from './vector'
+import { touchPoints } from './flp'
+import { closestPoint, intersection } from './vector'
+import rounder from './rounder'
 
 // Give segments unique ID's to get consistent sorting of
 // segments and sweep events when all else is identical
 let segmentId = 0
 
 export default class Segment {
+
+  /* This compare() function is for ordering segments in the sweep
+   * line tree, and does so according to the following criteria:
+   *
+   * Consider the vertical line that lies an infinestimal step to the
+   * right of the right-more of the two left endpoints of the input
+   * segments. Imagine slowly moving a point up from negative infinity
+   * in the increasing y direction. Which of the two segments will that
+   * point intersect first? That segment comes 'before' the other one.
+   *
+   * If neither segment would be intersected by such a line, (if one
+   * or more of the segments are vertical) then the line to be considered
+   * is directly on the right-more of the two left inputs.
+   */
   static compare (a, b) {
 
     const alx = a.leftSE.point.x
-    const aly = a.leftSE.point.y
     const blx = b.leftSE.point.x
-    const bly = b.leftSE.point.y
     const arx = a.rightSE.point.x
     const brx = b.rightSE.point.x
 
     // check if they're even in the same vertical plane
-    if (cmp(brx, alx) < 0) return 1
-    if (cmp(arx, blx) < 0) return -1
+    if (brx < alx) return 1
+    if (arx < blx) return -1
 
-    // check for a consumption relationship. if present,
-    // avoid the segment angle calculations (can yield
-    // inconsistent results after splitting)
-    let aConsumedBy = a
-    let bConsumedBy = b
-    while (aConsumedBy.consumedBy) aConsumedBy = aConsumedBy.consumedBy
-    while (bConsumedBy.consumedBy) bConsumedBy = bConsumedBy.consumedBy
+    const aly = a.leftSE.point.y
+    const bly = b.leftSE.point.y
+    const ary = a.rightSE.point.y
+    const bry = b.rightSE.point.y
 
-    // for segment angle comparisons
-    let aCmpBLeft, aCmpBRight, bCmpALeft, bCmpARight
+    // is left endpoint of segment B the right-more?
+    if (alx < blx) {
+      // are the two segments in the same horizontal plane?
+      if (bly < aly && bly < ary) return 1
+      if (bly > aly && bly > ary) return -1
 
-    if (aConsumedBy === bConsumedBy) {
-      // are they identical?
-      if (a === b) return 0
+      // is the B left endpoint colinear to segment A?
+      const aCmpBLeft = a.comparePoint(b.leftSE.point)
+      if (aCmpBLeft < 0) return 1
+      if (aCmpBLeft > 0) return -1
 
-      // colinear segments with matching left-endpoints, fall back
-      // on creation order as a tie-breaker
-      if (a.id < b.id) return -1
-      if (a.id > b.id) return 1
-
-    } else if (
-      // are a and b colinear?
-      (aCmpBLeft = a.comparePoint(b.leftSE.point)) === 0 &&
-      (aCmpBRight = a.comparePoint(b.rightSE.point)) === 0 &&
-      (bCmpALeft = b.comparePoint(a.leftSE.point)) === 0 &&
-      (bCmpARight = b.comparePoint(a.rightSE.point)) === 0
-    ) {
-      // a & b are colinear
-
-      // colinear segments with non-matching left-endpoints, consider
-      // the more-left endpoint to be earlier
-      const cmpLX = cmp(alx, blx)
-      if (cmpLX !== 0) return cmpLX
-
-      // NOTE: we do not use segment length to break a tie here, because
-      //       when segments are split their length changes
-
-      // colinear segments with matching left-endpoints, fall back
-      // on creation order as a tie-breaker
-      if (a.id < b.id) return -1
-      if (a.id > b.id) return 1
-
-    } else {
-      // a & b are not colinear
-
-      const cmpLX = cmp(alx, blx)
-      // if the left endpoints are not in the same vertical line,
-      // consider the placement of the left event of the right-more segment
-      // with respect to the left-more segment.
-      if (cmpLX < 0) {
-        if (aCmpBLeft > 0) return -1
-        if (aCmpBLeft < 0) return 1
-        // NOTE: fall-through is necessary here. why? Can that be avoided?
-      }
-      if (cmpLX > 0) {
-        if (bCmpALeft === undefined) bCmpALeft = b.comparePoint(a.leftSE.point)
-        if (bCmpALeft !== 0) return bCmpALeft
-        // NOTE: fall-through is necessary here. why? Can that be avoided?
-      }
-
-      const cmpLY = cmp(aly, bly)
-      // if left endpoints are in the same vertical line, lower means ealier
-      if (cmpLY !== 0) return cmpLY
-      // left endpoints match exactly
-
-      // special case verticals due to rounding errors
-      // part of https://github.com/mfogel/polygon-clipping/issues/29
-      const aVert = a.isVertical()
-      if (aVert !== b.isVertical()) return aVert ? 1 : -1
-
-      // sometimes, because one segment is longer than the other,
-      // one of these comparisons will return 0 and the other won't
-      if (aCmpBRight === undefined) aCmpBRight = a.comparePoint(b.rightSE.point)
-      if (aCmpBRight > 0) return -1
-      if (aCmpBRight < 0) return 1
-      if (bCmpARight === undefined) bCmpARight = b.comparePoint(a.rightSE.point)
+      // is the A right endpoint colinear to segment B ?
+      const bCmpARight = b.comparePoint(a.rightSE.point)
       if (bCmpARight !== 0) return bCmpARight
+
+      // colinear segments, consider the one with left-more
+      // left endpoint to be first (arbitrary?)
+      return -1
     }
 
-    throw new Error(
-      'Segment comparison of ' +
-      `[${a.leftSE.point.x}, ${a.leftSE.point.y}] -> [${a.rightSE.point.x}, ${a.rightSE.point.y}] ` +
-      'against ' +
-      `[${b.leftSE.point.x}, ${b.leftSE.point.y}] -> [${b.rightSE.point.x}, ${b.rightSE.point.y}] ` +
-      'failed. Please submit a bug report.'
-    )
+    // is left endpoint of segment A the right-more?
+    if (alx > blx) {
+      if (aly < bly && aly < bry) return -1
+      if (aly > bly && aly > bry) return 1
+
+      // is the A left endpoint colinear to segment B?
+      const bCmpALeft = b.comparePoint(a.leftSE.point)
+      if (bCmpALeft !== 0) return bCmpALeft
+
+      // is the B right endpoint colinear to segment A?
+      const aCmpBRight = a.comparePoint(b.rightSE.point)
+      if (aCmpBRight < 0) return 1
+      if (aCmpBRight > 0) return -1
+
+      // colinear segments, consider the one with left-more
+      // left endpoint to be first (arbitrary?)
+      return 1
+    }
+
+    // if we get here, the two left endpoints are in the same
+    // vertical plane, ie alx === blx
+
+    // consider the lower left-endpoint to come first
+    if (aly < bly) return -1
+    if (aly > bly) return 1
+
+    // left endpoints are identical
+    // check for colinearity by using the left-more right endpoint
+
+    // is the A right endpoint more left-more?
+    if (arx < brx) {
+      const bCmpARight = b.comparePoint(a.rightSE.point)
+      if (bCmpARight !== 0) return bCmpARight
+
+      // colinear segments with matching left endpoints,
+      // consider the one with more left-more right endpoint to be first
+      return -1
+    }
+
+    // is the B right endpoint more left-more?
+    if (arx > brx) {
+      const aCmpBRight = a.comparePoint(b.rightSE.point)
+      if (aCmpBRight < 0) return 1
+      if (aCmpBRight > 0) return -1
+
+      // colinear segments with matching left endpoints,
+      // consider the one with more left-more right endpoint to be first
+      return 1
+    }
+
+    // if we get here, two two right endpoints are in the same
+    // vertical plane, ie arx === brx
+
+    // consider the lower right-endpoint to come first
+    if (ary < bry) return -1
+    if (ary > bry) return 1
+
+    // right endpoints identical as well, so the segments are idential
+    // fall back on creation order as consistent tie-breaker
+    if (a.id < b.id) return -1
+    if (a.id > b.id) return 1
+
+    // identical segment, ie a === b
+    return 0
   }
 
   /* Warning: a reference to ringsIn input will be stored,
@@ -126,20 +142,25 @@ export default class Segment {
     // this.ringOut, this.consumedBy, this.prev
   }
 
-  static fromRing(point1, point2, ring) {
-    let leftSE, rightSE
-    const ptCmp = cmpPoints(point1, point2)
-    if (ptCmp < 0) {
-      leftSE = new SweepEvent(point1, true)
-      rightSE = new SweepEvent(point2, false)
-    } else if (ptCmp > 0) {
-      leftSE = new SweepEvent(point2, true)
-      rightSE = new SweepEvent(point1, false)
-    } else {
-      throw new Error(
-        `Tried to create degenerate segment at [${point1.x}, ${point2.y}]`
-      )
+  static fromRing(pt1, pt2, ring) {
+    let leftPt, rightPt
+
+    // ordering the two points according to sweep line ordering
+    const cmpPts = SweepEvent.comparePoints(pt1, pt2)
+    if (cmpPts < 0) {
+      leftPt = pt1
+      rightPt = pt2
     }
+    else if (cmpPts > 0) {
+      leftPt = pt2
+      rightPt = pt1
+    }
+    else throw new Error(
+      `Tried to create degenerate segment at [${pt1.x}, ${pt1.y}]`
+    )
+
+    const leftSE = new SweepEvent(leftPt, true)
+    const rightSE = new SweepEvent(rightPt, false)
     return new Segment(leftSE, rightSE, [ring])
   }
 
@@ -168,14 +189,10 @@ export default class Segment {
     }
   }
 
-  isVertical () {
-    return cmp(this.leftSE.point.x, this.rightSE.point.x) === 0
-  }
-
-  isAnEndpoint (point) {
+  isAnEndpoint (pt) {
     return (
-      cmpPoints(point, this.leftSE.point) === 0 ||
-      cmpPoints(point, this.rightSE.point) === 0
+      (pt.x === this.leftSE.point.x && pt.y === this.leftSE.point.y) ||
+      (pt.x === this.rightSE.point.x && pt.y === this.rightSE.point.y)
     )
   }
 
@@ -187,35 +204,21 @@ export default class Segment {
     if (this.isAnEndpoint(point)) return 0
     const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
 
-    const cmpY = cmp(point.y, interPt.y)
-    if (cmpY !== 0) return cmpY
-
-    const cmpX = cmp(point.x, interPt.x)
-    const segCmpX = cmp(this.leftSE.point.y, this.rightSE.point.y)
+    if (point.y < interPt.y) return -1
+    if (point.y > interPt.y) return 1
 
     // depending on if our segment angles up or down,
     // the x coord comparison means oppposite things
-    if (cmpX > 0) return segCmpX
-    if (cmpX < 0) {
-      if (segCmpX > 0) return -1
-      if (segCmpX < 0) return 1
+    if (point.x < interPt.x) {
+      if (this.leftSE.point.y < this.rightSE.point.y) return 1
+      if (this.leftSE.point.y > this.rightSE.point.y) return -1
     }
-    return 0
-  }
-
-  /* Compare point vertically with segment.
-   *    1: point is below segment
-   *    0: segment appears to be vertical
-   *   -1: point is above segment */
-  compareVertically (point) {
-    if (this.isAnEndpoint(point)) return 0
-    const interPt = verticalIntersection(this.leftSE.point, this.vector(), point.x)
-
-    // Trying to be as exact as possible here, hence not using flp comparisons
-    if (interPt !== null) {
-      if (point.y < interPt.y) return -1
-      if (point.y > interPt.y) return 1
+    if (point.x > interPt.x) {
+      if (this.leftSE.point.y < this.rightSE.point.y) return -1
+      if (this.leftSE.point.y > this.rightSE.point.y) return 1
     }
+
+    // on the line
     return 0
   }
 
@@ -279,7 +282,7 @@ export default class Segment {
     // does this left endpoint matches (other doesn't)
     if (touchesThisLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesOtherRSE && cmpPoints(this.leftSE.point, other.rightSE.point) === 0) return null
+      if (touchesOtherRSE && touchPoints(this.leftSE.point, other.rightSE.point)) return null
       // t-intersection on left endpoint
       return this.leftSE.point
     }
@@ -287,7 +290,7 @@ export default class Segment {
     // does other left endpoint matches (this doesn't)
     if (touchesOtherLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesThisRSE && cmpPoints(this.rightSE.point, other.leftSE.point) === 0) return null
+      if (touchesThisRSE && touchPoints(this.rightSE.point, other.leftSE.point)) return null
       // t-intersection on left endpoint
       return other.leftSE.point
     }
@@ -310,9 +313,8 @@ export default class Segment {
     // is the intersection found between the lines not on the segments?
     if (!isInBbox(bboxOverlap, pt)) return null
 
-    // We don't need to check if we need to 'snap' to an endpoint,
-    // because the endpoint cmps we did eariler were greedy
-    return pt
+    // round the the computed point if needed
+    return rounder.round(pt.x, pt.y)
   }
 
   /**
@@ -327,38 +329,24 @@ export default class Segment {
    *
    * Warning: input array of points is modified
    */
-  split (points) {
-    // sort the points in sweep line order
-    points.sort(cmpPoints)
-
-    let prevSeg = this
-    let prevPoint = null
-
+  split (point) {
     const newEvents = []
-    for (let i = 0, iMax = points.length; i < iMax; i++) {
-      const point = points[i]
-      // skip repeated points
-      if (prevPoint && cmpPoints(prevPoint, point) === 0) continue
-      const alreadyLinked = point.events !== undefined
+    const alreadyLinked = point.events !== undefined
 
-      const newLeftSE = new SweepEvent(point, true)
-      const newRightSE = new SweepEvent(point, false)
-      const oldRightSE = prevSeg.rightSE
-      prevSeg.replaceRightSE(newRightSE)
-      newEvents.push(newRightSE)
-      newEvents.push(newLeftSE)
+    const newLeftSE = new SweepEvent(point, true)
+    const newRightSE = new SweepEvent(point, false)
+    const oldRightSE = this.rightSE
+    this.replaceRightSE(newRightSE)
+    newEvents.push(newRightSE)
+    newEvents.push(newLeftSE)
+    new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
 
-      prevSeg = new Segment(newLeftSE, oldRightSE, prevSeg.ringsIn.slice())
-
-      // in the point we just used to create new sweep events with was already
-      // linked to other events, we need to check if either of the affected
-      // segments should be consumed
-      if (alreadyLinked) {
-        newLeftSE.checkForConsuming()
-        newRightSE.checkForConsuming()
-      }
-
-      prevPoint = point
+    // in the point we just used to create new sweep events with was already
+    // linked to other events, we need to check if either of the affected
+    // segments should be consumed
+    if (alreadyLinked) {
+      newLeftSE.checkForConsuming()
+      newRightSE.checkForConsuming()
     }
 
     return newEvents

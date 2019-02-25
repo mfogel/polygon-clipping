@@ -2,14 +2,16 @@ import SplayTree from 'splaytree'
 import * as cleanInput from './clean-input'
 import * as geomIn from './geom-in'
 import * as geomOut from './geom-out'
+import rounder from './rounder'
 import SweepEvent from './sweep-event'
 import SweepLine from './sweep-line'
 
 export class Operation {
   run (type, geom, moreGeoms) {
     operation.type = type
+    rounder.reset()
 
-    /* Make a copy of the input geometry with points as objects, for perf */
+    /* Make a copy of the input geometry with rounded points as objects */
     const geoms = [cleanInput.pointsAsObjects(geom)]
     for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
       geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))

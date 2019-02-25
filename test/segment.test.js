@@ -57,7 +57,7 @@ describe('split', () => {
   test('on interior point', () => {
     const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 10, y: 10 }, true)
     const pt = { x: 5, y: 5 }
-    const evts = seg.split([pt])
+    const evts = seg.split(pt)
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isLeft).toBe(false)
@@ -73,7 +73,7 @@ describe('split', () => {
   test('on close-to-but-not-exactly interior point', () => {
     const seg = Segment.fromRing({ x: 0, y: 10 }, { x: 10, y: 0 }, false)
     const pt = { x: 5 + Number.EPSILON, y: 5 }
-    const evts = seg.split([pt])
+    const evts = seg.split(pt)
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isLeft).toBe(false)
@@ -88,7 +88,10 @@ describe('split', () => {
     const [sPt1, sPt2, sPt3] = [{ x: 2, y: 2 }, { x: 4, y: 4 }, { x: 6, y: 6 }]
 
     const [orgLeftEvt, orgRightEvt] = [seg.leftSE, seg.rightSE]
-    const newEvts = seg.split([sPt3, sPt1, sPt2])
+    const newEvts3 = seg.split(sPt3)
+    const newEvts2 = seg.split(sPt2)
+    const newEvts1 = seg.split(sPt1)
+    const newEvts = [].concat(newEvts1, newEvts2, newEvts3)
 
     expect(newEvts.length).toBe(6)
 
@@ -109,26 +112,23 @@ describe('split', () => {
   })
 })
 
-describe('simple properties - bbox, vector, points, isVertical', () => {
+describe('simple properties - bbox, vector', () => {
   test('general', () => {
     const seg = Segment.fromRing({ x: 1, y: 2 }, { x: 3, y: 4 })
     expect(seg.bbox()).toEqual({ ll: { x: 1, y: 2 }, ur: { x: 3, y: 4 } })
     expect(seg.vector()).toEqual({ x: 2, y: 2 })
-    expect(seg.isVertical()).toBeFalsy()
   })
 
   test('horizontal', () => {
     const seg = Segment.fromRing({ x: 1, y: 4 }, { x: 3, y: 4 })
     expect(seg.bbox()).toEqual({ ll: { x: 1, y: 4 }, ur: { x: 3, y: 4 } })
     expect(seg.vector()).toEqual({ x: 2, y: 0 })
-    expect(seg.isVertical()).toBeFalsy()
   })
 
   test('vertical', () => {
     const seg = Segment.fromRing({ x: 3, y: 2 }, { x: 3, y: 4 })
     expect(seg.bbox()).toEqual({ ll: { x: 3, y: 2 }, ur: { x: 3, y: 4 } })
     expect(seg.vector()).toEqual({ x: 0, y: 2 })
-    expect(seg.isVertical()).toBeTruthy()
   })
 })
 
@@ -628,15 +628,15 @@ describe('compare segments', () => {
     test('intersect on left from above', () => {
       const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 0 })
       const seg2 = Segment.fromRing({ x: -2, y: 2 }, { x: 2, y: -2 })
-      expect(Segment.compare(seg1, seg2)).toBe(-1)
-      expect(Segment.compare(seg2, seg1)).toBe(1)
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
 
     test('intersect on left from below', () => {
       const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 0 })
       const seg2 = Segment.fromRing({ x: -2, y: -2 }, { x: 2, y: 2 })
-      expect(Segment.compare(seg1, seg2)).toBe(1)
-      expect(Segment.compare(seg2, seg1)).toBe(-1)
+      expect(Segment.compare(seg1, seg2)).toBe(-1)
+      expect(Segment.compare(seg2, seg1)).toBe(1)
     })
 
     test('intersect on left from vertical', () => {
@@ -709,8 +709,8 @@ describe('compare segments', () => {
     test('one segment thinks theyre colinear, but the other says no', () => {
       const seg1 = Segment.fromRing({ x: -60.6876, y: -40.83428174062278 }, { x: -60.6841701, y: -40.83491 })
       const seg2 = Segment.fromRing({ x: -60.6876, y: -40.83428174062278 }, { x: -60.6874, y: -40.83431837489067 })
-      expect(Segment.compare(seg1, seg2)).toBe(-1)
-      expect(Segment.compare(seg2, seg1)).toBe(1)
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
   })
 
@@ -736,12 +736,12 @@ describe('compare segments', () => {
       expect(Segment.compare(seg2, seg1)).toBe(-1)
     })
 
-    test('left endpoints match - should be sorted by ring id', () => {
+    test('left endpoints match - should be length', () => {
       const seg1 = Segment.fromRing({ x: 0, y: 0 }, { x: 4, y: 4 }, { id: 1 })
       const seg2 = Segment.fromRing({ x: 0, y: 0 }, { x: 3, y: 3 }, { id: 2 })
       const seg3 = Segment.fromRing({ x: 0, y: 0 }, { x: 5, y: 5 }, { id: 3 })
-      expect(Segment.compare(seg1, seg2)).toBe(-1)
-      expect(Segment.compare(seg2, seg1)).toBe(1)
+      expect(Segment.compare(seg1, seg2)).toBe(1)
+      expect(Segment.compare(seg2, seg1)).toBe(-1)
 
       expect(Segment.compare(seg2, seg3)).toBe(-1)
       expect(Segment.compare(seg3, seg2)).toBe(1)
