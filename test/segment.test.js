@@ -57,7 +57,7 @@ describe('split', () => {
   test('on interior point', () => {
     const seg = Segment.fromRing({ x: 0, y: 0 }, { x: 10, y: 10 }, true)
     const pt = { x: 5, y: 5 }
-    const evts = seg.split([pt])
+    const evts = seg.split(pt)
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isLeft).toBe(false)
@@ -73,7 +73,7 @@ describe('split', () => {
   test('on close-to-but-not-exactly interior point', () => {
     const seg = Segment.fromRing({ x: 0, y: 10 }, { x: 10, y: 0 }, false)
     const pt = { x: 5 + Number.EPSILON, y: 5 }
-    const evts = seg.split([pt])
+    const evts = seg.split(pt)
     expect(evts[0].segment).toBe(seg)
     expect(evts[0].point).toEqual(pt)
     expect(evts[0].isLeft).toBe(false)
@@ -88,7 +88,10 @@ describe('split', () => {
     const [sPt1, sPt2, sPt3] = [{ x: 2, y: 2 }, { x: 4, y: 4 }, { x: 6, y: 6 }]
 
     const [orgLeftEvt, orgRightEvt] = [seg.leftSE, seg.rightSE]
-    const newEvts = seg.split([sPt3, sPt1, sPt2])
+    const newEvts3 = seg.split(sPt3)
+    const newEvts2 = seg.split(sPt2)
+    const newEvts1 = seg.split(sPt1)
+    const newEvts = [].concat(newEvts1, newEvts2, newEvts3)
 
     expect(newEvts.length).toBe(6)
 

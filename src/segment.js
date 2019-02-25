@@ -1,7 +1,7 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
-import { cmpPoints, touchPoints } from './flp'
+import { touchPoints } from './flp'
 import { closestPoint, intersection } from './vector'
 import rounder from './rounder'
 
@@ -338,38 +338,24 @@ export default class Segment {
    *
    * Warning: input array of points is modified
    */
-  split (points) {
-    // sort the points in sweep line order
-    points.sort(cmpPoints)
-
-    let prevSeg = this
-    let prevPoint = null
-
+  split (point) {
     const newEvents = []
-    for (let i = 0, iMax = points.length; i < iMax; i++) {
-      const point = points[i]
-      // skip repeated points
-      if (prevPoint && prevPoint.x === point.x && prevPoint.y === point.y) continue
-      const alreadyLinked = point.events !== undefined
+    const alreadyLinked = point.events !== undefined
 
-      const newLeftSE = new SweepEvent(point, true)
-      const newRightSE = new SweepEvent(point, false)
-      const oldRightSE = prevSeg.rightSE
-      prevSeg.replaceRightSE(newRightSE)
-      newEvents.push(newRightSE)
-      newEvents.push(newLeftSE)
+    const newLeftSE = new SweepEvent(point, true)
+    const newRightSE = new SweepEvent(point, false)
+    const oldRightSE = this.rightSE
+    this.replaceRightSE(newRightSE)
+    newEvents.push(newRightSE)
+    newEvents.push(newLeftSE)
+    new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
 
-      prevSeg = new Segment(newLeftSE, oldRightSE, prevSeg.ringsIn.slice())
-
-      // in the point we just used to create new sweep events with was already
-      // linked to other events, we need to check if either of the affected
-      // segments should be consumed
-      if (alreadyLinked) {
-        newLeftSE.checkForConsuming()
-        newRightSE.checkForConsuming()
-      }
-
-      prevPoint = point
+    // in the point we just used to create new sweep events with was already
+    // linked to other events, we need to check if either of the affected
+    // segments should be consumed
+    if (alreadyLinked) {
+      newLeftSE.checkForConsuming()
+      newRightSE.checkForConsuming()
     }
 
     return newEvents
