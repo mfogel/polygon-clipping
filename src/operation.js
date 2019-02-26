@@ -62,6 +62,9 @@ export class Operation {
       node = queue.pop()
     }
 
+    // free some memory we don't need anymore
+    rounder.reset()
+
     /* Collect and compile segments we're keeping into a multipolygon */
     const ringsOut = geomOut.RingOut.factory(sweepLine.segments)
     const result = new geomOut.MultiPolyOut(ringsOut)
