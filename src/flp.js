@@ -29,43 +29,28 @@ export const cmp = (a, b) => {
   return a < b ? -1 : 1
 }
 
-/* FLP point comparator, favors point encountered first by sweep line */
-export const cmpPoints = (aPt, bPt) => {
-  if (aPt === bPt) return 0
+/* Greedy comparison. Two numbers are defined to touch
+ * if their midpoint is indistinguishable from either. */
+export const touch = (a, b) => {
+  const m = (a + b) / 2
+  return cmp(m, a) === 0 || cmp(m, b) === 0
+}
 
-  // fist compare X, then compare Y
-  let a = aPt.x
-  let b = bPt.x
+/* Greedy comparison. Two points are defined to touch
+ * if their midpoint is indistinguishable from either. */
+export const touchPoints = (aPt, bPt) => {
+  // call directly to (skip touch()) cmp() for performance boost
+  const mx = (aPt.x + bPt.x) / 2
+  const aXMiss = cmp(mx, aPt.x) !== 0
+  if (aXMiss && cmp(mx, bPt.x) !== 0) return false
 
-  // inlined version of cmp() for performance boost
-  if (
-    a <= -epsilon ||
-    epsilon <= a ||
-    b <= -epsilon ||
-    epsilon <= b
-  ) {
-    const diff = a - b
-    if (diff * diff >= EPSILON_SQ * a * b) {
-      return a < b ? -1 : 1
-    }
-  }
+  const my = (aPt.y + bPt.y) / 2
+  const aYMiss = cmp(my, aPt.y) !== 0
+  if (aYMiss && cmp(my, bPt.y) !== 0) return false
 
-  a = aPt.y
-  b = bPt.y
-
-  // inlined version of cmp() for performance boost
-  if (
-    a <= -epsilon ||
-    epsilon <= a ||
-    b <= -epsilon ||
-    epsilon <= b
-  ) {
-    const diff = a - b
-    if (diff * diff >= EPSILON_SQ * a * b) {
-      return a < b ? -1 : 1
-    }
-  }
-
-  // they're the same
-  return 0
+  // we have touching on both x & y, we have to make sure it's
+  // not just on opposite points thou
+  if (aYMiss && aYMiss) return true
+  if (!aYMiss && !aYMiss) return true
+  return false
 }

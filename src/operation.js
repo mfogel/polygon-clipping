@@ -2,17 +2,19 @@ import SplayTree from 'splaytree'
 import * as cleanInput from './clean-input'
 import * as geomIn from './geom-in'
 import * as geomOut from './geom-out'
+import rounder from './rounder'
 import SweepEvent from './sweep-event'
 import SweepLine from './sweep-line'
 
 export class Operation {
   run (type, geom, moreGeoms) {
     operation.type = type
+    rounder.reset()
 
     const sbbox = [Infinity, Infinity, -Infinity, -Infinity]
     const cbbox = [Infinity, Infinity, -Infinity, -Infinity]
 
-    /* Make a copy of the input geometry with points as objects, for perf */
+    /* Make a copy of the input geometry with rounded points as objects */
     const geoms = [cleanInput.pointsAsObjects(geom, sbbox)]
     for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
       geoms.push(cleanInput.pointsAsObjects(moreGeoms[i], cbbox))
@@ -44,22 +46,36 @@ export class Operation {
     const rightbound = Math.min(sbbox[2], cbbox[2])
 
     /* Pass the sweep line over those endpoints */
-    const sweepLine = new SweepLine()
-    let node
-    while (node = queue.pop()) {
-
-       // optimization by bboxes for intersection and difference goes here
+    const sweepLine = new SweepLine(queue)
+    let prevQueueSize = queue.size
+    let node = queue.pop()
+    while (node) {
+      // optimization by bboxes for intersection and difference goes here
       if (cbbox[0] !== Infinity && (operation.type === 'intersection' && node.key.point.x > rightbound) ||
           (operation.type === 'difference' && node.key.point.x > sbbox[2])) {
-        break;
+        break
+      }
+      const evt = node.key
+      if (queue.size === prevQueueSize) {
+        // prevents an infinite loop, an otherwise common manifestation of bugs
+        throw new Error(
+          `Unable to pop() SweepEvent [${evt.point.x}, ${evt.point.y}] from ` +
+          `segment #${evt.segment.id} from queue. Please file a bug report.`
+        )
       }
 
       const newEvents = sweepLine.process(node.key)
 
       for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
-        queue.insert(newEvents[i])
+        const evt = newEvents[i]
+        if (evt.consumedBy === undefined) queue.insert(evt)
       }
+      prevQueueSize = queue.size
+      node = queue.pop()
     }
+
+    // free some memory we don't need anymore
+    rounder.reset()
 
     /* Collect and compile segments we're keeping into a multipolygon */
     const ringsOut = geomOut.RingOut.factory(sweepLine.segments)

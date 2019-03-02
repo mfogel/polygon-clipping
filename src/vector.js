@@ -30,6 +30,30 @@ export const cosineOfAngle = (pShared, pBase, pAngle) => {
   return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase)
 }
 
+/* Get the closest point on an line (defined by two points)
+ * to another point. */
+export const closestPoint = (ptA1, ptA2, ptB) => {
+  if (ptA1.x === ptA2.x) return { x: ptA1.x, y: ptB.y } // vertical vector
+  if (ptA1.y === ptA2.y) return { x: ptB.x, y: ptA1.y } // horizontal vector
+
+  // determinne which point is further away
+  const v1 = { x: ptA1.x - ptB.x, y: ptA1.y - ptB.y }
+  const v2 = { x: ptA2.x - ptB.x, y: ptA2.y - ptB.y }
+  let nearPt = ptA1
+  let farPt = ptA2
+  if (dotProduct(v1, v1) > dotProduct(v2, v2)) {
+    farPt = ptA1
+    nearPt = ptA2
+  }
+
+  // use the further point as our base in the calculation, so that the
+  // vectors are more parallel, providing more accurate dot product
+  const vA = { x: nearPt.x - farPt.x, y: nearPt.y - farPt.y }
+  const vB = { x: ptB.x - farPt.x, y: ptB.y - farPt.y }
+  const dist = dotProduct(vA, vB) / dotProduct(vA, vA)
+  return { x: farPt.x + dist * vA.x, y: farPt.y + dist * vA.y }
+}
+
 /* Get the x coordinate where the given line (defined by a point and vector)
  * crosses the horizontal line with the given y coordiante.
  * In the case of parrallel lines (including overlapping ones) returns null. */
@@ -69,8 +93,10 @@ export const intersection = (pt1, v1, pt2, v2) => {
   const d2 = crossProduct(ve, v2) / kross
 
   // take the average of the two calculations to minimize rounding error
-  let x = (pt1.x + d2 * v1.x + pt2.x + d1 * v2.x) / 2
-  let y = (pt1.y + d2 * v1.y + pt2.y + d1 * v2.y) / 2
+  const x1 = pt1.x + d2 * v1.x, x2 = pt2.x + d1 * v2.x
+  const y1 = pt1.y + d2 * v1.y, y2 = pt2.y + d1 * v2.y
+  const x = (x1 + x2) / 2
+  const y = (y1 + y2) / 2
   return { x: x, y: y }
 }
 

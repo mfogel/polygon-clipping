@@ -4,6 +4,7 @@ import {
   crossProduct,
   dotProduct,
   length,
+  closestPoint,
   compareVectorAngles,
   cosineOfAngle,
   sineOfAngle,
@@ -198,6 +199,69 @@ describe('perpendicular()', () => {
   })
 })
 
+describe('closestPoint()', () => {
+  test('on line', () => {
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 3}
+    const pB = { x: -1, y: -1 }
+    const cp = closestPoint(pA1, pA2, pB)
+    expect(cp).toEqual(pB)
+  })
+
+  test('on first point', () => {
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 3}
+    const pB = { x: 2, y: 2 }
+    const cp = closestPoint(pA1, pA2, pB)
+    expect(cp).toEqual(pB)
+  })
+
+  test('off line above', () => {
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 1}
+    const pB = { x: 3, y: 7 }
+    const expected = { x: 0, y: 4 }
+    expect(closestPoint(pA1, pA2, pB)).toEqual(expected)
+    expect(closestPoint(pA2, pA1, pB)).toEqual(expected)
+  })
+
+  test('off line below', () => {
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 1}
+    const pB = { x: 0, y: 2 }
+    const expected = { x: 1, y: 3 }
+    expect(closestPoint(pA1, pA2, pB)).toEqual(expected)
+    expect(closestPoint(pA2, pA1, pB)).toEqual(expected)
+  })
+
+  test('off line perpendicular to first point', () => {
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 3 }
+    const pB = { x: 1, y: 3 }
+    const cp = closestPoint(pA1, pA2, pB)
+    const expected = { x: 2, y: 2 }
+    expect(cp).toEqual(expected)
+  })
+
+  test('horizontal vector', () => {
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 3, y: 2}
+    const pB = { x: 1, y: 3 }
+    const cp = closestPoint(pA1, pA2, pB)
+    const expected = { x: 1, y: 2 }
+    expect(cp).toEqual(expected)
+  })
+
+  test('vertical vector', () => {
+    const pA1 = { x: 2, y: 2 }
+    const pA2 = { x: 2, y: 3}
+    const pB = { x: 1, y: 3 }
+    const cp = closestPoint(pA1, pA2, pB)
+    const expected = { x: 2, y: 3 }
+    expect(cp).toEqual(expected)
+  })
+})
+
 describe('verticalIntersection()', () => {
   test('horizontal', () => {
     const p = { x: 42, y: 3 }
@@ -311,5 +375,17 @@ describe('intersection()', () => {
     const i = intersection(p1, v1, p2, v2)
     expect(i.x).toBe(7)
     expect(i.y).toBe(7)
+  })
+
+  test('consistency', () => {
+    // Taken from https://github.com/mfogel/polygon-clipping/issues/37
+    const p1 = { x: 0.523787, y: 51.281453 }
+    const v1 = { x: 0.0002729999999999677, y: 0.0002729999999999677 }
+    const p2 = { x: 0.523985, y: 51.281651 }
+    const v2 = { x: 0.000024999999999941735, y: 0.000049000000004184585 }
+    const i1 = intersection(p1, v1, p2, v2)
+    const i2 = intersection(p2, v2, p1, v1)
+    expect(i1.x).toBe(i2.x)
+    expect(i1.y).toBe(i2.y)
   })
 })

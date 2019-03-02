@@ -1,0 +1,8 @@
+{
+  "type": "Feature",
+  "properties": null,
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": []
+  }
+}

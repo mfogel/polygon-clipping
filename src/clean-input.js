@@ -1,5 +1,5 @@
-import { cmpPoints } from './flp'
 import { compareVectorAngles } from './vector'
+import rounder from './rounder'
 
 const min = Math.min
 const max = Math.max
@@ -33,11 +33,12 @@ export const pointsAsObjects = (geom, bbox) => {
               'Only 2-dimensional polygons supported.'
             )
           }
-          output[i][j].push({ x: geom[i][j][k][0], y: geom[i][j][k][1] })
-          bbox[0] = min(bbox[0], geom[i][j][k][0]);
-          bbox[1] = min(bbox[1], geom[i][j][k][1]);
-          bbox[2] = max(bbox[2], geom[i][j][k][0]);
-          bbox[3] = max(bbox[3], geom[i][j][k][1]);
+          const pt = rounder.round(geom[i][j][k][0], geom[i][j][k][1])
+          output[i][j].push(pt)
+          bbox[0] = min(bbox[0], pt.x)
+          bbox[1] = min(bbox[1], pt.y)
+          bbox[2] = max(bbox[2], pt.x)
+          bbox[3] = max(bbox[3], pt.y)
         }
       } else { // polygon
         if (geom[i][j].length < 2) {
@@ -49,11 +50,12 @@ export const pointsAsObjects = (geom, bbox) => {
             'Only 2-dimensional polygons supported.'
           )
         }
-        output[i].push({ x: geom[i][j][0], y: geom[i][j][1] })
-        bbox[0] = min(bbox[0], geom[i][j][0]);
-        bbox[1] = min(bbox[1], geom[i][j][1]);
-        bbox[2] = max(bbox[2], geom[i][j][0]);
-        bbox[3] = max(bbox[3], geom[i][j][1]);
+        const pt = rounder.round(geom[i][j][0], geom[i][j][1])
+        output[i].push(pt)
+        bbox[0] = min(bbox[0], pt.x)
+        bbox[1] = min(bbox[1], pt.y)
+        bbox[2] = max(bbox[2], pt.x)
+        bbox[3] = max(bbox[3], pt.y)
       }
     }
   }
@@ -127,11 +129,13 @@ export const cleanMultiPoly = multipoly => {
  * WARN: input modified directly */
 export const cleanRing = ring => {
   if (ring.length === 0) return
-  if (cmpPoints(ring[0], ring[ring.length - 1]) === 0) ring.pop()
+  const firstPt = ring[0]
+  const lastPt = ring[ring.length - 1]
+  if (firstPt.x === lastPt.x && firstPt.y === lastPt.y) ring.pop()
 
   const isPointUncessary = (prevPt, pt, nextPt) =>
-    cmpPoints(prevPt, pt) === 0 ||
-    cmpPoints(pt, nextPt) === 0 ||
+    (prevPt.x === pt.x && prevPt.y === pt.y) ||
+    (nextPt.x === pt.x && nextPt.y === pt.y) ||
     compareVectorAngles(pt, prevPt, nextPt) === 0
 
   let i = 0

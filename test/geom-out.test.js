@@ -4,7 +4,6 @@
 // do is operate off of the result of the sweep line sweep
 
 import Segment from '../src/segment'
-import SweepEvent from '../src/sweep-event'
 import { RingOut, PolyOut, MultiPolyOut } from '../src/geom-out'
 
 describe('ring', () => {
@@ -348,6 +347,33 @@ describe('ring', () => {
     const ring = RingOut.factory([seg1, seg2, seg3, seg4])[0]
 
     expect(ring.getGeom()).toEqual([[0, 0], [2, 2], [0, 2], [0, 0]])
+  })
+
+  test('almost equal point handled ok', () => {
+    // points harvested from https://github.com/mfogel/polygon-clipping/issues/37
+    const p1 = { x: 0.523985, y: 51.281651 }
+    const p2 = { x: 0.5241, y: 51.2816 }
+    const p3 = { x: 0.5240213684210527, y: 51.2816873684210 }
+    const p4 = { x: 0.5239850000000027, y: 51.281651000000004 }  // almost equal to p1
+
+    const seg1 = Segment.fromRing(p1, p2)
+    const seg2 = Segment.fromRing(p2, p3)
+    const seg3 = Segment.fromRing(p3, p4)
+    const seg4 = Segment.fromRing(p4, p1)
+
+    seg1._cache['isInResult'] = true
+    seg2._cache['isInResult'] = true
+    seg3._cache['isInResult'] = true
+    seg4._cache['isInResult'] = true
+
+    const ring = RingOut.factory([seg1, seg2, seg3, seg4])[0]
+
+    expect(ring.getGeom()).toEqual([
+      [0.523985, 51.281651],
+      [0.5241, 51.2816],
+      [0.5240213684210527, 51.2816873684210],
+      [0.523985, 51.281651]
+    ])
   })
 
   test('ring with all colinear points returns null', () => {

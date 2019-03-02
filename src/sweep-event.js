@@ -1,72 +1,35 @@
-import { cmp, cmpPoints } from './flp'
+import Segment from './segment'
 import { cosineOfAngle, sineOfAngle } from './vector'
-
-// Give sweep events unique ID's to get consistent sorting of
-// segments and sweep events when all else is identical
-let sweepEventId = 0
 
 export default class SweepEvent {
 
+  // for ordering sweep events in the sweep event queue
   static compare (a, b) {
 
-    // if the events are already linked, then we know the points are equal
-    if (a.point !== b.point) {
+    // favor event with a point that the sweep line hits first
+    const ptCmp = SweepEvent.comparePoints(a.point, b.point)
+    if (ptCmp !== 0) return ptCmp
 
-      // favor event with a point that the sweep line hits first
-      const cmpX = cmp(a.point.x, b.point.x)
-      if (cmpX !== 0) return cmpX
-
-      const cmpY = cmp(a.point.y, b.point.y)
-      if (cmpY !== 0) return cmpY
-
-      // Points are equal, so go ahead and link these events.
-      a.link(b)
-    }
+    // the points are the same, so link them if needed
+    if (a.point !== b.point) a.link(b)
 
     // favor right events over left
     if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1
 
-    // are they identical?
-    if (a === b) return 0
+    // we have two matching left or right endpoints
+    // ordering of this case is the same as for their segments
+    return Segment.compare(a.segment, b.segment)
+  }
 
-    // The calcuations of relative segment angle below can give different
-    // results after segment splitting due to rounding errors.
-    // To maintain sweep event queue ordering, we thus skip these calculations
-    // if we already know the segements to be colinear (one of the requirements
-    // of the 'consumedBy' relationship).
-    let aConsumedBy = a
-    let bConsumedBy = b
-    while (aConsumedBy.consumedBy) aConsumedBy = aConsumedBy.consumedBy
-    while (bConsumedBy.consumedBy) bConsumedBy = bConsumedBy.consumedBy
-    if (aConsumedBy !== bConsumedBy) {
+  // for ordering points in sweep line order
+  static comparePoints (aPt, bPt) {
+    if (aPt.x < bPt.x) return -1
+    if (aPt.x > bPt.x) return 1
 
-      // favor vertical segments for left events, and non-vertical for right
-      // https://github.com/mfogel/polygon-clipping/issues/29
-      const aVert = a.segment.isVertical()
-      const bVert = b.segment.isVertical()
-      if (aVert && ! bVert) return a.isLeft ? 1 : -1
-      if (! aVert && bVert) return a.isLeft ? -1 : 1
+    if (aPt.y < bPt.y) return -1
+    if (aPt.y > bPt.y) return 1
 
-      // Favor events where the line segment is lower.
-      // Sometimes, because one segment is longer than the other,
-      // one of these comparisons will return 0 and the other won't.
-      const pointSegCmp = a.segment.comparePoint(b.otherSE.point)
-      if (pointSegCmp === 1) return -1
-      if (pointSegCmp === -1) return 1
-      const otherPointSegCmp = b.segment.comparePoint(a.otherSE.point)
-      if (otherPointSegCmp !== 0) return otherPointSegCmp
-
-      // NOTE:  We don't sort on segment length because that changes
-      //        as segments are divided.
-    }
-
-    // as a tie-breaker, favor lower creation id
-    if (a.id < b.id) return -1
-    if (a.id > b.id) return 1
-
-    throw new Error(
-      `SweepEvent comparison failed at [${a.point.x}, ${a.point.y}]`
-    )
+    return 0
   }
 
   // Warning: 'point' input will be modified and re-used (for performance)
@@ -75,24 +38,40 @@ export default class SweepEvent {
     else point.events.push(this)
     this.point = point
     this.isLeft = isLeft
-    this.id = ++sweepEventId
     // this.segment, this.otherSE set by factory
   }
 
   link (other) {
     if (other.point === this.point) {
-      throw new Error(`Tried to link already linked events`)
+      throw new Error('Tried to link already linked events')
     }
-    const numOriginalEvents = this.point.events.length
     const otherEvents = other.point.events
     for (let i = 0, iMax = otherEvents.length; i < iMax; i++) {
       const evt = otherEvents[i]
       this.point.events.push(evt)
       evt.point = this.point
-      for (let j = 0, jMax = numOriginalEvents; j < jMax; j++) {
-        if (this.point.events[j].otherSE.point === evt.otherSE.point) {
-          this.point.events[j].segment.consume(evt.segment)
-        }
+    }
+    this.checkForConsuming()
+  }
+
+  /* Do a pass over our linked events and check to see if any pair
+   * of segments match, and should be consumed. */
+  checkForConsuming () {
+    // FIXME: The loops in this method run O(n^2) => no good.
+    //        Maintain little ordered sweep event trees?
+    //        Can we maintaining an ordering that avoids the need
+    //        for the re-sorting with getLeftmostComparator in geom-out?
+
+    // Compare each pair of events to see if other events also match
+    const numEvents = this.point.events.length
+    for (let i = 0; i < numEvents; i++) {
+      const evt1 = this.point.events[i]
+      if (evt1.segment.consumedBy !== undefined) continue
+      for (let j = i + 1; j < numEvents; j++) {
+        const evt2 = this.point.events[j]
+        if (evt2.consumedBy !== undefined) continue
+        if (evt1.otherSE.point.events !== evt2.otherSE.point.events) continue
+        evt1.segment.consume(evt2.segment)
       }
     }
   }
@@ -137,12 +116,24 @@ export default class SweepEvent {
       const { sine: asine, cosine: acosine } = cache.get(a)
       const { sine: bsine, cosine: bcosine } = cache.get(b)
 
-      const cmpZeroASine = cmp(asine, 0)
-      const cmpZeroBSine = cmp(bsine, 0)
+      // both on or above x-axis
+      if (asine >= 0 && bsine >= 0) {
+        if (acosine < bcosine) return 1
+        if (acosine > bcosine) return -1
+        return 0
+      }
 
-      if (cmpZeroASine >= 0 && cmpZeroBSine >= 0) return cmp(bcosine, acosine)
-      if (cmpZeroASine < 0 && cmpZeroBSine < 0) return cmp(acosine, bcosine)
-      return cmp(bsine, asine)
+      // both below x-axis
+      if (asine < 0 && bsine < 0) {
+        if (acosine < bcosine) return -1
+        if (acosine > bcosine) return 1
+        return 0
+      }
+
+      // one above x-axis, one below
+      if (bsine < asine) return -1
+      if (bsine > asine) return 1
+      return 0
     }
   }
 }
