@@ -7,9 +7,18 @@ export class RingIn {
     this.segments = []
 
     let prevPoint = geomRing[0]
+    this.bbox = {
+      ll: { x: prevPoint.x, y: prevPoint.y },
+      ur: { x: prevPoint.x, y: prevPoint.y },
+    }
+
     for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
       let point = geomRing[i]
       this.segments.push(Segment.fromRing(prevPoint, point, this))
+      if (point.x < this.bbox.ll.x) this.bbox.ll.x = point.x
+      if (point.y < this.bbox.ll.y) this.bbox.ll.y = point.y
+      if (point.x > this.bbox.ur.x) this.bbox.ur.x = point.x
+      if (point.y > this.bbox.ur.y) this.bbox.ur.y = point.y
       prevPoint = point
     }
     this.segments.push(Segment.fromRing(prevPoint, geomRing[0], this))
@@ -29,9 +38,19 @@ export class RingIn {
 export class PolyIn {
   constructor (geomPoly, multiPoly) {
     this.exteriorRing = new RingIn(geomPoly[0], this, true)
+    // copy by value
+    this.bbox = {
+      ll: { x: this.exteriorRing.bbox.ll.x, y: this.exteriorRing.bbox.ll.y },
+      ur: { x: this.exteriorRing.bbox.ur.x, y: this.exteriorRing.bbox.ur.y },
+    }
     this.interiorRings = []
     for (let i = 1, iMax = geomPoly.length; i < iMax; i++) {
-      this.interiorRings.push(new RingIn(geomPoly[i], this, false))
+      const ring = new RingIn(geomPoly[i], this, false)
+      if (ring.bbox.ll.x < this.bbox.ll.x) this.bbox.ll.x = ring.bbox.ll.x
+      if (ring.bbox.ll.y < this.bbox.ll.y) this.bbox.ll.y = ring.bbox.ll.y
+      if (ring.bbox.ur.x > this.bbox.ur.x) this.bbox.ur.x = ring.bbox.ur.x
+      if (ring.bbox.ur.y > this.bbox.ur.y) this.bbox.ur.y = ring.bbox.ur.y
+      this.interiorRings.push(ring)
     }
     this.multiPoly = multiPoly
   }
@@ -51,8 +70,17 @@ export class PolyIn {
 export class MultiPolyIn {
   constructor (geomMultiPoly) {
     this.polys = []
+    this.bbox = {
+      ll: { x: Number.POSITIVE_INFINITY, y: Number.POSITIVE_INFINITY },
+      ur: { x: Number.NEGATIVE_INFINITY, y: Number.NEGATIVE_INFINITY },
+    }
     for (let i = 0, iMax = geomMultiPoly.length; i < iMax; i++) {
-      this.polys.push(new PolyIn(geomMultiPoly[i], this))
+      const poly = new PolyIn(geomMultiPoly[i], this)
+      if (poly.bbox.ll.x < this.bbox.ll.x) this.bbox.ll.x = poly.bbox.ll.x
+      if (poly.bbox.ll.y < this.bbox.ll.y) this.bbox.ll.y = poly.bbox.ll.y
+      if (poly.bbox.ur.x > this.bbox.ur.x) this.bbox.ur.x = poly.bbox.ur.x
+      if (poly.bbox.ur.y > this.bbox.ur.y) this.bbox.ur.y = poly.bbox.ur.y
+      this.polys.push(poly)
     }
     this.isSubject = false
   }

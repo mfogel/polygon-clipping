@@ -1,12 +1,9 @@
 import { compareVectorAngles } from './vector'
 import rounder from './rounder'
 
-const min = Math.min
-const max = Math.max
-
 /* Given input geometry as a standard array-of-arrays geojson-style
  * geometry, return one that uses objects as points, for better perf */
-export const pointsAsObjects = (geom, bbox) => {
+export const pointsAsObjects = geom => {
   // we can handle well-formed multipolys and polys
   const output = []
   if (!Array.isArray(geom)) {
@@ -33,12 +30,7 @@ export const pointsAsObjects = (geom, bbox) => {
               'Only 2-dimensional polygons supported.'
             )
           }
-          const pt = rounder.round(geom[i][j][k][0], geom[i][j][k][1])
-          output[i][j].push(pt)
-          bbox[0] = min(bbox[0], pt.x)
-          bbox[1] = min(bbox[1], pt.y)
-          bbox[2] = max(bbox[2], pt.x)
-          bbox[3] = max(bbox[3], pt.y)
+          output[i][j].push(rounder.round(geom[i][j][k][0], geom[i][j][k][1]))
         }
       } else { // polygon
         if (geom[i][j].length < 2) {
@@ -50,12 +42,7 @@ export const pointsAsObjects = (geom, bbox) => {
             'Only 2-dimensional polygons supported.'
           )
         }
-        const pt = rounder.round(geom[i][j][0], geom[i][j][1])
-        output[i].push(pt)
-        bbox[0] = min(bbox[0], pt.x)
-        bbox[1] = min(bbox[1], pt.y)
-        bbox[2] = max(bbox[2], pt.x)
-        bbox[3] = max(bbox[3], pt.y)
+        output[i].push(rounder.round(geom[i][j][0], geom[i][j][1]))
       }
     }
   }

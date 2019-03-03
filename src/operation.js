@@ -1,4 +1,5 @@
 import SplayTree from 'splaytree'
+import { getBboxOverlap } from './bbox'
 import * as cleanInput from './clean-input'
 import * as geomIn from './geom-in'
 import * as geomOut from './geom-out'
@@ -11,13 +12,10 @@ export class Operation {
     operation.type = type
     rounder.reset()
 
-    const sbbox = [Infinity, Infinity, -Infinity, -Infinity]
-    const cbbox = [Infinity, Infinity, -Infinity, -Infinity]
-
     /* Make a copy of the input geometry with rounded points as objects */
-    const geoms = [cleanInput.pointsAsObjects(geom, sbbox)]
+    const geoms = [cleanInput.pointsAsObjects(geom)]
     for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-      geoms.push(cleanInput.pointsAsObjects(moreGeoms[i], cbbox))
+      geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
     }
 
     /* Clean inputs */
@@ -34,6 +32,34 @@ export class Operation {
     multipolys[0].markAsSubject()
     operation.numMultiPolys = multipolys.length
 
+    /* BBox optimization for difference operation
+     * If the bbox of a multipolygon that's part of the clipping doesn't
+     * intersect the bbox of the subject at all, we can just drop that
+     * multiploygon. */
+    if (operation.type === 'difference') {
+      // in place removal
+      const subject = multipolys[0]
+      let i = 1
+      while (i < multipolys.length) {
+        if (getBboxOverlap(multipolys[i].bbox, subject.bbox) !== null) i++
+        else multipolys.splice(i, 1)
+      }
+    }
+
+    /* BBox optimization for intersection operation
+     * If we can find any pair of multipolygons whose bbox does not overlap,
+     * then the result will be empty. */
+    if (operation.type === 'intersection') {
+      // TODO: this is O(n^2) in number of polygons. By sorting the bboxes,
+      //       it could be optimized to O(n * ln(n))
+      for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
+        const mpA = multipolys[i]
+        for (let j = i + 1, jMax = multipolys.length; j < jMax; j++) {
+          if (getBboxOverlap(mpA.bbox, multipolys[j].bbox) === null) return []
+        }
+      }
+    }
+
     /* Put segment endpoints in a priority queue */
     const queue = new SplayTree(SweepEvent.compare)
     for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
@@ -43,18 +69,11 @@ export class Operation {
       }
     }
 
-    const rightbound = Math.min(sbbox[2], cbbox[2])
-
     /* Pass the sweep line over those endpoints */
     const sweepLine = new SweepLine(queue)
     let prevQueueSize = queue.size
     let node = queue.pop()
     while (node) {
-      // optimization by bboxes for intersection and difference goes here
-      if (cbbox[0] !== Infinity && (operation.type === 'intersection' && node.key.point.x > rightbound) ||
-          (operation.type === 'difference' && node.key.point.x > sbbox[2])) {
-        break
-      }
       const evt = node.key
       if (queue.size === prevQueueSize) {
         // prevents an infinite loop, an otherwise common manifestation of bugs
@@ -63,9 +82,7 @@ export class Operation {
           `segment #${evt.segment.id} from queue. Please file a bug report.`
         )
       }
-
-      const newEvents = sweepLine.process(node.key)
-
+      const newEvents = sweepLine.process(evt)
       for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
         const evt = newEvents[i]
         if (evt.consumedBy === undefined) queue.insert(evt)

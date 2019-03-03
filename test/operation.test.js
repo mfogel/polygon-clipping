@@ -13,9 +13,9 @@ describe('operation.run() calls the right stuff', () => {
     operation.run('union', mp1, [mp2, mp3])
 
     expect(cleanInput.pointsAsObjects).toHaveBeenCalledTimes(3)
-    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp1, expect.any(Array))
-    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp2, expect.any(Array))
-    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp3, expect.any(Array))
+    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp1)
+    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp2)
+    expect(cleanInput.pointsAsObjects).toHaveBeenCalledWith(mp3)
   })
 
   test('forceMultiPoly() called correctly', () => {
