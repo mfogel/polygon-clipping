@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## vNext (in development)
+
+ * Performance improvements ([#55](https://github.com/mfogel/polygon-clipping/issues/55))
+
 ## v0.13.0 (2019-02-26)
 
  * Performance improvements: [Rounder() module](https://github.com/mfogel/polygon-clipping/commit/59b6713d4e72eedf23d64d0ac2a51c84ddce1df7)
