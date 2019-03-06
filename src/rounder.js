@@ -24,10 +24,10 @@ class PtRounder {
     this.yRounder = new CoordRounder()
   }
 
-  round (x, y, save = true) {
+  round (x, y) {
     return {
-      x: this.xRounder.round(x, save),
-      y: this.yRounder.round(y, save),
+      x: this.xRounder.round(x),
+      y: this.yRounder.round(y),
     }
   }
 }
@@ -46,16 +46,8 @@ class CoordRounder {
   //       right). No - it wouldn't, because we snap intersections
   //       to endpoints (to establish independence from the segment
   //       angle for t-intersections).
-  round (coord, save = true) {
-    let node
-    let nodeAlreadyPresent
-
-    if (save) node = this.tree.add(coord)
-    else {
-      node = this.tree.find(coord)
-      nodeAlreadyPresent = (node !== null)
-      if (!nodeAlreadyPresent) node = this.tree.add(coord)
-    }
+  round (coord) {
+    const node = this.tree.add(coord)
 
     const prevNode = this.tree.prev(node)
     if (prevNode !== null && cmp(node.key, prevNode.key) === 0) {
@@ -68,8 +60,6 @@ class CoordRounder {
       this.tree.remove(coord)
       return nextNode.key
     }
-
-    if (!save && !nodeAlreadyPresent) this.tree.remove(coord)
 
     return coord
   }
