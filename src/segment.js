@@ -1,7 +1,7 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
-import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
-import { touchPoints } from './flp'
+import { isInBbox, getBboxOverlap } from './bbox'
+import { cmp } from './flp'
 import { closestPoint, intersection } from './vector'
 import rounder from './rounder'
 
@@ -204,38 +204,27 @@ export default class Segment {
     if (this.isAnEndpoint(point)) return 0
     const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
 
-    if (point.y < interPt.y) return -1
-    if (point.y > interPt.y) return 1
+    // use cmp() to do the same rounding as would apply in rounder.round
+    // but avoid using rounder.round for performance boost, and to avoid
+    // saving the result in the rounding trees
+
+    const cmpY = cmp(point.y, interPt.y)
+    if (cmpY !== 0) return cmpY
 
     // depending on if our segment angles up or down,
     // the x coord comparison means oppposite things
-    if (point.x < interPt.x) {
+    const cmpX = cmp(point.x, interPt.x)
+    if (cmpX < 0) {
       if (this.leftSE.point.y < this.rightSE.point.y) return 1
       if (this.leftSE.point.y > this.rightSE.point.y) return -1
     }
-    if (point.x > interPt.x) {
+    if (cmpX > 0) {
       if (this.leftSE.point.y < this.rightSE.point.y) return -1
       if (this.leftSE.point.y > this.rightSE.point.y) return 1
     }
 
     // on the line
     return 0
-  }
-
-  /* Does the point in question touch the given segment?
-   * Greedy - essentially a 2 * Number.EPSILON comparison.
-   * If it's not possible to add an independent point between the
-   * point and the segment, we say the point 'touches' the segment. */
-  touches (point) {
-    if (!touchesBbox(this.bbox(), point)) return false
-    // if the points have been linked already, performance boost use that
-    if (point === this.leftSE.point || point === this.rightSE.point) return true
-    // avoid doing vector math on tiny vectors
-    if (touchPoints(this.leftSE.point, point)) return true
-    if (touchPoints(this.rightSE.point, point)) return true
-    const cPt1 = closestPoint(this.leftSE.point, this.rightSE.point, point)
-    const avgPt1 = { x: (cPt1.x + point.x) / 2, y: (cPt1.y + point.y) / 2 }
-    return touchPoints(avgPt1, cPt1) || touchPoints(avgPt1, point)
   }
 
   /**
@@ -255,25 +244,32 @@ export default class Segment {
    */
   getIntersection (other) {
     // If bboxes don't overlap, there can't be any intersections
-    const bboxOverlap = getBboxOverlap(this.bbox(), other.bbox())
+    const tBbox = this.bbox()
+    const oBbox = other.bbox()
+    const bboxOverlap = getBboxOverlap(tBbox, oBbox)
     if (bboxOverlap === null) return null
 
     // We first check to see if the endpoints can be considered intersections.
     // This will 'snap' intersections to endpoints if possible, and will
     // handle cases of colinearity.
 
+    const tlp = this.leftSE.point
+    const trp = this.rightSE.point
+    const olp = other.leftSE.point
+    const orp = other.rightSE.point
+
     // does each endpoint touch the other segment?
-    const touchesOtherLSE = this.touches(other.leftSE.point)
-    const touchesThisLSE = other.touches(this.leftSE.point)
-    const touchesOtherRSE = this.touches(other.rightSE.point)
-    const touchesThisRSE = other.touches(this.rightSE.point)
+    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0
+    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0
+    const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0
+    const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0
 
     // do left endpoints match?
     if (touchesThisLSE && touchesOtherLSE) {
       // these two cases are for colinear segments with matching left
       // endpoints, and one segment being longer than the other
-      if (touchesThisRSE && !touchesOtherRSE) return this.rightSE.point
-      if (!touchesThisRSE && touchesOtherRSE) return other.rightSE.point
+      if (touchesThisRSE && !touchesOtherRSE) return trp
+      if (!touchesThisRSE && touchesOtherRSE) return orp
       // either the two segments match exactly (two trival intersections)
       // or just on their left endpoint (one trivial intersection
       return null
@@ -282,29 +278,33 @@ export default class Segment {
     // does this left endpoint matches (other doesn't)
     if (touchesThisLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesOtherRSE && touchPoints(this.leftSE.point, other.rightSE.point)) return null
+      if (touchesOtherRSE) {
+        if (tlp.x === orp.x && tlp.y === orp.y) return null
+      }
       // t-intersection on left endpoint
-      return this.leftSE.point
+      return tlp
     }
 
     // does other left endpoint matches (this doesn't)
     if (touchesOtherLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesThisRSE && touchPoints(this.rightSE.point, other.leftSE.point)) return null
+      if (touchesThisRSE) {
+        if (trp.x === olp.x && trp.y === olp.y) return null
+      }
       // t-intersection on left endpoint
-      return other.leftSE.point
+      return olp
     }
 
     // trivial intersection on right endpoints
     if (touchesThisRSE && touchesOtherRSE) return null
 
     // t-intersections on just one right endpoint
-    if (touchesThisRSE) return this.rightSE.point
-    if (touchesOtherRSE) return other.rightSE.point
+    if (touchesThisRSE) return trp
+    if (touchesOtherRSE) return orp
 
     // None of our endpoints intersect. Look for a general intersection between
     // infinite lines laid over the segments
-    const pt = intersection(this.leftSE.point, this.vector(), other.leftSE.point, other.vector())
+    const pt = intersection(tlp, this.vector(), olp, other.vector())
 
     // are the segments parrallel? Note that if they were colinear with overlap,
     // they would have an endpoint intersection and that case was already handled above

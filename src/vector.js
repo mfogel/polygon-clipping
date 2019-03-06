@@ -37,20 +37,23 @@ export const closestPoint = (ptA1, ptA2, ptB) => {
   if (ptA1.y === ptA2.y) return { x: ptB.x, y: ptA1.y } // horizontal vector
 
   // determinne which point is further away
-  const v1 = { x: ptA1.x - ptB.x, y: ptA1.y - ptB.y }
-  const v2 = { x: ptA2.x - ptB.x, y: ptA2.y - ptB.y }
-  let nearPt = ptA1
-  let farPt = ptA2
+  // we use the further point as our base in the calculation, so that the
+  // vectors are more parallel, providing more accurate dot product
+  const v1 = { x: ptB.x - ptA1.x, y: ptB.y - ptA1.y }
+  const v2 = { x: ptB.x - ptA2.x, y: ptB.y - ptA2.y }
+  let vFar, vA, farPt
   if (dotProduct(v1, v1) > dotProduct(v2, v2)) {
+    vFar = v1
+    vA = { x: ptA2.x - ptA1.x, y: ptA2.y - ptA1.y }
     farPt = ptA1
-    nearPt = ptA2
+  }
+  else {
+    vFar = v2
+    vA = { x: ptA1.x - ptA2.x, y: ptA1.y - ptA2.y }
+    farPt = ptA2
   }
 
-  // use the further point as our base in the calculation, so that the
-  // vectors are more parallel, providing more accurate dot product
-  const vA = { x: nearPt.x - farPt.x, y: nearPt.y - farPt.y }
-  const vB = { x: ptB.x - farPt.x, y: ptB.y - farPt.y }
-  const dist = dotProduct(vA, vB) / dotProduct(vA, vA)
+  const dist = dotProduct(vA, vFar) / dotProduct(vA, vA)
   return { x: farPt.x + dist * vA.x, y: farPt.y + dist * vA.y }
 }
 

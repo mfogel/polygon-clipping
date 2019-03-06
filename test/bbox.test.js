@@ -3,7 +3,6 @@
 import {
   getBboxOverlap,
   isInBbox,
-  touchesBbox
 } from '../src/bbox'
 
 describe('is in bbox', () => {
@@ -30,33 +29,6 @@ describe('is in bbox', () => {
     expect(isInBbox(bbox, { x: 1.2 + Number.EPSILON, y: 6 })).toBeFalsy()
     expect(isInBbox(bbox, { x: 1, y: 0.8 + Number.EPSILON })).toBeTruthy()
     expect(isInBbox(bbox, { x: 1, y: 0.8 - Number.EPSILON })).toBeFalsy()
-  })
-})
-
-describe('touchesBbox()', () => {
-  test('outside', () => {
-    const bbox = { ll: { x: 1, y: 2 }, ur: { x: 5, y: 6 } }
-    expect(touchesBbox(bbox, { x: 0, y: 3 })).toBeFalsy()
-    expect(touchesBbox(bbox, { x: 3, y: 30 })).toBeFalsy()
-    expect(touchesBbox(bbox, { x: 3, y: -30 })).toBeFalsy()
-    expect(touchesBbox(bbox, { x: 9, y: 3 })).toBeFalsy()
-  })
-
-  test('inside', () => {
-    const bbox = { ll: { x: 1, y: 2 }, ur: { x: 5, y: 6 } }
-    expect(touchesBbox(bbox, { x: 1, y: 2 })).toBeTruthy()
-    expect(touchesBbox(bbox, { x: 5, y: 6 })).toBeTruthy()
-    expect(touchesBbox(bbox, { x: 1, y: 6 })).toBeTruthy()
-    expect(touchesBbox(bbox, { x: 5, y: 2 })).toBeTruthy()
-    expect(touchesBbox(bbox, { x: 3, y: 4 })).toBeTruthy()
-  })
-
-  test('barely inside & outside', () => {
-    const bbox = { ll: { x: 1, y: 0.8 }, ur: { x: 1.2, y: 6 } }
-    expect(touchesBbox(bbox, { x: 1.2 + 2 * Number.EPSILON, y: 6 })).toBeTruthy()
-    expect(touchesBbox(bbox, { x: 1.2 + 4 * Number.EPSILON, y: 6 })).toBeFalsy()
-    expect(touchesBbox(bbox, { x: 1, y: 0.8 - Number.EPSILON })).toBeTruthy()
-    expect(touchesBbox(bbox, { x: 1, y: 0.8 - 2 * Number.EPSILON })).toBeFalsy()
   })
 })
 

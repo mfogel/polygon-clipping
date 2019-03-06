@@ -519,6 +519,13 @@ describe('get intersections 2', () => {
     expect(segA.getIntersection(segB)).toBeNull()
     expect(segB.getIntersection(segA)).toBeNull()
   })
+
+  test('endpoint intersection between very short and very vertical segment', () => {
+    const segA = Segment.fromRing({ x: -10.000000000000004, y: 0 }, { x: -9.999999999999995, y: 0})
+    const segB = Segment.fromRing({ x: -10.000000000000004, y: 0 }, { x: -9.999999999999995, y: 1000})
+    expect(segA.getIntersection(segB)).toBeNull()
+    expect(segB.getIntersection(segA)).toBeNull()
+  })
 })
 
 describe('compare segments', () => {
@@ -769,8 +776,8 @@ describe('compare segments', () => {
   test('segment consistency - from #60', () => {
     const seg1 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.571478, y: 55.0187174 })
     const seg2 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.57152375603846, y: 55.01943125 })
-    expect(Segment.compare(seg1, seg2)).toBe(-1)
-    expect(Segment.compare(seg2, seg1)).toBe(1)
+    expect(Segment.compare(seg1, seg2)).toBe(1)
+    expect(Segment.compare(seg2, seg1)).toBe(-1)
   })
 
   test('ensure transitive - part of issue 60', () => {
