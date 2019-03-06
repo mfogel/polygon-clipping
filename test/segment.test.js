@@ -520,7 +520,7 @@ describe('get intersections 2', () => {
     expect(segB.getIntersection(segA)).toBeNull()
   })
 
-  test.only('tmp', () => {
+  test('endpoint intersection between very short and very vertical segment', () => {
     const segA = Segment.fromRing({ x: -10.000000000000004, y: 0 }, { x: -9.999999999999995, y: 0})
     const segB = Segment.fromRing({ x: -10.000000000000004, y: 0 }, { x: -9.999999999999995, y: 1000})
     expect(segA.getIntersection(segB)).toBeNull()
