@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ## vNext (in development)
 
  * Performance improvements ([#55](https://github.com/mfogel/polygon-clipping/issues/55))
+ * Bug fixes (another instance of [#60](https://github.com/mfogel/polygon-clipping/issues/60))
 
 ## v0.13.0 (2019-02-26)
 
