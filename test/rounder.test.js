@@ -48,4 +48,22 @@ describe('rounder.round()', () => {
     expect(pt1.y).not.toEqual(0)
     expect(rounder.round(pt1.x, pt1.y)).toEqual({ x: 0, y: 0 })
   })
+
+  test('result of basic round with save = false', () => {
+    rounder.reset()
+    const pt1 = {x: 3, y: 4}
+    const pt2 = {x: 4, y: 5}
+    const pt3 = {x: 5, y: 5}
+    expect(rounder.round(pt1.x, pt1.y, false)).toEqual(pt1)
+    expect(rounder.round(pt2.x, pt2.y, false)).toEqual(pt2)
+    expect(rounder.round(pt3.x, pt3.y, false)).toEqual(pt3)
+  })
+
+  test('ensure save = false really is not saving', () => {
+    rounder.reset()
+    const pt1 = {x: 3, y: 4}
+    const pt2 = {x: 3 + Number.EPSILON, y: 4 + Number.EPSILON}
+    expect(rounder.round(pt1.x, pt1.y, false)).toEqual(pt1)
+    expect(rounder.round(pt2.x, pt2.y)).toEqual(pt2)
+  })
 })
