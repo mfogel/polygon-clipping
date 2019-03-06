@@ -1,7 +1,6 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
-import { isInBbox, touchesBbox, getBboxOverlap } from './bbox'
-import { touchPoints } from './flp'
+import { isInBbox, getBboxOverlap } from './bbox'
 import { closestPoint, intersection } from './vector'
 import rounder from './rounder'
 
@@ -227,15 +226,11 @@ export default class Segment {
    * If it's not possible to add an independent point between the
    * point and the segment, we say the point 'touches' the segment. */
   touches (point) {
-    if (!touchesBbox(this.bbox(), point)) return false
-    // if the points have been linked already, performance boost use that
-    if (point === this.leftSE.point || point === this.rightSE.point) return true
-    // avoid doing vector math on tiny vectors
-    if (touchPoints(this.leftSE.point, point)) return true
-    if (touchPoints(this.rightSE.point, point)) return true
-    const cPt1 = closestPoint(this.leftSE.point, this.rightSE.point, point)
-    const avgPt1 = { x: (cPt1.x + point.x) / 2, y: (cPt1.y + point.y) / 2 }
-    return touchPoints(avgPt1, cPt1) || touchPoints(avgPt1, point)
+    if (!isInBbox(this.bbox(), point)) return false
+    if (this.isAnEndpoint(point)) return true
+    const cPtRaw = closestPoint(this.leftSE.point, this.rightSE.point, point)
+    const cPt = rounder.round(cPtRaw.x, cPtRaw.y, false)
+    return (cPt.x === point.x && cPt.y === point.y)
   }
 
   /**
@@ -282,7 +277,11 @@ export default class Segment {
     // does this left endpoint matches (other doesn't)
     if (touchesThisLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesOtherRSE && touchPoints(this.leftSE.point, other.rightSE.point)) return null
+      if (touchesOtherRSE) {
+        const tlp = this.leftSE.point
+        const orp = other.rightSE.point
+        if (tlp.x === orp.x && tlp.y === orp.y) return null
+      }
       // t-intersection on left endpoint
       return this.leftSE.point
     }
@@ -290,7 +289,11 @@ export default class Segment {
     // does other left endpoint matches (this doesn't)
     if (touchesOtherLSE) {
       // check for segments that just intersect on opposing endpoints
-      if (touchesThisRSE && touchPoints(this.rightSE.point, other.leftSE.point)) return null
+      if (touchesThisRSE) {
+        const trp = this.rightSE.point
+        const olp = other.leftSE.point
+        if (trp.x === olp.x && trp.y === olp.y) return null
+      }
       // t-intersection on left endpoint
       return other.leftSE.point
     }
