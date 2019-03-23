@@ -94,7 +94,16 @@ export default class Segment {
       const bCmpARight = b.comparePoint(a.rightSE.point)
       if (bCmpARight !== 0) return bCmpARight
 
-      // colinear segments with matching left endpoints,
+      // are these two [almost] vertical segments with opposite orientation?
+      // if so, the one with the lower right endpoint comes first
+      const ay = ary - aly
+      const ax = arx - alx
+      const by = bry - bly
+      const bx = brx - blx
+      if (ay > ax && by < bx) return 1
+      if (ay < ax && by > bx) return -1
+
+      // we have colinear segments with matching orientation
       // consider the one with more left-more right endpoint to be first
       return -1
     }
@@ -105,7 +114,16 @@ export default class Segment {
       if (aCmpBRight < 0) return 1
       if (aCmpBRight > 0) return -1
 
-      // colinear segments with matching left endpoints,
+      // are these two [almost] vertical segments with opposite orientation?
+      // if so, the one with the lower right endpoint comes first
+      const ay = ary - aly
+      const ax = arx - alx
+      const by = bry - bly
+      const bx = brx - blx
+      if (ay > ax && by < bx) return 1
+      if (ay < ax && by > bx) return -1
+
+      // we have colinear segments with matching orientation
       // consider the one with more left-more right endpoint to be first
       return 1
     }
@@ -339,7 +357,17 @@ export default class Segment {
     this.replaceRightSE(newRightSE)
     newEvents.push(newRightSE)
     newEvents.push(newLeftSE)
-    new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+    const newSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+
+    // when splitting a nearly vertical downward-facing segment,
+    // sometimes one of the resulting new segments is vertical, in which
+    // case its left and right events may need to be swapped
+    if (SweepEvent.comparePoints(newSeg.leftSE.point, newSeg.rightSE.point) > 0) {
+      newSeg.swapEvents()
+    }
+    if (SweepEvent.comparePoints(this.leftSE.point, this.rightSE.point) > 0) {
+      this.swapEvents()
+    }
 
     // in the point we just used to create new sweep events with was already
     // linked to other events, we need to check if either of the affected
@@ -350,6 +378,15 @@ export default class Segment {
     }
 
     return newEvents
+  }
+
+  /* Swap which event is left and right */
+  swapEvents () {
+    const tmpEvt = this.rightSE
+    this.rightSE = this.leftSE
+    this.leftSE = tmpEvt
+    this.leftSE.isLeft = true
+    this.rightSE.isLeft = false
   }
 
   /* Consume another segment. We take their ringsIn under our wing

@@ -784,8 +784,27 @@ describe('compare segments', () => {
     const seg2 = Segment.fromRing({ x: -10.000000000000018, y: -9.17 }, { x: -10.000000000000004, y: -8.79 })
     const seg6 = Segment.fromRing({ x: -10.000000000000016, y: 1.44 }, { x: -9, y: 1.5 })
     const seg4 = Segment.fromRing({ x: -10.00000000000001, y: 1.75 }, { x: -9, y: 1.5 })
+
     expect(Segment.compare(seg2, seg6)).toBe(-1)
     expect(Segment.compare(seg6, seg4)).toBe(-1)
     expect(Segment.compare(seg2, seg4)).toBe(-1)
+
+    expect(Segment.compare(seg6, seg2)).toBe(1)
+    expect(Segment.compare(seg4, seg6)).toBe(1)
+    expect(Segment.compare(seg4, seg2)).toBe(1)
+  })
+
+  test('ensure transitive 2 - also part of issue 60', () => {
+    const seg1 = Segment.fromRing({ x: -10.000000000000002, y: 1.8181818181818183 }, { x: -9.999999999999996, y: -3 })
+    const seg2 = Segment.fromRing({ x: -10.000000000000002, y: 1.8181818181818183 }, { x: 0, y: 0 })
+    const seg3 = Segment.fromRing({ x: -10.000000000000002, y: 1.8181818181818183 }, { x: -10.000000000000002, y: 2 })
+
+    expect(Segment.compare(seg1, seg2)).toBe(-1)
+    expect(Segment.compare(seg2, seg3)).toBe(-1)
+    expect(Segment.compare(seg1, seg3)).toBe(-1)
+
+    expect(Segment.compare(seg2, seg1)).toBe(1)
+    expect(Segment.compare(seg3, seg2)).toBe(1)
+    expect(Segment.compare(seg3, seg1)).toBe(1)
   })
 })
