@@ -93,19 +93,6 @@ export default class Segment {
     if (arx < brx) {
       const bCmpARight = b.comparePoint(a.rightSE.point)
       if (bCmpARight !== 0) return bCmpARight
-
-      // are these two [almost] vertical segments with opposite orientation?
-      // if so, the one with the lower right endpoint comes first
-      const ay = ary - aly
-      const ax = arx - alx
-      const by = bry - bly
-      const bx = brx - blx
-      if (ay > ax && by < bx) return 1
-      if (ay < ax && by > bx) return -1
-
-      // we have colinear segments with matching orientation
-      // consider the one with more left-more right endpoint to be first
-      return -1
     }
 
     // is the B right endpoint more left-more?
@@ -113,7 +100,9 @@ export default class Segment {
       const aCmpBRight = a.comparePoint(b.rightSE.point)
       if (aCmpBRight < 0) return 1
       if (aCmpBRight > 0) return -1
+    }
 
+    if (arx !== brx)  {
       // are these two [almost] vertical segments with opposite orientation?
       // if so, the one with the lower right endpoint comes first
       const ay = ary - aly
@@ -122,11 +111,12 @@ export default class Segment {
       const bx = brx - blx
       if (ay > ax && by < bx) return 1
       if (ay < ax && by > bx) return -1
-
-      // we have colinear segments with matching orientation
-      // consider the one with more left-more right endpoint to be first
-      return 1
     }
+
+    // we have colinear segments with matching orientation
+    // consider the one with more left-more right endpoint to be first
+    if (arx > brx) return 1
+    if (arx < brx) return -1
 
     // if we get here, two two right endpoints are in the same
     // vertical plane, ie arx === brx
