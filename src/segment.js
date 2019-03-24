@@ -93,10 +93,6 @@ export default class Segment {
     if (arx < brx) {
       const bCmpARight = b.comparePoint(a.rightSE.point)
       if (bCmpARight !== 0) return bCmpARight
-
-      // colinear segments with matching left endpoints,
-      // consider the one with more left-more right endpoint to be first
-      return -1
     }
 
     // is the B right endpoint more left-more?
@@ -104,11 +100,23 @@ export default class Segment {
       const aCmpBRight = a.comparePoint(b.rightSE.point)
       if (aCmpBRight < 0) return 1
       if (aCmpBRight > 0) return -1
-
-      // colinear segments with matching left endpoints,
-      // consider the one with more left-more right endpoint to be first
-      return 1
     }
+
+    if (arx !== brx)  {
+      // are these two [almost] vertical segments with opposite orientation?
+      // if so, the one with the lower right endpoint comes first
+      const ay = ary - aly
+      const ax = arx - alx
+      const by = bry - bly
+      const bx = brx - blx
+      if (ay > ax && by < bx) return 1
+      if (ay < ax && by > bx) return -1
+    }
+
+    // we have colinear segments with matching orientation
+    // consider the one with more left-more right endpoint to be first
+    if (arx > brx) return 1
+    if (arx < brx) return -1
 
     // if we get here, two two right endpoints are in the same
     // vertical plane, ie arx === brx
@@ -241,8 +249,11 @@ export default class Segment {
    *
    * If no non-trivial intersection exists, return null
    * Else, return null.
+   *
+   * The input 'processingPt' is the currnet position of the sweep line pass.
+   * It is used to avoid snapping to an already-processed endpoint.
    */
-  getIntersection (other) {
+  getIntersection (other, processingPt) {
     // If bboxes don't overlap, there can't be any intersections
     const tBbox = this.bbox()
     const oBbox = other.bbox()
@@ -259,8 +270,14 @@ export default class Segment {
     const orp = other.rightSE.point
 
     // does each endpoint touch the other segment?
-    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0
-    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0
+    // note that we restrict the 'touching' definition to only allow segments
+    // to touch endpoints that lie forward from where we are in the sweep line pass
+    const touchesOtherLSE = (
+      isInBbox(tBbox, olp) && this.comparePoint(olp) === 0 && SweepEvent.comparePoints(olp, processingPt) >= 0
+    )
+    const touchesThisLSE = (
+      isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0 && SweepEvent.comparePoints(tlp, processingPt) >= 0
+    )
     const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0
     const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0
 
@@ -339,7 +356,17 @@ export default class Segment {
     this.replaceRightSE(newRightSE)
     newEvents.push(newRightSE)
     newEvents.push(newLeftSE)
-    new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+    const newSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+
+    // when splitting a nearly vertical downward-facing segment,
+    // sometimes one of the resulting new segments is vertical, in which
+    // case its left and right events may need to be swapped
+    if (SweepEvent.comparePoints(newSeg.leftSE.point, newSeg.rightSE.point) > 0) {
+      newSeg.swapEvents()
+    }
+    if (SweepEvent.comparePoints(this.leftSE.point, this.rightSE.point) > 0) {
+      this.swapEvents()
+    }
 
     // in the point we just used to create new sweep events with was already
     // linked to other events, we need to check if either of the affected
@@ -350,6 +377,15 @@ export default class Segment {
     }
 
     return newEvents
+  }
+
+  /* Swap which event is left and right */
+  swapEvents () {
+    const tmpEvt = this.rightSE
+    this.rightSE = this.leftSE
+    this.leftSE = tmpEvt
+    this.leftSE.isLeft = true
+    this.rightSE.isLeft = false
   }
 
   /* Consume another segment. We take their ringsIn under our wing
