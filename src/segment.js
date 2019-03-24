@@ -259,8 +259,11 @@ export default class Segment {
    *
    * If no non-trivial intersection exists, return null
    * Else, return null.
+   *
+   * The input 'processingPt' is the currnet position of the sweep line pass.
+   * It is used to avoid snapping to an already-processed endpoint.
    */
-  getIntersection (other) {
+  getIntersection (other, processingPt) {
     // If bboxes don't overlap, there can't be any intersections
     const tBbox = this.bbox()
     const oBbox = other.bbox()
@@ -277,8 +280,14 @@ export default class Segment {
     const orp = other.rightSE.point
 
     // does each endpoint touch the other segment?
-    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0
-    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0
+    // note that we restrict the 'touching' definition to only allow segments
+    // to touch endpoints that lie forward from where we are in the sweep line pass
+    const touchesOtherLSE = (
+      isInBbox(tBbox, olp) && this.comparePoint(olp) === 0 && SweepEvent.comparePoints(olp, processingPt) >= 0
+    )
+    const touchesThisLSE = (
+      isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0 && SweepEvent.comparePoints(tlp, processingPt) >= 0
+    )
     const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0
     const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0
 
