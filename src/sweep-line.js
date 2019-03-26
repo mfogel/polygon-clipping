@@ -67,7 +67,7 @@ export default class SweepLine {
       // Check for intersections against the previous segment in the sweep line
       let prevMySplitter = null
       if (prevSeg) {
-        const prevInter = prevSeg.getIntersection(segment, event.point)
+        const prevInter = prevSeg.getIntersection(segment)
         if (prevInter !== null) {
           if (!segment.isAnEndpoint(prevInter)) prevMySplitter = prevInter
           if (!prevSeg.isAnEndpoint(prevInter)) {
@@ -82,7 +82,7 @@ export default class SweepLine {
       // Check for intersections against the next segment in the sweep line
       let nextMySplitter = null
       if (nextSeg) {
-        const nextInter = nextSeg.getIntersection(segment, event.point)
+        const nextInter = nextSeg.getIntersection(segment)
         if (nextInter !== null) {
           if (!segment.isAnEndpoint(nextInter)) nextMySplitter = nextInter
           if (!nextSeg.isAnEndpoint(nextInter))  {
@@ -140,7 +140,7 @@ export default class SweepLine {
       // since we're about to be removed from the sweep line, check for
       // intersections between our previous and next segments
       if (prevSeg && nextSeg) {
-        const inter = prevSeg.getIntersection(nextSeg, event.point)
+        const inter = prevSeg.getIntersection(nextSeg)
         if (inter !== null) {
           if (!prevSeg.isAnEndpoint(inter))  {
             const newEventsFromSplit = this._splitSafely(prevSeg, inter)

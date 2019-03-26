@@ -216,19 +216,42 @@ export default class Segment {
     // but avoid using rounder.round for performance boost, and to avoid
     // saving the result in the rounding trees
 
-    const cmpY = cmp(point.y, interPt.y)
-    if (cmpY !== 0) return cmpY
+    // also, there is a fair amount of rounding error introduced when computing
+    // the closestPoint to a nearly vertical or horizontal segment. Thus, we use
+    // the more accurate coordinate for comparison of the two points
 
-    // depending on if our segment angles up or down,
-    // the x coord comparison means oppposite things
-    const cmpX = cmp(point.x, interPt.x)
-    if (cmpX < 0) {
-      if (this.leftSE.point.y < this.rightSE.point.y) return 1
-      if (this.leftSE.point.y > this.rightSE.point.y) return -1
+    const lx = this.leftSE.point.x
+    const ly = this.leftSE.point.y
+    const rx = this.rightSE.point.x
+    const ry = this.rightSE.point.y
+
+    // is the segment upward sloping?
+    if (ry >= ly) {
+      // is the segment more vertical?
+      if (ry - ly > rx - lx) {
+        // use the X coordinate
+        const cmpX = cmp(interPt.x, point.x)
+        if (cmpX != 0) return cmpX
+      }
+      else {
+        // segment is more horizontal, so use Y coord
+        const cmpY = cmp(point.y, interPt.y)
+        if (cmpY != 0) return cmpY
+      }
     }
-    if (cmpX > 0) {
-      if (this.leftSE.point.y < this.rightSE.point.y) return -1
-      if (this.leftSE.point.y > this.rightSE.point.y) return 1
+    else {
+      // segment is more downward sloping
+      // is the segment more vertical?
+      if (ly - ry > rx - lx) {
+        // use the X coordinate
+        const cmpX = cmp(point.x, interPt.x)
+        if (cmpX != 0) return cmpX
+      }
+      else {
+        // segment is more horizontal, so use the Y coordinate
+        const cmpY = cmp(point.y, interPt.y)
+        if (cmpY != 0) return cmpY
+      }
     }
 
     // on the line
@@ -249,11 +272,8 @@ export default class Segment {
    *
    * If no non-trivial intersection exists, return null
    * Else, return null.
-   *
-   * The input 'processingPt' is the currnet position of the sweep line pass.
-   * It is used to avoid snapping to an already-processed endpoint.
    */
-  getIntersection (other, processingPt) {
+  getIntersection (other) {
     // If bboxes don't overlap, there can't be any intersections
     const tBbox = this.bbox()
     const oBbox = other.bbox()
@@ -272,12 +292,8 @@ export default class Segment {
     // does each endpoint touch the other segment?
     // note that we restrict the 'touching' definition to only allow segments
     // to touch endpoints that lie forward from where we are in the sweep line pass
-    const touchesOtherLSE = (
-      isInBbox(tBbox, olp) && this.comparePoint(olp) === 0 && SweepEvent.comparePoints(olp, processingPt) >= 0
-    )
-    const touchesThisLSE = (
-      isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0 && SweepEvent.comparePoints(tlp, processingPt) >= 0
-    )
+    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0
+    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0
     const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0
     const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0
 
