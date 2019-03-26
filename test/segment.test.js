@@ -234,6 +234,102 @@ describe('comparison with point', () => {
   test('downward-slopping segment with nearly touching point', () => {
     const seg = Segment.fromRing({ x: 0.523985, y: 51.281651 }, { x: 0.5241, y: 51.2816 })
     const pt = { x: 0.5239850000000027, y: 51.281651000000004 }
+    expect(seg.comparePoint(pt)).toBe(0)
+  })
+
+  test('vertical before', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 1, y: 3 })
+    const pt = { x: 0, y: 0 }
+    expect(seg.comparePoint(pt)).toBe(1)
+  })
+
+  test('vertical after', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 1, y: 3 })
+    const pt = { x: 2, y: 0 }
+    expect(seg.comparePoint(pt)).toBe(-1)
+  })
+
+  test('vertical on', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 1, y: 3 })
+    const pt = { x: 1, y: 0 }
+    expect(seg.comparePoint(pt)).toBe(0)
+  })
+
+  test('horizontal below', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 1 })
+    const pt = { x: 0, y: 0 }
+    expect(seg.comparePoint(pt)).toBe(-1)
+  })
+
+  test('horizontal above', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 1 })
+    const pt = { x: 0, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(1)
+  })
+
+  test('horizontal on', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 1 })
+    const pt = { x: 0, y: 1 }
+    expect(seg.comparePoint(pt)).toBe(0)
+  })
+
+  test('in vertical plane below', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
+    const pt = { x: 2, y: 0 }
+    expect(seg.comparePoint(pt)).toBe(-1)
+  })
+
+  test('in vertical plane above', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
+    const pt = { x: 2, y: 4 }
+    expect(seg.comparePoint(pt)).toBe(1)
+  })
+
+  test('in horizontal plane upward sloping before', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
+    const pt = { x: 0, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(1)
+  })
+
+  test('in horizontal plane upward sloping after', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
+    const pt = { x: 4, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(-1)
+  })
+
+  test('in horizontal plane downward sloping before', () => {
+    const seg = Segment.fromRing({ x: 1, y: 3 }, { x: 3, y: 1 })
+    const pt = { x: 0, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(-1)
+  })
+
+  test('in horizontal plane downward sloping after', () => {
+    const seg = Segment.fromRing({ x: 1, y: 3 }, { x: 3, y: 1 })
+    const pt = { x: 4, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(1)
+  })
+
+  test('upward more vertical before', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 6 })
+    const pt = { x: 0, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(1)
+  })
+
+  test('upward more vertical after', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 6 })
+    const pt = { x: 4, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(-1)
+  })
+
+  test('downward more vertical before', () => {
+    const seg = Segment.fromRing({ x: 1, y: 6 }, { x: 3, y: 1 })
+    const pt = { x: 0, y: 2 }
+    expect(seg.comparePoint(pt)).toBe(-1)
+  })
+
+  test('downward more vertical after', () => {
+    const seg = Segment.fromRing({ x: 1, y: 6 }, { x: 3, y: 1 })
+    const pt = { x: 4, y: 2 }
     expect(seg.comparePoint(pt)).toBe(1)
   })
 })
