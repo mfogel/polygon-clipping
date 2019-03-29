@@ -40,7 +40,7 @@ Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon. T
 * MultiPolygons may contain touching or overlapping Polygons.
 * rings are not required to be self-closing.
 * rings may contain repeated points, which are ignored.
-* rings may be self-touching and/or self-crossing. Self-crossing rings will be interpreted using the [even-odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule).
+* rings may be self-touching and/or self-crossing. Self-crossing rings will be interpreted using the [non-zero rule](https://en.wikipedia.org/wiki/Nonzero-rule).
 * winding order of rings does not matter.
 * inner rings may extend outside their outer ring. The portion of inner rings outside their outer ring is dropped.
 * inner rings may touch or overlap each other.

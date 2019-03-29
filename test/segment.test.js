@@ -7,14 +7,15 @@ describe('constructor', () => {
   test('general', () => {
     const leftSE = new SweepEvent({x: 0, y: 0})
     const rightSE = new SweepEvent({x: 1, y: 1})
-    const ringsIn = []
-    const seg = new Segment(leftSE, rightSE, ringsIn)
-    expect(seg.ringsIn).toBe(ringsIn)
+    const rings = []
+    const windings = []
+    const seg = new Segment(leftSE, rightSE, rings, windings)
+    expect(seg.rings).toBe(rings)
+    expect(seg.windings).toBe(windings)
     expect(seg.leftSE).toBe(leftSE)
     expect(seg.leftSE.otherSE).toBe(rightSE)
     expect(seg.rightSE).toBe(rightSE)
     expect(seg.rightSE.otherSE).toBe(leftSE)
-    expect(seg._cache).toEqual({})
     expect(seg.ringOut).toBe(undefined)
     expect(seg.prev).toBe(undefined)
     expect(seg.consumedBy).toBe(undefined)
