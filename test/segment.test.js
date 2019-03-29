@@ -14,7 +14,6 @@ describe('constructor', () => {
     expect(seg.leftSE.otherSE).toBe(rightSE)
     expect(seg.rightSE).toBe(rightSE)
     expect(seg.rightSE.otherSE).toBe(leftSE)
-    expect(seg._cache).toEqual({})
     expect(seg.ringOut).toBe(undefined)
     expect(seg.prev).toBe(undefined)
     expect(seg.consumedBy).toBe(undefined)

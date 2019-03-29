@@ -145,7 +145,6 @@ export default class Segment {
     rightSE.segment = this
     rightSE.otherSE = leftSE
     this.ringWindings = ringWindings
-    this._cache = {}
     // left unset for performance, set later in algorithm
     // this.ringOut, this.consumedBy, this.prev
   }
@@ -448,60 +447,44 @@ export default class Segment {
 
   /* The first segment previous segment chain that is in the result */
   prevInResult () {
-    const key = 'prevInResult'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _prevInResult () {
-    if (! this.prev) return null
-    if (this.prev.isInResult()) return this.prev
-    return this.prev.prevInResult()
+    if (this._prevInResult !== undefined) return this._prevInResult
+    if (! this.prev) this._prevInResult = null
+    else if (this.prev.isInResult()) this._prevInResult = this.prev
+    else this._prevInResult = this.prev.prevInResult()
+    return this._prevInResult
   }
 
   ringWindingsBefore () {
-    const key = 'ringWindingsBefore'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _ringWindingsBefore () {
-    if (! this.prev) return []
-    return (this.prev.consumedBy || this.prev).ringWindingsAfter()
+    if (this._ringWindingBefore !== undefined) return this._ringWindingBefore
+    if (! this.prev) this._ringWindingBefore = []
+    else {
+      const seg = this.prev.consumedBy || this.prev
+      this._ringWindingBefore = seg.ringWindingsAfter()
+    }
+    return this._ringWindingBefore
   }
 
   ringWindingsAfter () {
-    const key = 'ringWindingsAfter'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _ringWindingsAfter () {
-    const ringWindingsAfter = this.ringWindingsBefore().slice(0)
+    if (this._ringWindingAfter !== undefined) return this._ringWindingAfter
+    this._ringWindingsAfter = this.ringWindingsBefore().slice(0)
     for (let i = 0, iMax = this.ringWindings.length; i < iMax; i++) {
-      ringWindingsAfter.push(this.ringWindings[i])
+      this._ringWindingsAfter.push(this.ringWindings[i])
     }
-    return ringWindingsAfter
+    return this._ringWindingsAfter
   }
 
   multiPolysBefore () {
-    const key = 'multiPolysBefore'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _multiPolysBefore () {
-    if (! this.prev) return []
-    return (this.prev.consumedBy || this.prev).multiPolysAfter()
+    if (this._multiPolysBefore !== undefined) return this._multiPolysBefore
+    if (! this.prev) this._multiPolysBefore = []
+    else {
+      const seg = this.prev.consumedBy || this.prev
+      this._multiPolysBefore = seg.multiPolysAfter()
+    }
+    return this._multiPolysBefore
   }
 
   multiPolysAfter () {
-    const key = 'multiPolysAfter'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
-
-  _multiPolysAfter () {
+    if (this._multiPolysAfter !== undefined) return this._multiPolysAfter
     // consolidate down the ringWindings we've accumulated
     const rings = []
     const windings = []
@@ -534,22 +517,20 @@ export default class Segment {
       }
     }
     // now calculate our multiPolysAfter
-    const mps = []
+    this._multiPolysAfter = []
     for (let i = 0, iMax = polysAfter.length; i < iMax; i++) {
       const mp = polysAfter[i].multiPoly
-      if (mps.indexOf(mp) === -1) mps.push(mp)
+      if (this._multiPolysAfter.indexOf(mp) === -1) {
+        this._multiPolysAfter.push(mp)
+      }
     }
-    return mps
+    return this._multiPolysAfter
   }
 
   /* Is this segment part of the final result? */
   isInResult () {
-    const key = 'isInResult'
-    if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
-    return this._cache[key]
-  }
+    if (this._isInResult !== undefined) return this._isInResult
 
-  _isInResult () {
     // if we've been consumed, we're not in the result
     if (this.consumedBy) return false
 
@@ -563,7 +544,8 @@ export default class Segment {
         //  * On the other side there is 1 or more.
         const noBefores = mpsBefore.length === 0
         const noAfters = mpsAfter.length === 0
-        return noBefores !== noAfters
+        this._isInResult = noBefores !== noAfters
+        break
       }
 
       case 'intersection': {
@@ -580,7 +562,8 @@ export default class Segment {
           least = mpsAfter.length
           most = mpsBefore.length
         }
-        return most === operation.numMultiPolys && least < most
+        this._isInResult = most === operation.numMultiPolys && least < most
+        break
       }
 
       case 'xor': {
@@ -588,19 +571,23 @@ export default class Segment {
         //  * the difference between the number of multipolys represented
         //    with poly interiors on our two sides is an odd number
         const diff = Math.abs(mpsBefore.length - mpsAfter.length)
-        return diff % 2 === 1
+        this._isInResult = diff % 2 === 1
+        break
       }
 
       case 'difference': {
         // DIFFERENCE included iff:
         //  * on exactly one side, we have just the subject
         const isJustSubject = mps => mps.length === 1 && mps[0].isSubject
-        return isJustSubject(mpsBefore) !== isJustSubject(mpsAfter)
+        this._isInResult = isJustSubject(mpsBefore) !== isJustSubject(mpsAfter)
+        break
       }
 
       default:
         throw new Error(`Unrecognized operation type found ${operation.type}`)
     }
+
+    return this._isInResult
   }
 
 }

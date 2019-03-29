@@ -17,9 +17,9 @@ describe('ring', () => {
       const seg2 = Segment.fromRing(p2, p3)
       const seg3 = Segment.fromRing(p3, p1)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = true
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = true
 
       const rings = RingOut.factory([seg1, seg2, seg3])
 
@@ -44,12 +44,12 @@ describe('ring', () => {
       const seg5 = Segment.fromRing(p5, p6)
       const seg6 = Segment.fromRing(p6, p4)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = true
-      seg4._cache['isInResult'] = true
-      seg5._cache['isInResult'] = true
-      seg6._cache['isInResult'] = true
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = true
+      seg4._isInResult = true
+      seg5._isInResult = true
+      seg6._isInResult = true
 
       const rings = RingOut.factory([seg1, seg2, seg3, seg4, seg5, seg6])
 
@@ -77,13 +77,13 @@ describe('ring', () => {
       const seg6 = Segment.fromRing(p6, p7)
       const seg7 = Segment.fromRing(p7, p5)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = true
-      seg4._cache['isInResult'] = true
-      seg5._cache['isInResult'] = true
-      seg6._cache['isInResult'] = true
-      seg7._cache['isInResult'] = true
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = true
+      seg4._isInResult = true
+      seg5._isInResult = true
+      seg6._isInResult = true
+      seg7._isInResult = true
 
       const rings = RingOut.factory([seg1, seg2, seg3, seg4, seg5, seg6, seg7])
 
@@ -113,14 +113,14 @@ describe('ring', () => {
       const seg7 = Segment.fromRing(p7, p8)
       const seg8 = Segment.fromRing(p8, p5)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = true
-      seg4._cache['isInResult'] = true
-      seg5._cache['isInResult'] = true
-      seg6._cache['isInResult'] = true
-      seg7._cache['isInResult'] = true
-      seg8._cache['isInResult'] = true
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = true
+      seg4._isInResult = true
+      seg5._isInResult = true
+      seg6._isInResult = true
+      seg7._isInResult = true
+      seg8._isInResult = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8]
       const rings = RingOut.factory(segs)
@@ -163,16 +163,16 @@ describe('ring', () => {
       const seg9 = Segment.fromRing(p9, p10)
       const seg10 = Segment.fromRing(p10, p8)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = true
-      seg4._cache['isInResult'] = true
-      seg5._cache['isInResult'] = true
-      seg6._cache['isInResult'] = true
-      seg7._cache['isInResult'] = true
-      seg8._cache['isInResult'] = true
-      seg9._cache['isInResult'] = true
-      seg10._cache['isInResult'] = true
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = true
+      seg4._isInResult = true
+      seg5._isInResult = true
+      seg6._isInResult = true
+      seg7._isInResult = true
+      seg8._isInResult = true
+      seg9._isInResult = true
+      seg10._isInResult = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, seg10]
       const rings = RingOut.factory(segs)
@@ -208,15 +208,15 @@ describe('ring', () => {
       const seg8 = Segment.fromRing(p8, p9)
       const seg9 = Segment.fromRing(p9, p7)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = true
-      seg4._cache['isInResult'] = true
-      seg5._cache['isInResult'] = true
-      seg6._cache['isInResult'] = true
-      seg7._cache['isInResult'] = true
-      seg8._cache['isInResult'] = true
-      seg9._cache['isInResult'] = true
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = true
+      seg4._isInResult = true
+      seg5._isInResult = true
+      seg6._isInResult = true
+      seg7._isInResult = true
+      seg8._isInResult = true
+      seg9._isInResult = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9]
       const rings = RingOut.factory(segs)
@@ -252,15 +252,15 @@ describe('ring', () => {
       const seg8 = Segment.fromRing(p8, p9)
       const seg9 = Segment.fromRing(p9, p7)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = true
-      seg4._cache['isInResult'] = true
-      seg5._cache['isInResult'] = true
-      seg6._cache['isInResult'] = true
-      seg7._cache['isInResult'] = true
-      seg8._cache['isInResult'] = true
-      seg9._cache['isInResult'] = true
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = true
+      seg4._isInResult = true
+      seg5._isInResult = true
+      seg6._isInResult = true
+      seg7._isInResult = true
+      seg8._isInResult = true
+      seg9._isInResult = true
 
       const segs = [seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9]
       const rings = RingOut.factory(segs)
@@ -280,9 +280,9 @@ describe('ring', () => {
       const seg2 = Segment.fromRing(p2, p3)
       const seg3 = Segment.fromRing(p3, p1)
 
-      seg1._cache['isInResult'] = true
-      seg2._cache['isInResult'] = true
-      seg3._cache['isInResult'] = false // broken ring
+      seg1._isInResult = true
+      seg2._isInResult = true
+      seg3._isInResult = false // broken ring
 
       expect(() => RingOut.factory([seg1, seg2, seg3])).toThrow()
     })
@@ -297,9 +297,9 @@ describe('ring', () => {
     const seg2 = Segment.fromRing(p2, p3)
     const seg3 = Segment.fromRing(p3, p1)
 
-    seg1._cache['isInResult'] = true
-    seg2._cache['isInResult'] = true
-    seg3._cache['isInResult'] = true
+    seg1._isInResult = true
+    seg2._isInResult = true
+    seg3._isInResult = true
 
     const ring = RingOut.factory([seg1, seg2, seg3])[0]
 
@@ -317,9 +317,9 @@ describe('ring', () => {
     const seg2 = Segment.fromRing(p2, p3)
     const seg3 = Segment.fromRing(p3, p1)
 
-    seg1._cache['isInResult'] = true
-    seg2._cache['isInResult'] = true
-    seg3._cache['isInResult'] = true
+    seg1._isInResult = true
+    seg2._isInResult = true
+    seg3._isInResult = true
 
     const ring = RingOut.factory([seg1, seg2, seg3])[0]
     ring._isExteriorRing = false
@@ -339,10 +339,10 @@ describe('ring', () => {
     const seg3 = Segment.fromRing(p3, p4)
     const seg4 = Segment.fromRing(p4, p1)
 
-    seg1._cache['isInResult'] = true
-    seg2._cache['isInResult'] = true
-    seg3._cache['isInResult'] = true
-    seg4._cache['isInResult'] = true
+    seg1._isInResult = true
+    seg2._isInResult = true
+    seg3._isInResult = true
+    seg4._isInResult = true
 
     const ring = RingOut.factory([seg1, seg2, seg3, seg4])[0]
 
@@ -361,10 +361,10 @@ describe('ring', () => {
     const seg3 = Segment.fromRing(p3, p4)
     const seg4 = Segment.fromRing(p4, p1)
 
-    seg1._cache['isInResult'] = true
-    seg2._cache['isInResult'] = true
-    seg3._cache['isInResult'] = true
-    seg4._cache['isInResult'] = true
+    seg1._isInResult = true
+    seg2._isInResult = true
+    seg3._isInResult = true
+    seg4._isInResult = true
 
     const ring = RingOut.factory([seg1, seg2, seg3, seg4])[0]
 
@@ -387,10 +387,10 @@ describe('ring', () => {
     const seg3 = Segment.fromRing(p3, p4)
     const seg4 = Segment.fromRing(p4, p1)
 
-    seg1._cache['isInResult'] = true
-    seg2._cache['isInResult'] = true
-    seg3._cache['isInResult'] = true
-    seg4._cache['isInResult'] = true
+    seg1._isInResult = true
+    seg2._isInResult = true
+    seg3._isInResult = true
+    seg4._isInResult = true
 
     const ring = RingOut.factory([seg1, seg2, seg3, seg4])[0]
 
