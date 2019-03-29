@@ -464,70 +464,48 @@ export default class Segment {
     return this._prevInResult
   }
 
-  _calcRingWindingsBefore () {
-    if (! this.prev) {
-      this._ringsBefore = []
-      this._windingsBefore = []
+  beforeState() {
+    if (this._beforeState !== undefined) return this._beforeState
+    if (! this.prev) this._beforeState = {
+      rings: [],
+      windings: [],
+      multiPolys: [],
     }
     else {
       const seg = this.prev.consumedBy || this.prev
-      this._ringsBefore = seg.ringsAfter()
-      this._windingsBefore = seg.windingsAfter()
+      this._beforeState = seg.afterState()
     }
+    return this._beforeState
   }
 
-  ringsBefore () {
-    if (this._ringsBefore === undefined) this._calcRingWindingsBefore()
-    return this._ringsBefore
-  }
+  afterState () {
+    if (this._afterState !== undefined) return this._afterState
 
-  windingsBefore() {
-    if (this._windingsBefore === undefined) this._calcRingWindingsBefore()
-    return this._windingsBefore
-  }
+    const beforeState = this.beforeState()
+    this._afterState = {
+      rings: beforeState.rings.slice(0),
+      windings: beforeState.windings.slice(0),
+      multiPolys: []
+    }
+    const ringsAfter = this._afterState.rings
+    const windingsAfter = this._afterState.windings
+    const mpsAfter = this._afterState.multiPolys
 
-  _calcRingWindingsAfter () {
-    this._ringsAfter = this.ringsBefore().slice(0)
-    this._windingsAfter = this.windingsBefore().slice(0)
+    // calculate ringsAfter, windingsAfter
     for (let i = 0, iMax = this.rings.length; i < iMax; i++) {
       const ring = this.rings[i]
       const winding = this.windings[i]
-      const index = this._ringsAfter.indexOf(ring)
+      const index = ringsAfter.indexOf(ring)
       if (index === -1) {
-        this._ringsAfter.push(ring)
-        this._windingsAfter.push(winding)
+        ringsAfter.push(ring)
+        windingsAfter.push(winding)
       }
-      else this._windingsAfter[index] += winding
+      else windingsAfter[index] += winding
     }
-  }
 
-  ringsAfter () {
-    if (this._ringsAfter === undefined) this._calcRingWindingsAfter()
-    return this._ringsAfter
-  }
-
-  windingsAfter() {
-    if (this._windingsAfter === undefined) this._calcRingWindingsAfter()
-    return this._windingsAfter
-  }
-
-  multiPolysBefore () {
-    if (this._multiPolysBefore !== undefined) return this._multiPolysBefore
-    if (! this.prev) this._multiPolysBefore = []
-    else {
-      const seg = this.prev.consumedBy || this.prev
-      this._multiPolysBefore = seg.multiPolysAfter()
-    }
-    return this._multiPolysBefore
-  }
-
-  multiPolysAfter () {
-    if (this._multiPolysAfter !== undefined) return this._multiPolysAfter
-    // calcualte our polysAfter
+    // calcualte polysAfter
     const polysAfter = []
     const polysExclude = []
-    const ringsAfter = this.ringsAfter()
-    const windingsAfter = this.windingsAfter()
     for (let i = 0, iMax = ringsAfter.length; i < iMax; i++) {
       if (windingsAfter[i] === 0) continue // non-zero rule
       const ring = ringsAfter[i]
@@ -540,26 +518,25 @@ export default class Segment {
         if (index !== -1) polysAfter.splice(index, 1)
       }
     }
-    // now calculate our multiPolysAfter
-    this._multiPolysAfter = []
+
+    // calculate multiPolysAfter
     for (let i = 0, iMax = polysAfter.length; i < iMax; i++) {
       const mp = polysAfter[i].multiPoly
-      if (this._multiPolysAfter.indexOf(mp) === -1) {
-        this._multiPolysAfter.push(mp)
-      }
+      if (mpsAfter.indexOf(mp) === -1) mpsAfter.push(mp)
     }
-    return this._multiPolysAfter
+
+    return this._afterState
   }
 
   /* Is this segment part of the final result? */
   isInResult () {
-    if (this._isInResult !== undefined) return this._isInResult
-
     // if we've been consumed, we're not in the result
     if (this.consumedBy) return false
 
-    const mpsBefore = this.multiPolysBefore()
-    const mpsAfter = this.multiPolysAfter()
+    if (this._isInResult !== undefined) return this._isInResult
+
+    const mpsBefore = this.beforeState().multiPolys
+    const mpsAfter = this.afterState().multiPolys
 
     switch (operation.type) {
       case 'union': {
