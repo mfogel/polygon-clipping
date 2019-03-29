@@ -7,9 +7,9 @@ describe('constructor', () => {
   test('general', () => {
     const leftSE = new SweepEvent({x: 0, y: 0})
     const rightSE = new SweepEvent({x: 1, y: 1})
-    const ringsIn = []
-    const seg = new Segment(leftSE, rightSE, ringsIn)
-    expect(seg.ringsIn).toBe(ringsIn)
+    const ringWindings = []
+    const seg = new Segment(leftSE, rightSE, ringWindings)
+    expect(seg.ringWindings).toBe(ringWindings)
     expect(seg.leftSE).toBe(leftSE)
     expect(seg.leftSE.otherSE).toBe(rightSE)
     expect(seg.rightSE).toBe(rightSE)

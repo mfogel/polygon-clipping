@@ -134,9 +134,9 @@ export default class Segment {
     return 0
   }
 
-  /* Warning: a reference to ringsIn input will be stored,
+  /* Warning: a reference to ringWindings input will be stored,
    *  and possibly will be later modified */
-  constructor (leftSE, rightSE, ringsIn) {
+  constructor (leftSE, rightSE, ringWindings) {
     this.id = ++segmentId
     this.leftSE = leftSE
     leftSE.segment = this
@@ -144,24 +144,26 @@ export default class Segment {
     this.rightSE = rightSE
     rightSE.segment = this
     rightSE.otherSE = leftSE
-    this.ringsIn = ringsIn
+    this.ringWindings = ringWindings
     this._cache = {}
     // left unset for performance, set later in algorithm
     // this.ringOut, this.consumedBy, this.prev
   }
 
   static fromRing(pt1, pt2, ring) {
-    let leftPt, rightPt
+    let leftPt, rightPt, winding
 
     // ordering the two points according to sweep line ordering
     const cmpPts = SweepEvent.comparePoints(pt1, pt2)
     if (cmpPts < 0) {
       leftPt = pt1
       rightPt = pt2
+      winding = 1
     }
     else if (cmpPts > 0) {
       leftPt = pt2
       rightPt = pt1
+      winding = -1
     }
     else throw new Error(
       `Tried to create degenerate segment at [${pt1.x}, ${pt1.y}]`
@@ -169,7 +171,7 @@ export default class Segment {
 
     const leftSE = new SweepEvent(leftPt, true)
     const rightSE = new SweepEvent(rightPt, false)
-    return new Segment(leftSE, rightSE, [ring])
+    return new Segment(leftSE, rightSE, [[ring, winding]])
   }
 
   /* When a segment is split, the rightSE is replaced with a new sweep event */
@@ -372,7 +374,7 @@ export default class Segment {
     this.replaceRightSE(newRightSE)
     newEvents.push(newRightSE)
     newEvents.push(newLeftSE)
-    const newSeg = new Segment(newLeftSE, oldRightSE, this.ringsIn.slice())
+    const newSeg = new Segment(newLeftSE, oldRightSE, this.ringWindings.slice())
 
     // when splitting a nearly vertical downward-facing segment,
     // sometimes one of the resulting new segments is vertical, in which
@@ -402,9 +404,13 @@ export default class Segment {
     this.leftSE = tmpEvt
     this.leftSE.isLeft = true
     this.rightSE.isLeft = false
+    for (let i = 0, iMax = this.ringWindings.length; i < iMax; i++) {
+      const pair = this.ringWindings[i]
+      this.ringWindings[i] = [pair[0], -1 * pair[1]]
+    }
   }
 
-  /* Consume another segment. We take their ringsIn under our wing
+  /* Consume another segment. We take their ringWindings under our wing
    * and mark them as consumed. Use for perfectly overlapping segments */
   consume (other) {
     let consumer = this
@@ -429,10 +435,10 @@ export default class Segment {
       consumee = tmp
     }
 
-    for (let i = 0, iMax = consumee.ringsIn.length; i < iMax; i++) {
-      consumer.ringsIn.push(consumee.ringsIn[i])
+    for (let i = 0, iMax = consumee.ringWindings.length; i < iMax; i++) {
+      consumer.ringWindings.push(consumee.ringWindings[i])
     }
-    consumee.ringsIn = null
+    consumee.ringWindings = null
     consumee.consumedBy = consumer
 
     // mark sweep events consumed as to maintain ordering in sweep event queue
@@ -453,32 +459,29 @@ export default class Segment {
     return this.prev.prevInResult()
   }
 
-  ringsBefore () {
-    const key = 'ringsBefore'
+  ringWindingsBefore () {
+    const key = 'ringWindingsBefore'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
-  _ringsBefore () {
+  _ringWindingsBefore () {
     if (! this.prev) return []
-    return (this.prev.consumedBy || this.prev).ringsAfter()
+    return (this.prev.consumedBy || this.prev).ringWindingsAfter()
   }
 
-  ringsAfter () {
-    const key = 'ringsAfter'
+  ringWindingsAfter () {
+    const key = 'ringWindingsAfter'
     if (this._cache[key] === undefined) this._cache[key] = this[`_${key}`]()
     return this._cache[key]
   }
 
-  _ringsAfter () {
-    const rings = this.ringsBefore().slice(0)
-    for (let i = 0, iMax = this.ringsIn.length; i < iMax; i++) {
-      const ring = this.ringsIn[i]
-      const index = rings.indexOf(ring)
-      if (index === -1) rings.push(ring)
-      else rings.splice(index, 1)
+  _ringWindingsAfter () {
+    const ringWindingsAfter = this.ringWindingsBefore().slice(0)
+    for (let i = 0, iMax = this.ringWindings.length; i < iMax; i++) {
+      ringWindingsAfter.push(this.ringWindings[i])
     }
-    return rings
+    return ringWindingsAfter
   }
 
   multiPolysBefore () {
@@ -499,12 +502,28 @@ export default class Segment {
   }
 
   _multiPolysAfter () {
-    // first calcualte our polysAfter
+    // consolidate down the ringWindings we've accumulated
+    const rings = []
+    const windings = []
+    const ringWindingsAfter = this.ringWindingsAfter()
+    for (let i = 0, iMax = ringWindingsAfter.length; i < iMax; i++) {
+      const ring = ringWindingsAfter[i][0]
+      const winding = ringWindingsAfter[i][1]
+      const index = rings.indexOf(ring)
+      if (index === -1) {
+        rings.push(ring)
+        windings.push(winding)
+      }
+      else {
+        windings[index] += winding
+      }
+    }
+    // calcualte our polysAfter
     const polysAfter = []
     const polysExclude = []
-    const ringsAfter = this.ringsAfter()
-    for (let i = 0, iMax = ringsAfter.length; i < iMax; i++) {
-      const ring = ringsAfter[i]
+    for (let i = 0, iMax = rings.length; i < iMax; i++) {
+      if (windings[i] === 0) continue // non-zero rule
+      const ring = rings[i]
       const poly = ring.poly
       if (polysExclude.indexOf(poly) !== -1) continue
       if (ring.isExterior) polysAfter.push(poly)
