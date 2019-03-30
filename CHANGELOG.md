@@ -2,7 +2,7 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## vNext (in development)
+## v0.14.0 (2019-03-30)
 
  * Change winding rule from [even-odd](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule) to [non-zero](https://en.wikipedia.org/wiki/Nonzero-rule) ([#57](https://github.com/mfogel/polygon-clipping/issues/57))
  * Performance improvements ([#55](https://github.com/mfogel/polygon-clipping/issues/55))
