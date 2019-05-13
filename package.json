@@ -69,6 +69,6 @@
     "vue-template-compiler": "^2.5.22"
   },
   "dependencies": {
-    "splaytree": "^2.0.3"
+    "splaytree": "^3.0.0"
   }
 }
