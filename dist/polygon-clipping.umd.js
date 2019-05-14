@@ -26,62 +26,40 @@
     return Constructor;
   }
 
-  /* follows "An implementation of top-down splaying"
-   * by D. Sleator <sleator@cs.cmu.edu> March 1992
-   */
-
   /**
-   * @typedef {*} Key
-   */
-
-  /**
-   * @typedef {*} Value
-   */
-
-  /**
-   * @typedef {function(node:Node):void} Visitor
-   */
-
-  /**
-   * @typedef {function(a:Key, b:Key):number} Comparator
-   */
-
-  /**
-   * @param {function(node:Node):string} NodePrinter
-   */
-
-  /**
-   * @typedef {Object}  Node
-   * @property {Key}    Key
-   * @property {Value=} data
-   * @property {Node}   left
-   * @property {Node}   right
+   * splaytree v3.0.0
+   * Fast Splay tree for Node and browser
+   *
+   * @author Alexander Milevski <info@w8r.name>
+   * @license MIT
+   * @preserve
    */
   var Node = function Node(key, data) {
     _classCallCheck(this, Node);
 
+    this.next = null;
     this.key = key;
     this.data = data;
     this.left = null;
     this.right = null;
   };
+  /* follows "An implementation of top-down splaying"
+   * by D. Sleator <sleator@cs.cmu.edu> March 1992
+   */
+
 
   function DEFAULT_COMPARE(a, b) {
     return a > b ? 1 : a < b ? -1 : 0;
   }
   /**
    * Simple top down splay, not requiring i to be in the tree t.
-   * @param {Key} i
-   * @param {Node?} t
-   * @param {Comparator} comparator
    */
 
 
   function splay(i, t, comparator) {
-    if (t === null) return t;
-    var l, r, y;
-    var N = new Node();
-    l = r = N;
+    var N = new Node(null, null);
+    var l = N;
+    var r = N;
 
     while (true) {
       var cmp = comparator(i, t.key); //if (i < t.key) {
@@ -90,7 +68,7 @@
         if (t.left === null) break; //if (i < t.left.key) {
 
         if (comparator(i, t.left.key) < 0) {
-          y = t.left;
+          var y = t.left;
           /* rotate right */
 
           t.left = y.right;
@@ -108,12 +86,12 @@
         if (t.right === null) break; //if (i > t.right.key) {
 
         if (comparator(i, t.right.key) > 0) {
-          y = t.right;
+          var _y = t.right;
           /* rotate left */
 
-          t.right = y.left;
-          y.left = t;
-          t = y;
+          t.right = _y.left;
+          _y.left = t;
+          t = _y;
           if (t.right === null) break;
         }
 
@@ -122,9 +100,7 @@
 
         l = t;
         t = t.right;
-      } else {
-        break;
-      }
+      } else break;
     }
     /* assemble */
 
@@ -135,18 +111,9 @@
     t.right = N.left;
     return t;
   }
-  /**
-   * @param  {Key}        i
-   * @param  {Value}      data
-   * @param  {Comparator} comparator
-   * @param  {Tree}       tree
-   * @return {Node}      root
-   */
 
-
-  function _insert(i, data, t, comparator, tree) {
+  function _insert(i, data, t, comparator) {
     var node = new Node(i, data);
-    tree._size++;
 
     if (t === null) {
       node.left = node.right = null;
@@ -168,81 +135,12 @@
 
     return node;
   }
-  /**
-   * Insert i into the tree t, unless it's already there.
-   * @param  {Key}        i
-   * @param  {Value}      data
-   * @param  {Comparator} comparator
-   * @param  {Tree}       tree
-   * @return {Node}       root
-   */
-
-
-  function _add(i, data, t, comparator, tree) {
-    var node = new Node(i, data);
-
-    if (t === null) {
-      node.left = node.right = null;
-      tree._size++;
-      return node;
-    }
-
-    t = splay(i, t, comparator);
-    var cmp = comparator(i, t.key);
-    if (cmp === 0) return t;else {
-      if (cmp < 0) {
-        node.left = t.left;
-        node.right = t;
-        t.left = null;
-      } else if (cmp > 0) {
-        node.right = t.right;
-        node.left = t;
-        t.right = null;
-      }
-
-      tree._size++;
-      return node;
-    }
-  }
-  /**
-   * Deletes i from the tree if it's there
-   * @param {Key}        i
-   * @param {Tree}       tree
-   * @param {Comparator} comparator
-   * @param {Tree}       tree
-   * @return {Node}      new root
-   */
-
-
-  function _remove(i, t, comparator, tree) {
-    var x;
-    if (t === null) return null;
-    t = splay(i, t, comparator);
-    var cmp = comparator(i, t.key);
-
-    if (cmp === 0) {
-      /* found it */
-      if (t.left === null) {
-        x = t.right;
-      } else {
-        x = splay(i, t.left, comparator);
-        x.right = t.right;
-      }
-
-      tree._size--;
-      return x;
-    }
-
-    return t;
-    /* It wasn't there */
-  }
 
   function _split(key, v, comparator) {
-    var left, right;
+    var left = null;
+    var right = null;
 
-    if (v === null) {
-      left = right = null;
-    } else {
+    if (v) {
       v = splay(key, v, comparator);
       var cmp = comparator(v.key, key);
 
@@ -275,11 +173,6 @@
   }
   /**
    * Prints level of the tree
-   * @param  {Node}                        root
-   * @param  {String}                      prefix
-   * @param  {Boolean}                     isTail
-   * @param  {Array<string>}               out
-   * @param  {Function(node:Node):String}  printNode
    */
 
 
@@ -300,34 +193,54 @@
 
       _classCallCheck(this, Tree);
 
-      this._comparator = comparator;
       this._root = null;
       this._size = 0;
+      this._comparator = comparator;
     }
     /**
      * Inserts a key, allows duplicates
-     * @param  {Key}    key
-     * @param  {Value=} data
-     * @return {Node|null}
      */
 
 
     _createClass(Tree, [{
       key: "insert",
       value: function insert(key, data) {
-        return this._root = _insert(key, data, this._root, this._comparator, this);
+        this._size++;
+        return this._root = _insert(key, data, this._root, this._comparator);
       }
       /**
        * Adds a key, if it is not present in the tree
-       * @param  {Key}    key
-       * @param  {Value=} data
-       * @return {Node|null}
        */
 
     }, {
       key: "add",
       value: function add(key, data) {
-        return this._root = _add(key, data, this._root, this._comparator, this);
+        var node = new Node(key, data);
+
+        if (this._root === null) {
+          node.left = node.right = null;
+          this._size++;
+          this._root = node;
+        }
+
+        var comparator = this._comparator;
+        var t = splay(key, this._root, comparator);
+        var cmp = comparator(key, t.key);
+        if (cmp === 0) this._root = t;else {
+          if (cmp < 0) {
+            node.left = t.left;
+            node.right = t;
+            t.left = null;
+          } else if (cmp > 0) {
+            node.right = t.right;
+            node.left = t;
+            t.right = null;
+          }
+
+          this._size++;
+          this._root = node;
+        }
+        return this._root;
       }
       /**
        * @param  {Key} key
@@ -337,11 +250,38 @@
     }, {
       key: "remove",
       value: function remove(key) {
-        this._root = _remove(key, this._root, this._comparator, this);
+        this._root = this._remove(key, this._root, this._comparator);
+      }
+      /**
+       * Deletes i from the tree if it's there
+       */
+
+    }, {
+      key: "_remove",
+      value: function _remove(i, t, comparator) {
+        var x;
+        if (t === null) return null;
+        t = splay(i, t, comparator);
+        var cmp = comparator(i, t.key);
+
+        if (cmp === 0) {
+          /* found it */
+          if (t.left === null) {
+            x = t.right;
+          } else {
+            x = splay(i, t.left, comparator);
+            x.right = t.right;
+          }
+
+          this._size--;
+          return x;
+        }
+
+        return t;
+        /* It wasn't there */
       }
       /**
        * Removes and returns the node with smallest key
-       * @return {?Node}
        */
 
     }, {
@@ -355,7 +295,7 @@
           }
 
           this._root = splay(node.key, this._root, this._comparator);
-          this._root = _remove(node.key, this._root, this._comparator, this);
+          this._root = this._remove(node.key, this._root, this._comparator);
           return {
             key: node.key,
             data: node.data
@@ -365,8 +305,7 @@
         return null;
       }
       /**
-       * @param  {Key} key
-       * @return {Node|null}
+       * Find without splaying
        */
 
     }, {
@@ -382,11 +321,6 @@
 
         return null;
       }
-      /**
-       * @param  {Key} key
-       * @return {Node|null}
-       */
-
     }, {
       key: "find",
       value: function find(key) {
@@ -397,11 +331,6 @@
 
         return this._root;
       }
-      /**
-       * @param  {Key} key
-       * @return {Boolean}
-       */
-
     }, {
       key: "contains",
       value: function contains(key) {
@@ -415,12 +344,6 @@
 
         return false;
       }
-      /**
-       * @param  {Visitor} visitor
-       * @param  {*=}      ctx
-       * @return {SplayTree}
-       */
-
     }, {
       key: "forEach",
       value: function forEach(visitor, ctx) {
@@ -447,11 +370,6 @@
       }
       /**
        * Walk key range from `low` to `high`. Stops if `fn` returns a value.
-       * @param  {Key}      low
-       * @param  {Key}      high
-       * @param  {Function} fn
-       * @param  {*?}       ctx
-       * @return {SplayTree}
        */
 
     }, {
@@ -459,8 +377,8 @@
       value: function range(low, high, fn, ctx) {
         var Q = [];
         var compare = this._comparator;
-        var node = this._root,
-            cmp;
+        var node = this._root;
+        var cmp;
 
         while (Q.length !== 0 || node) {
           if (node) {
@@ -484,7 +402,6 @@
       }
       /**
        * Returns array of keys
-       * @return {Array<Key>}
        */
 
     }, {
@@ -499,7 +416,6 @@
       }
       /**
        * Returns array of all the data in the nodes
-       * @return {Array<Value>}
        */
 
     }, {
@@ -512,30 +428,18 @@
         });
         return values;
       }
-      /**
-       * @return {Key|null}
-       */
-
     }, {
       key: "min",
       value: function min() {
         if (this._root) return this.minNode(this._root).key;
         return null;
       }
-      /**
-       * @return {Key|null}
-       */
-
     }, {
       key: "max",
       value: function max() {
         if (this._root) return this.maxNode(this._root).key;
         return null;
       }
-      /**
-       * @return {Node|null}
-       */
-
     }, {
       key: "minNode",
       value: function minNode() {
@@ -545,10 +449,6 @@
         }
         return t;
       }
-      /**
-       * @return {Node|null}
-       */
-
     }, {
       key: "maxNode",
       value: function maxNode() {
@@ -560,16 +460,14 @@
       }
       /**
        * Returns node at given index
-       * @param  {number} index
-       * @return {?Node}
        */
 
     }, {
       key: "at",
       value: function at(index) {
-        var current = this._root,
-            done = false,
-            i = 0;
+        var current = this._root;
+        var done = false;
+        var i = 0;
         var Q = [];
 
         while (!done) {
@@ -588,11 +486,6 @@
 
         return null;
       }
-      /**
-       * @param  {Node}   d
-       * @return {Node|null}
-       */
-
     }, {
       key: "next",
       value: function next(d) {
@@ -621,11 +514,6 @@
 
         return successor;
       }
-      /**
-       * @param  {Node} d
-       * @return {Node|null}
-       */
-
     }, {
       key: "prev",
       value: function prev(d) {
@@ -654,10 +542,6 @@
 
         return predecessor;
       }
-      /**
-       * @return {SplayTree}
-       */
-
     }, {
       key: "clear",
       value: function clear() {
@@ -665,10 +549,6 @@
         this._size = 0;
         return this;
       }
-      /**
-       * @return {NodeList}
-       */
-
     }, {
       key: "toList",
       value: function toList() {
@@ -676,18 +556,11 @@
       }
       /**
        * Bulk-load items. Both array have to be same size
-       * @param  {Array<Key>}    keys
-       * @param  {Array<Value>}  [values]
-       * @param  {Boolean}       [presort=false] Pre-sort keys and values, using
-       *                                         tree's comparator. Sorting is done
-       *                                         in-place
-       * @return {AVLTree}
        */
 
     }, {
       key: "load",
-      value: function load() {
-        var keys = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      value: function load(keys) {
         var values = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
         var presort = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
         var size = keys.length;
@@ -697,7 +570,7 @@
 
         if (this._root === null) {
           // empty tree
-          this._root = loadRecursive(this._root, keys, values, 0, size);
+          this._root = loadRecursive(keys, values, 0, size);
           this._size = size;
         } else {
           // that re-builds the whole tree from two in-order traversals
@@ -710,10 +583,6 @@
 
         return this;
       }
-      /**
-       * @return {Boolean}
-       */
-
     }, {
       key: "isEmpty",
       value: function isEmpty() {
@@ -721,14 +590,9 @@
       }
     }, {
       key: "toString",
-
-      /**
-       * @param  {NodePrinter=} printNode
-       * @return {String}
-       */
       value: function toString() {
         var printNode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function (n) {
-          return n.key;
+          return String(n.key);
         };
         var out = [];
         printRow(this._root, '', true, function (v) {
@@ -745,12 +609,10 @@
             left = _split2.left,
             right = _split2.right;
 
-        this._size--;
-
         if (comparator(key, newKey) < 0) {
-          right = _insert(newKey, newData, right, comparator, this);
+          right = _insert(newKey, newData, right, comparator);
         } else {
-          left = _insert(newKey, newData, left, comparator, this);
+          left = _insert(newKey, newData, left, comparator);
         }
 
         this._root = merge(left, right, comparator);
@@ -765,25 +627,26 @@
       get: function get() {
         return this._size;
       }
+    }, {
+      key: "root",
+      get: function get() {
+        return this._root;
+      }
     }]);
 
     return Tree;
   }();
 
-  function loadRecursive(parent, keys, values, start, end) {
+  function loadRecursive(keys, values, start, end) {
     var size = end - start;
 
     if (size > 0) {
       var middle = start + Math.floor(size / 2);
       var key = keys[middle];
       var data = values[middle];
-      var node = {
-        key: key,
-        data: data,
-        parent: parent
-      };
-      node.left = loadRecursive(node, keys, values, start, middle);
-      node.right = loadRecursive(node, keys, values, middle + 1, end);
+      var node = new Node(key, data);
+      node.left = loadRecursive(keys, values, start, middle);
+      node.right = loadRecursive(keys, values, middle + 1, end);
       return node;
     }
 
@@ -791,16 +654,11 @@
   }
 
   function createList(keys, values) {
-    var head = {
-      next: null
-    };
+    var head = new Node(null, null);
     var p = head;
 
     for (var i = 0; i < keys.length; i++) {
-      p = p.next = {
-        key: keys[i],
-        data: values[i]
-      };
+      p = p.next = new Node(keys[i], values[i]);
     }
 
     p.next = null;
@@ -809,11 +667,9 @@
 
   function _toList(root) {
     var current = root;
-    var Q = [],
-        done = false;
-    var head = {
-      next: null
-    };
+    var Q = [];
+    var done = false;
+    var head = new Node(null, null);
     var p = head;
 
     while (!done) {
@@ -849,11 +705,8 @@
     return null;
   }
 
-  function mergeLists(l1, l2) {
-    var compare = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function (a, b) {
-      return a - b;
-    };
-    var head = {}; // dummy
+  function mergeLists(l1, l2, compare) {
+    var head = new Node(null, null); // dummy
 
     var p = head;
     var p1 = l1;
@@ -871,7 +724,12 @@
       p = p.next;
     }
 
-    if (p1 !== null) p.next = p1;else if (p2 !== null) p.next = p2;
+    if (p1 !== null) {
+      p.next = p1;
+    } else if (p2 !== null) {
+      p.next = p2;
+    }
+
     return head.next;
   }
 
