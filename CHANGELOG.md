@@ -2,7 +2,7 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## vNext
+## v0.14.1 (2019-05-14)
 
  * Upgrade splaytree dependency [#72](https://github.com/mfogel/polygon-clipping/issues/72)
 
