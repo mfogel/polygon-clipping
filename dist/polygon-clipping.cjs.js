@@ -1040,12 +1040,12 @@ function () {
         consumee = consumee.consumedBy;
       }
 
-      var cmp$$1 = Segment.compare(consumer, consumee);
-      if (cmp$$1 === 0) return; // already consumed
+      var cmp = Segment.compare(consumer, consumee);
+      if (cmp === 0) return; // already consumed
       // the winner of the consumption is the earlier segment
       // according to sweep line ordering
 
-      if (cmp$$1 > 0) {
+      if (cmp > 0) {
         var tmp = consumer;
         consumer = consumee;
         consumee = tmp;
