@@ -2,6 +2,11 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.14.2 (2019-07-27)
+
+ * Add typescript declarations [#76](https://github.com/mfogel/polygon-clipping/issues/76)
+ * Upgrade project dependencies
+
 ## v0.14.1 (2019-05-14)
 
  * Upgrade splaytree dependency [#72](https://github.com/mfogel/polygon-clipping/issues/72)
