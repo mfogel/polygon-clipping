@@ -207,22 +207,32 @@ export default class Segment {
   }
 
   /* Does the given point touch this segment? */
-  touchesPoint (point) {
-    if (this.isAnEndpoint(point)) return true
-    const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
+  touchesPoint (pt) {
+    if (this.isAnEndpoint(pt)) return true
+    const interPt = closestPoint(this.leftSE.point, this.rightSE.point, pt)
 
     // use cmp() to do the same rounding as would apply in rounder.round
     // but avoid using rounder.round for performance boost, and to avoid
     // saving the result in the rounding trees
 
-    const dx = this.rightSE.point.x - this.leftSE.point.x
-    const dy = this.rightSE.point.y - this.leftSE.point.y
+    const cmpX = cmp(interPt.x, pt.x)
+    const cmpY = cmp(interPt.y, pt.y)
 
-    // is this a more vertical segment?
-    if (Math.abs(dy) > 2 * dx) return cmp(interPt.x, point.x) === 0
+    // if the coordinates are in agreement, we're done
+    if (cmpX === 0 && cmpY === 0) return true
+    if (cmpX !== 0 && cmpY !== 0) return false
 
-    // it's more horizontal
-    return cmp(point.y, interPt.y) === 0
+    // Because of rounding effects on near vertical and near horizontal
+    // segments, the 'closest' point on a segment jumps around. To avoid
+    // loops, we catch those affects here.
+
+    const interLPt = closestPoint(this.leftSE.point, interPt, pt)
+    if (cmp(interLPt.x, pt.x) === 0 && cmp(interLPt.y, pt.y) === 0) return true
+
+    const interRPt = closestPoint(this.rightSE.point, interPt, pt)
+    if (cmp(interRPt.x, pt.x) === 0 && cmp(interRPt.y, pt.y) === 0) return true
+
+    return false
   }
 
   /* Compare this segment with a point. Return value indicates:

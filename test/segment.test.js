@@ -332,6 +332,12 @@ describe('touchesPoint()', () => {
     const pt = { x: 0.5239850000000027, y: 51.281651000000004 }
     expect(seg.touchesPoint(pt)).toBe(true)
   })
+
+  test('avoid splitting loops on near vertical segments - from issue 60-2', () => {
+    const seg = Segment.fromRing({ x: -45.3269382, y: -1.4059341 }, { x: -45.326737413921656, y: -1.40635 })
+    const pt = { x: -45.326833968900424, y: -1.40615 }
+    expect(seg.touchesPoint(pt)).toBe(true)
+  })
 })
 
 describe('get intersections 2', () => {
