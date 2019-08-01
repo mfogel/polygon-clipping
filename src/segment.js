@@ -206,57 +206,67 @@ export default class Segment {
     )
   }
 
-  /* Compare this segment with a point. Return value indicates:
-   *     1: point lies above or to the left of segment
-   *     0: point is colinear to segment
-   *    -1: point is below or to the right of segment */
-  comparePoint (point) {
-    if (this.isAnEndpoint(point)) return 0
+  /* Does the given point touch this segment? */
+  touchesPoint (point) {
+    if (this.isAnEndpoint(point)) return true
     const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
 
     // use cmp() to do the same rounding as would apply in rounder.round
     // but avoid using rounder.round for performance boost, and to avoid
     // saving the result in the rounding trees
 
-    // also, there is a fair amount of rounding error introduced when computing
-    // the closestPoint to a nearly vertical or horizontal segment. Thus, we use
-    // the more accurate coordinate for comparison of the two points
+    const dx = this.rightSE.point.x - this.leftSE.point.x
+    const dy = this.rightSE.point.y - this.leftSE.point.y
 
-    const lx = this.leftSE.point.x
-    const ly = this.leftSE.point.y
-    const rx = this.rightSE.point.x
-    const ry = this.rightSE.point.y
+    // is this a more vertical segment?
+    if (Math.abs(dy) > 2 * dx) return cmp(interPt.x, point.x) === 0
 
-    // is the segment upward sloping?
-    if (ry >= ly) {
-      // is the segment more vertical?
-      if (ry - ly > rx - lx) {
-        // use the X coordinate
-        const cmpX = cmp(interPt.x, point.x)
-        if (cmpX != 0) return cmpX
-      }
-      else {
-        // segment is more horizontal, so use Y coord
-        const cmpY = cmp(point.y, interPt.y)
-        if (cmpY != 0) return cmpY
-      }
-    }
-    else {
-      // segment is more downward sloping
-      // is the segment more vertical?
-      if (ly - ry > rx - lx) {
-        // use the X coordinate
-        const cmpX = cmp(point.x, interPt.x)
-        if (cmpX != 0) return cmpX
-      }
-      else {
-        // segment is more horizontal, so use the Y coordinate
-        const cmpY = cmp(point.y, interPt.y)
-        if (cmpY != 0) return cmpY
-      }
+    // it's more horizontal
+    return cmp(point.y, interPt.y) === 0
+  }
+
+  /* Compare this segment with a point. Return value indicates:
+   *     1: point lies above the segment (to the left of vertical)
+   *     0: point is colinear to segment
+   *    -1: point lies below the segment (to the right of vertical) */
+  comparePoint (point) {
+    if (this.isAnEndpoint(point)) return 0
+    const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
+
+    // For nearly vertical segments, the y coordinate may move in
+    // the 'wrong' direction due to rounding errors.
+
+    const dx = this.rightSE.point.x - this.leftSE.point.x
+    const dy = this.rightSE.point.y - this.leftSE.point.y
+
+    // is this a more vertical upward sloping segment?
+    if (dy >= dx) {
+      if (interPt.x < point.x) return -1
+      if (interPt.x > point.x) return 1
     }
 
-    // on the line
+    // is this a more vertical downward sloping segment?
+    if (dy <= -1 * dx) {
+      if (interPt.x < point.x) return 1
+      if (interPt.x > point.x) return -1
+    }
+
+    // this is a mostly horizontal segment
+    if (interPt.y < point.y) return 1
+    if (interPt.y > point.y) return -1
+
+    // mostly horizontal but slight upward
+    if (dy >= 0) {
+      if (interPt.x < point.x) return -1
+      if (interPt.x > point.x) return 1
+    }
+
+    // mostly horizontal but slight downward
+    if (dy < 0) {
+      if (interPt.x < point.x) return 1
+      if (interPt.x > point.x) return -1
+    }
+
     return 0
   }
 
@@ -294,10 +304,10 @@ export default class Segment {
     // does each endpoint touch the other segment?
     // note that we restrict the 'touching' definition to only allow segments
     // to touch endpoints that lie forward from where we are in the sweep line pass
-    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0
-    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0
-    const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0
-    const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0
+    const touchesOtherLSE = isInBbox(tBbox, olp) && this.touchesPoint(olp)
+    const touchesThisLSE = isInBbox(oBbox, tlp) && other.touchesPoint(tlp)
+    const touchesOtherRSE = isInBbox(tBbox, orp) && this.touchesPoint(orp)
+    const touchesThisRSE = isInBbox(oBbox, trp) && other.touchesPoint(trp)
 
     // do left endpoints match?
     if (touchesThisLSE && touchesOtherLSE) {
