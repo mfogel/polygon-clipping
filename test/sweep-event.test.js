@@ -53,8 +53,8 @@ describe('sweep event compare', () => {
   test('and favor barely lower segment', () => {
     const seg1 = Segment.fromRing({ x: -75.725, y: 45.357 }, { x: -75.72484615384616, y: 45.35723076923077 })
     const seg2 = Segment.fromRing({ x: -75.725, y: 45.357 }, { x: -75.723, y: 45.36 })
-    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(-1)
-    expect(SweepEvent.compare(seg2.leftSE, seg1.leftSE)).toBe(1)
+    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(1)
+    expect(SweepEvent.compare(seg2.leftSE, seg1.leftSE)).toBe(-1)
   })
 
   test('then favor lower ring id', () => {
@@ -97,8 +97,8 @@ describe('sweep event compare', () => {
     // harvested from https://github.com/mfogel/polygon-clipping/issues/62
     const seg1 = Segment.fromRing({ x: -71.0390933353125, y: 41.504475 }, { x: -71.0389879, y: 41.5037842 })
     const seg2 = Segment.fromRing({ x: -71.0390933353125, y: 41.504475 }, { x: -71.03906280974431, y: 41.504275 })
-    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(1)
-    expect(SweepEvent.compare(seg2.leftSE, seg1.leftSE)).toBe(-1)
+    expect(SweepEvent.compare(seg1.leftSE, seg2.leftSE)).toBe(-1)
+    expect(SweepEvent.compare(seg2.leftSE, seg1.leftSE)).toBe(1)
   })
 })
 

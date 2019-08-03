@@ -229,13 +229,6 @@ describe('comparison with point', () => {
     expect(s1.comparePoint(pt)).toBe(1)
   })
 
-  // harvested from #37
-  test('downward-slopping segment with nearly touching point', () => {
-    const seg = Segment.fromRing({ x: 0.523985, y: 51.281651 }, { x: 0.5241, y: 51.2816 })
-    const pt = { x: 0.5239850000000027, y: 51.281651000000004 }
-    expect(seg.comparePoint(pt)).toBe(0)
-  })
-
   test('vertical before', () => {
     const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 1, y: 3 })
     const pt = { x: 0, y: 0 }
@@ -330,6 +323,61 @@ describe('comparison with point', () => {
     const seg = Segment.fromRing({ x: 1, y: 6 }, { x: 3, y: 1 })
     const pt = { x: 4, y: 2 }
     expect(seg.comparePoint(pt)).toBe(1)
+  })
+})
+
+describe('touchesPoint()', () => {
+  test('basic misses', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
+    expect(seg.touchesPoint({ x: 5, y: 2 })).toBe(false)
+    expect(seg.touchesPoint({ x: 1, y: 0 })).toBe(false)
+    expect(seg.touchesPoint({ x: 3, y: 0 })).toBe(false)
+    expect(seg.touchesPoint({ x: 3, y: 1 })).toBe(false)
+    expect(seg.touchesPoint({ x: 0, y: 0 })).toBe(false)
+  })
+
+  test('basic upward sloping', () => {
+    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
+    const pt = { x: 2, y: 2 }
+    expect(seg.touchesPoint(pt)).toBe(true)
+  })
+
+  test('basic downward sloping', () => {
+    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 1, y: 1 })
+    const pt = { x: 2, y: 2 }
+    expect(seg.touchesPoint(pt)).toBe(true)
+  })
+
+  test('basic horizontal', () => {
+    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 1, y: 3 })
+    const pt = { x: 2, y: 3 }
+    expect(seg.touchesPoint(pt)).toBe(true)
+  })
+
+  test('basic vertical', () => {
+    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 3, y: 1 })
+    const pt = { x: 3, y: 2 }
+    expect(seg.touchesPoint(pt)).toBe(true)
+  })
+
+  test('basic endpoints', () => {
+    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 5, y: 1 })
+    const pt1 = { x: 3, y: 3 }
+    const pt2 = { x: 5, y: 1 }
+    expect(seg.touchesPoint(pt1)).toBe(true)
+    expect(seg.touchesPoint(pt2)).toBe(true)
+  })
+
+  test('downward-slopping segment with barely touching point - from issue 37', () => {
+    const seg = Segment.fromRing({ x: 0.523985, y: 51.281651 }, { x: 0.5241, y: 51.281651000100005 })
+    const pt = { x: 0.5239850000000027, y: 51.281651000000004 }
+    expect(seg.touchesPoint(pt)).toBe(true)
+  })
+
+  test('avoid splitting loops on near vertical segments - from issue 60-2', () => {
+    const seg = Segment.fromRing({ x: -45.3269382, y: -1.4059341 }, { x: -45.326737413921656, y: -1.40635 })
+    const pt = { x: -45.326833968900424, y: -1.40615 }
+    expect(seg.touchesPoint(pt)).toBe(true)
   })
 })
 
@@ -873,8 +921,8 @@ describe('compare segments', () => {
   test('segment consistency - from #60', () => {
     const seg1 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.571478, y: 55.0187174 })
     const seg2 = Segment.fromRing({ x: -131.57153657554915, y: 55.01963125 }, { x: -131.57152375603846, y: 55.01943125 })
-    expect(Segment.compare(seg1, seg2)).toBe(1)
-    expect(Segment.compare(seg2, seg1)).toBe(-1)
+    expect(Segment.compare(seg1, seg2)).toBe(-1)
+    expect(Segment.compare(seg2, seg1)).toBe(1)
   })
 
   test('ensure transitive - part of issue 60', () => {
