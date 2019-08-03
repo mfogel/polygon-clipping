@@ -20,10 +20,6 @@ export const cmp = (a, b) => {
     }
   }
 
-  // check if one is positive and the other negative
-  if (a < 0 && 0 < b) return -1
-  if (b < 0 && 0 < a) return 1
-
   // check if they're flp equal
   const ab = a - b
   if (ab * ab < EPSILON_SQ * a * b) {
