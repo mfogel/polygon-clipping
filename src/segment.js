@@ -209,6 +209,7 @@ export default class Segment {
   /* Does the given point touch this segment? */
   touchesPoint (pt) {
     if (this.isAnEndpoint(pt)) return true
+    if (!isInBbox(this.bbox(), pt)) return false
     const interPt = closestPoint(this.leftSE.point, this.rightSE.point, pt)
 
     // use cmp() to do the same rounding as would apply in rounder.round
@@ -297,9 +298,7 @@ export default class Segment {
    */
   getIntersection (other) {
     // If bboxes don't overlap, there can't be any intersections
-    const tBbox = this.bbox()
-    const oBbox = other.bbox()
-    const bboxOverlap = getBboxOverlap(tBbox, oBbox)
+    const bboxOverlap = getBboxOverlap(this.bbox(), other.bbox())
     if (bboxOverlap === null) return null
 
     // We first check to see if the endpoints can be considered intersections.
@@ -314,10 +313,10 @@ export default class Segment {
     // does each endpoint touch the other segment?
     // note that we restrict the 'touching' definition to only allow segments
     // to touch endpoints that lie forward from where we are in the sweep line pass
-    const touchesOtherLSE = isInBbox(tBbox, olp) && this.touchesPoint(olp)
-    const touchesThisLSE = isInBbox(oBbox, tlp) && other.touchesPoint(tlp)
-    const touchesOtherRSE = isInBbox(tBbox, orp) && this.touchesPoint(orp)
-    const touchesThisRSE = isInBbox(oBbox, trp) && other.touchesPoint(trp)
+    const touchesOtherLSE = this.touchesPoint(olp)
+    const touchesThisLSE = other.touchesPoint(tlp)
+    const touchesOtherRSE = this.touchesPoint(orp)
+    const touchesThisRSE = other.touchesPoint(trp)
 
     // do left endpoints match?
     if (touchesThisLSE && touchesOtherLSE) {
