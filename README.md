@@ -83,6 +83,7 @@ The full changelog is available at [CHANGELOG.md](https://github.com/mfogel/poly
 
 ## Sponsors
 
+ * [Alantgeo](https://www.alantgeo.com.au/)
  * [EasyTerritory](https://www.easyterritory.com/)
 
 Please contact [Mike Fogel](https://github.com/mfogel) if you or your company is interested in sponsoring work on specific bug fixes or feature requests.
