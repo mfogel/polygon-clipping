@@ -53,6 +53,16 @@ export const closestPoint = (ptA1, ptA2, ptB) => {
     farPt = ptA2
   }
 
+  // manually test if the current point can be considered to be on the line
+  // If the X coordinate was on the line, would the Y coordinate be as well?
+  const xDist = (ptB.x - farPt.x) / vA.x
+  if (ptB.y === farPt.y + xDist * vA.y) return ptB
+
+  // If the Y coordinate was on the line, would the X coordinate be as well?
+  const yDist = (ptB.y - farPt.y) / vA.y
+  if (ptB.x === farPt.x + yDist * vA.x) return ptB
+
+  // current point isn't exactly on line, so return closest point
   const dist = dotProduct(vA, vFar) / dotProduct(vA, vA)
   return { x: farPt.x + dist * vA.x, y: farPt.y + dist * vA.y }
 }

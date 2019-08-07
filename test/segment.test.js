@@ -324,60 +324,17 @@ describe('comparison with point', () => {
     const pt = { x: 4, y: 2 }
     expect(seg.comparePoint(pt)).toBe(1)
   })
-})
 
-describe('touchesPoint()', () => {
-  test('basic misses', () => {
-    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
-    expect(seg.touchesPoint({ x: 5, y: 2 })).toBe(false)
-    expect(seg.touchesPoint({ x: 1, y: 0 })).toBe(false)
-    expect(seg.touchesPoint({ x: 3, y: 0 })).toBe(false)
-    expect(seg.touchesPoint({ x: 3, y: 1 })).toBe(false)
-    expect(seg.touchesPoint({ x: 0, y: 0 })).toBe(false)
-  })
-
-  test('basic upward sloping', () => {
-    const seg = Segment.fromRing({ x: 1, y: 1 }, { x: 3, y: 3 })
-    const pt = { x: 2, y: 2 }
-    expect(seg.touchesPoint(pt)).toBe(true)
-  })
-
-  test('basic downward sloping', () => {
-    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 1, y: 1 })
-    const pt = { x: 2, y: 2 }
-    expect(seg.touchesPoint(pt)).toBe(true)
-  })
-
-  test('basic horizontal', () => {
-    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 1, y: 3 })
-    const pt = { x: 2, y: 3 }
-    expect(seg.touchesPoint(pt)).toBe(true)
-  })
-
-  test('basic vertical', () => {
-    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 3, y: 1 })
-    const pt = { x: 3, y: 2 }
-    expect(seg.touchesPoint(pt)).toBe(true)
-  })
-
-  test('basic endpoints', () => {
-    const seg = Segment.fromRing({ x: 3, y: 3 }, { x: 5, y: 1 })
-    const pt1 = { x: 3, y: 3 }
-    const pt2 = { x: 5, y: 1 }
-    expect(seg.touchesPoint(pt1)).toBe(true)
-    expect(seg.touchesPoint(pt2)).toBe(true)
-  })
-
-  test('downward-slopping segment with barely touching point - from issue 37', () => {
+  test('downward-slopping segment with almost touching point - from issue 37', () => {
     const seg = Segment.fromRing({ x: 0.523985, y: 51.281651 }, { x: 0.5241, y: 51.281651000100005 })
     const pt = { x: 0.5239850000000027, y: 51.281651000000004 }
-    expect(seg.touchesPoint(pt)).toBe(true)
+    expect(seg.comparePoint(pt)).toBe(1)
   })
 
   test('avoid splitting loops on near vertical segments - from issue 60-2', () => {
     const seg = Segment.fromRing({ x: -45.3269382, y: -1.4059341 }, { x: -45.326737413921656, y: -1.40635 })
     const pt = { x: -45.326833968900424, y: -1.40615 }
-    expect(seg.touchesPoint(pt)).toBe(true)
+    expect(seg.comparePoint(pt)).toBe(0)
   })
 })
 
@@ -668,6 +625,13 @@ describe('get intersections 2', () => {
   test('endpoint intersection between very short and very vertical segment', () => {
     const segA = Segment.fromRing({ x: -10.000000000000004, y: 0 }, { x: -9.999999999999995, y: 0})
     const segB = Segment.fromRing({ x: -10.000000000000004, y: 0 }, { x: -9.999999999999995, y: 1000})
+    expect(segA.getIntersection(segB)).toBeNull()
+    expect(segB.getIntersection(segA)).toBeNull()
+  })
+
+  test('avoid intersection - issue 79', () => {
+    const segA = Segment.fromRing({ x: 145.854148864746, y: -41.99816840491791 }, { x: 145.85421323776, y: -41.9981723915721 })
+    const segB = Segment.fromRing({ x: 145.854148864746, y: -41.998168404918 }, { x: 145.8543, y: -41.9982 })
     expect(segA.getIntersection(segB)).toBeNull()
     expect(segB.getIntersection(segA)).toBeNull()
   })

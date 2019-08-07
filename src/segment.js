@@ -1,8 +1,7 @@
 import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, getBboxOverlap } from './bbox'
-import { cmp } from './flp'
-import { closestPoint, intersection } from './vector'
+import { intersection } from './vector'
 import rounder from './rounder'
 
 // Give segments unique ID's to get consistent sorting of
@@ -206,79 +205,44 @@ export default class Segment {
     )
   }
 
-  /* Does the given point touch this segment? */
-  touchesPoint (pt) {
-    if (this.isAnEndpoint(pt)) return true
-    if (!isInBbox(this.bbox(), pt)) return false
-    const interPt = closestPoint(this.leftSE.point, this.rightSE.point, pt)
-
-    // use cmp() to do the same rounding as would apply in rounder.round
-    // but avoid using rounder.round for performance boost, and to avoid
-    // saving the result in the rounding trees
-
-    const cmpX = cmp(interPt.x, pt.x)
-    const cmpY = cmp(interPt.y, pt.y)
-
-    // if the coordinates are in agreement, we're done
-    if (cmpX === 0 && cmpY === 0) return true
-    if (cmpX !== 0 && cmpY !== 0) return false
-
-    // Because of rounding effects on near vertical and near horizontal
-    // segments, the 'closest' point on a segment jumps around. To avoid
-    // loops, we catch those affects here.
-
-    const interLPt = closestPoint(this.leftSE.point, interPt, pt)
-    if (cmp(interLPt.x, pt.x) === 0 && cmp(interLPt.y, pt.y) === 0) return true
-
-    const interRPt = closestPoint(this.rightSE.point, interPt, pt)
-    if (cmp(interRPt.x, pt.x) === 0 && cmp(interRPt.y, pt.y) === 0) return true
-
-    return false
-  }
-
-  /* Compare this segment with a point. Return value indicates:
-   *     1: point lies above the segment (to the left of vertical)
-   *     0: point is colinear to segment
-   *    -1: point lies below the segment (to the right of vertical) */
+  /* Compare this segment with a point.
+   *
+   * A point P is considered to be colinear to a segment if there
+   * exists a distance D such that if we travel along the segment
+   * from one * endpoint towards the other a distance D, we find
+   * ourselves at point P.
+   *
+   * Return value indicates:
+   *
+   *   1: point lies above the segment (to the left of vertical)
+   *   0: point is colinear to segment
+   *  -1: point lies below the segment (to the right of vertical)
+   */
   comparePoint (point) {
     if (this.isAnEndpoint(point)) return 0
-    const interPt = closestPoint(this.leftSE.point, this.rightSE.point, point)
 
-    // For nearly vertical segments, the y coordinate may move in
-    // the 'wrong' direction due to rounding errors.
+    const lPt = this.leftSE.point
+    const rPt = this.rightSE.point
+    const v = this.vector()
 
-    const dx = this.rightSE.point.x - this.leftSE.point.x
-    const dy = this.rightSE.point.y - this.leftSE.point.y
-
-    // is this a more vertical upward sloping segment?
-    if (dy >= dx) {
-      if (interPt.x < point.x) return -1
-      if (interPt.x > point.x) return 1
+    // Exactly vertical segments.
+    if (lPt.x === rPt.x) {
+      if (point.x === lPt.x) return 0
+      return point.x < lPt.x ? 1 : -1
     }
 
-    // is this a more vertical downward sloping segment?
-    if (dy <= -1 * dx) {
-      if (interPt.x < point.x) return 1
-      if (interPt.x > point.x) return -1
-    }
+    // Nearly vertical segments with an intersection.
+    // Check to see where a point on the line with matching Y coordinate is.
+    const yDist = (point.y - lPt.y) / v.y
+    const xFromYDist = lPt.x + yDist * v.x
+    if (point.x === xFromYDist) return 0
 
-    // this is a mostly horizontal segment
-    if (interPt.y < point.y) return 1
-    if (interPt.y > point.y) return -1
-
-    // mostly horizontal but slight upward
-    if (dy >= 0) {
-      if (interPt.x < point.x) return -1
-      if (interPt.x > point.x) return 1
-    }
-
-    // mostly horizontal but slight downward
-    if (dy < 0) {
-      if (interPt.x < point.x) return 1
-      if (interPt.x > point.x) return -1
-    }
-
-    return 0
+    // General case.
+    // Check to see where a point on the line with matching X coordinate is.
+    const xDist =  (point.x - lPt.x) / v.x
+    const yFromXDist = lPt.y + xDist * v.y
+    if (point.y === yFromXDist) return 0
+    return point.y < yFromXDist ? -1 : 1
   }
 
   /**
@@ -298,7 +262,9 @@ export default class Segment {
    */
   getIntersection (other) {
     // If bboxes don't overlap, there can't be any intersections
-    const bboxOverlap = getBboxOverlap(this.bbox(), other.bbox())
+    const tBbox = this.bbox()
+    const oBbox = other.bbox()
+    const bboxOverlap = getBboxOverlap(tBbox, oBbox)
     if (bboxOverlap === null) return null
 
     // We first check to see if the endpoints can be considered intersections.
@@ -313,10 +279,10 @@ export default class Segment {
     // does each endpoint touch the other segment?
     // note that we restrict the 'touching' definition to only allow segments
     // to touch endpoints that lie forward from where we are in the sweep line pass
-    const touchesOtherLSE = this.touchesPoint(olp)
-    const touchesThisLSE = other.touchesPoint(tlp)
-    const touchesOtherRSE = this.touchesPoint(orp)
-    const touchesThisRSE = other.touchesPoint(trp)
+    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0
+    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0
+    const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0
+    const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0
 
     // do left endpoints match?
     if (touchesThisLSE && touchesOtherLSE) {

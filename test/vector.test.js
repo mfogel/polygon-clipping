@@ -260,6 +260,14 @@ describe('closestPoint()', () => {
     const expected = { x: 2, y: 3 }
     expect(cp).toEqual(expected)
   })
+
+  test('on line but dot product does not think so - part of issue 60-2', () => {
+    const pA1 = { x: -45.3269382, y: -1.4059341 }
+    const pA2 = { x: -45.326737413921656, y: -1.40635 }
+    const pB = { x: -45.326833968900424, y: -1.40615 }
+    const cp = closestPoint(pA1, pA2, pB)
+    expect(cp).toEqual(pB)
+  })
 })
 
 describe('verticalIntersection()', () => {
