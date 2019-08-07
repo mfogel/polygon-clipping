@@ -2,7 +2,7 @@ import operation from './operation'
 import SweepEvent from './sweep-event'
 import { isInBbox, getBboxOverlap } from './bbox'
 import { cmp } from './flp'
-import { closestPoint, intersection } from './vector'
+import { closestPoint, dotProduct, intersection } from './vector'
 import rounder from './rounder'
 
 // Give segments unique ID's to get consistent sorting of
@@ -206,7 +206,13 @@ export default class Segment {
     )
   }
 
-  /* Does the given point touch this segment? */
+  /* Does the given point touch this segment?
+   *
+   * A point P is considered to be 'on' a segment if there exists a
+   * distance D such that if we travel along the segment from one
+   * endpoint towards the other a distance D, we find ourselves at
+   * a point which is within rounding error of our query point P.
+   */
   touchesPoint (pt) {
     if (this.isAnEndpoint(pt)) return true
     if (!isInBbox(this.bbox(), pt)) return false
@@ -218,22 +224,7 @@ export default class Segment {
 
     const cmpX = cmp(interPt.x, pt.x)
     const cmpY = cmp(interPt.y, pt.y)
-
-    // if the coordinates are in agreement, we're done
-    if (cmpX === 0 && cmpY === 0) return true
-    if (cmpX !== 0 && cmpY !== 0) return false
-
-    // Because of rounding effects on near vertical and near horizontal
-    // segments, the 'closest' point on a segment jumps around. To avoid
-    // loops, we catch those affects here.
-
-    const interLPt = closestPoint(this.leftSE.point, interPt, pt)
-    if (cmp(interLPt.x, pt.x) === 0 && cmp(interLPt.y, pt.y) === 0) return true
-
-    const interRPt = closestPoint(this.rightSE.point, interPt, pt)
-    if (cmp(interRPt.x, pt.x) === 0 && cmp(interRPt.y, pt.y) === 0) return true
-
-    return false
+    return (cmpX === 0 && cmpY === 0)
   }
 
   /* Compare this segment with a point. Return value indicates:

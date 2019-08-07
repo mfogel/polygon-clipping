@@ -671,6 +671,13 @@ describe('get intersections 2', () => {
     expect(segA.getIntersection(segB)).toBeNull()
     expect(segB.getIntersection(segA)).toBeNull()
   })
+
+  test('avoid intersection - issue 79', () => {
+    const segA = Segment.fromRing({ x: 145.854148864746, y: -41.99816840491791 }, { x: 145.85421323776, y: -41.9981723915721 })
+    const segB = Segment.fromRing({ x: 145.854148864746, y: -41.998168404918 }, { x: 145.8543, y: -41.9982 })
+    expect(segA.getIntersection(segB)).toBeNull()
+    expect(segB.getIntersection(segA)).toBeNull()
+  })
 })
 
 describe('compare segments', () => {
