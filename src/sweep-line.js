@@ -104,10 +104,7 @@ export default class SweepLine {
         else if (nextMySplitter === null) mySplitter = prevMySplitter
         else {
           const cmpSplitters = SweepEvent.comparePoints(prevMySplitter, nextMySplitter)
-          if (cmpSplitters < 0) mySplitter = prevMySplitter
-          if (cmpSplitters > 0) mySplitter = nextMySplitter
-          // the two splitters are the exact same point
-          mySplitter = prevMySplitter
+          mySplitter = cmpSplitters <= 0 ? prevMySplitter : nextMySplitter
         }
 
         // Rounding errors can cause changes in ordering,
