@@ -116,22 +116,23 @@ export const cleanMultiPoly = multipoly => {
  * WARN: input modified directly */
 export const cleanRing = ring => {
   if (ring.length === 0) return
-  const firstPt = ring[0]
-  const lastPt = ring[ring.length - 1]
-  if (firstPt.x === lastPt.x && firstPt.y === lastPt.y) ring.pop()
-
-  const isPointUncessary = (prevPt, pt, nextPt) =>
-    (prevPt.x === pt.x && prevPt.y === pt.y) ||
-    (nextPt.x === pt.x && nextPt.y === pt.y) ||
-    compareVectorAngles(pt, prevPt, nextPt) === 0
 
   let i = 0
-  let prevPt, nextPt
+  let pt, prevPt, nextPt
   while (i < ring.length) {
+    pt = ring[i]
     prevPt = (i === 0 ? ring[ring.length - 1] : ring[i - 1])
+    if (pt.x === prevPt.x && pt.y === prevPt.y) {
+      ring.splice(i - 1, 1)
+      continue
+    }
     nextPt = (i === ring.length - 1 ? ring[0] : ring[i + 1])
-    if (isPointUncessary(prevPt, ring[i], nextPt)) ring.splice(i, 1)
-    else i++
+    if (compareVectorAngles(pt, prevPt, nextPt) === 0) {
+      ring.splice(i, 1)
+      if (i > 0) i--
+      continue
+    }
+    i++
   }
 
   // if our ring has less than 3 distinct points now (so is degenerate)

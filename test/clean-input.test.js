@@ -257,6 +257,41 @@ describe('cleanRing()', () => {
     cleanRing(ringBad)
     expect(ringBad).toEqual([])
   })
+
+  test('removes last two when colinear', () => {
+    const ringBad = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 },
+    ]
+    const ringGood = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+    ]
+    cleanRing(ringBad)
+    expect(ringBad).toEqual(ringGood)
+  })
+
+  test('removes last two when repeats', () => {
+    const ringBad = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+    ]
+    const ringGood = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+    ]
+    cleanRing(ringBad)
+    expect(ringBad).toEqual(ringGood)
+  })
 })
 
 describe('pointsAsObjects()', () => {
