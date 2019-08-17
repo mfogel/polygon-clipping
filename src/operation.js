@@ -18,15 +18,10 @@ export class Operation {
       geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
     }
 
-    /* Clean inputs */
-    for (let i = 0, iMax = geoms.length; i < iMax; i++) {
-      cleanInput.forceMultiPoly(geoms[i])
-      cleanInput.cleanMultiPoly(geoms[i])
-    }
-
     /* Convert inputs to MultiPoly objects, mark subject */
     const multipolys = []
     for (let i = 0, iMax = geoms.length; i < iMax; i++) {
+      cleanInput.forceMultiPoly(geoms[i])
       multipolys.push(new geomIn.MultiPolyIn(geoms[i]))
     }
     multipolys[0].markAsSubject()

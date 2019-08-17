@@ -14,6 +14,8 @@ export class RingIn {
 
     for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
       let point = geomRing[i]
+      // skip repeated points
+      if (point.x == prevPoint.x && point.y == prevPoint.y) continue
       this.segments.push(Segment.fromRing(prevPoint, point, this))
       if (point.x < this.bbox.ll.x) this.bbox.ll.x = point.x
       if (point.y < this.bbox.ll.y) this.bbox.ll.y = point.y
@@ -21,7 +23,11 @@ export class RingIn {
       if (point.y > this.bbox.ur.y) this.bbox.ur.y = point.y
       prevPoint = point
     }
-    this.segments.push(Segment.fromRing(prevPoint, geomRing[0], this))
+    let point = geomRing[0]
+    // add segment from last to first if last is not the same as first
+    if (point.x !== prevPoint.x || point.y !== prevPoint.y) {
+      this.segments.push(Segment.fromRing(prevPoint, point, this))
+    }
   }
 
   getSweepEvents () {

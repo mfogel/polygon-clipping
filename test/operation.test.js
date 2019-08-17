@@ -23,9 +23,9 @@ describe('operation.run() calls the right stuff', () => {
     const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
     const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
 
-    const mp1Ob = [[[{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }]]]
-    const mp2Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
-    const mp3Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
+    const mp1Ob = [[[{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 0 }]]]
+    const mp2Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]]
+    const mp3Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 0 }]]]
 
     cleanInput.forceMultiPoly = jest.fn(cleanInput.forceMultiPoly)
     operation.run('union', mp1, [mp2, mp3])
@@ -34,23 +34,5 @@ describe('operation.run() calls the right stuff', () => {
     expect(cleanInput.forceMultiPoly.mock.calls[0]).toMatchObject([mp1Ob])
     expect(cleanInput.forceMultiPoly.mock.calls[1]).toMatchObject([mp2Ob])
     expect(cleanInput.forceMultiPoly.mock.calls[2]).toMatchObject([mp3Ob])
-  })
-
-  test('cleanMultiPoly() called correctly', () => {
-    const mp1 = [[[[0, 0], [2, 0], [0, 2], [0, 0]]]]
-    const mp2 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
-    const mp3 = [[[[0, 0], [1, 0], [0, 1], [0, 0]]]]
-
-    const mp1Ob = [[[{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }]]]
-    const mp2Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
-    const mp3Ob = [[[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]]
-
-    cleanInput.cleanMultiPoly = jest.fn(cleanInput.cleanMultiPoly)
-    operation.run('union', mp1, [mp2, mp3])
-
-    expect(cleanInput.cleanMultiPoly.mock.calls.length === 3)
-    expect(cleanInput.cleanMultiPoly.mock.calls[0]).toMatchObject([mp1Ob])
-    expect(cleanInput.cleanMultiPoly.mock.calls[1]).toMatchObject([mp2Ob])
-    expect(cleanInput.cleanMultiPoly.mock.calls[2]).toMatchObject([mp3Ob])
   })
 })

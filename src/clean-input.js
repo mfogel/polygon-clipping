@@ -1,4 +1,3 @@
-import { compareVectorAngles } from './vector'
 import rounder from './rounder'
 
 /* Given input geometry as a standard array-of-arrays geojson-style
@@ -75,68 +74,4 @@ export const forceMultiPoly = geom => {
     }
   }
   throw new Error('Unrecognized input - not a polygon nor multipolygon')
-}
-
-/* WARN: input modified directly */
-export const cleanMultiPoly = multipoly => {
-  let i = 0
-  while (i < multipoly.length) {
-    const poly = multipoly[i]
-    if (poly.length === 0) {
-      multipoly.splice(i, 1)
-      continue
-    }
-
-    const exteriorRing = poly[0]
-    cleanRing(exteriorRing)
-    // poly is dropped if exteriorRing is degenerate
-    if (exteriorRing.length === 0) {
-      multipoly.splice(i, 1)
-      continue
-    }
-
-    let j = 1
-    while (j < poly.length) {
-      const interiorRing = poly[j]
-      cleanRing(interiorRing)
-      if (interiorRing.length === 0) poly.splice(j, 1)
-      else j++
-    }
-
-    i++
-  }
-}
-
-/* Clean ring:
- *  - remove duplicate points
- *  - remove colinear points
- *  - remove rings with no area (less than 3 distinct points)
- *  - un-close rings (last point should not repeat first)
- *
- * WARN: input modified directly */
-export const cleanRing = ring => {
-  if (ring.length === 0) return
-
-  let i = 0
-  let pt, prevPt, nextPt
-  while (i < ring.length) {
-    pt = ring[i]
-    prevPt = (i === 0 ? ring[ring.length - 1] : ring[i - 1])
-    if (pt.x === prevPt.x && pt.y === prevPt.y) {
-      ring.splice(i - 1, 1)
-      continue
-    }
-    nextPt = (i === ring.length - 1 ? ring[0] : ring[i + 1])
-    if (compareVectorAngles(pt, prevPt, nextPt) === 0) {
-      ring.splice(i, 1)
-      if (i > 0) i--
-      continue
-    }
-    i++
-  }
-
-  // if our ring has less than 3 distinct points now (so is degenerate)
-  // shrink it down to the empty array to communicate to our caller to
-  // drop it
-  while (ring.length < 3 && ring.length > 0) ring.pop()
 }
