@@ -4,13 +4,12 @@ import { RingIn, PolyIn, MultiPolyIn } from '../src/geom-in'
 
 describe('RingIn', () => {
   test('create exterior ring', () => {
-    const [pt1, pt2, pt3] = [
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-      { x: 1, y: 1 },
-    ]
+    const ringGeomIn = [[0, 0], [1, 0], [1, 1]]
+    const expectedPt1 = { x: 0, y: 0 }
+    const expectedPt2 = { x: 1, y: 0 }
+    const expectedPt3 = { x: 1, y: 1 }
     const poly = {}
-    const ring = new RingIn([pt1, pt2, pt3], poly, true)
+    const ring = new RingIn(ringGeomIn, poly, true)
     poly.exteriorRing = ring
 
     expect(ring.poly).toBe(poly)
@@ -18,16 +17,16 @@ describe('RingIn', () => {
     expect(ring.segments.length).toBe(3)
     expect(ring.getSweepEvents().length).toBe(6)
 
-    expect(ring.segments[0].leftSE.point).toEqual(pt1)
-    expect(ring.segments[0].rightSE.point).toEqual(pt2)
-    expect(ring.segments[1].leftSE.point).toEqual(pt2)
-    expect(ring.segments[1].rightSE.point).toEqual(pt3)
-    expect(ring.segments[2].leftSE.point).toEqual(pt1)
-    expect(ring.segments[2].rightSE.point).toEqual(pt3)
+    expect(ring.segments[0].leftSE.point).toMatchObject(expectedPt1)
+    expect(ring.segments[0].rightSE.point).toMatchObject(expectedPt2)
+    expect(ring.segments[1].leftSE.point).toMatchObject(expectedPt2)
+    expect(ring.segments[1].rightSE.point).toMatchObject(expectedPt3)
+    expect(ring.segments[2].leftSE.point).toMatchObject(expectedPt1)
+    expect(ring.segments[2].rightSE.point).toMatchObject(expectedPt3)
   })
 
   test('create an interior ring', () => {
-    const ring = new RingIn([{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}], {}, false)
+    const ring = new RingIn([[0, 0], [1, 1], [1, 0]], {}, false)
     expect(ring.isExterior).toBe(false)
   })
 })
@@ -37,9 +36,9 @@ describe('PolyIn', () => {
     const multiPoly = {}
     const poly = new PolyIn(
       [
-        [{x: 0, y: 0}, {x: 10, y: 0}, {x: 10, y: 10}, {x: 0, y: 10}],
-        [{x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}],
-        [{x: 2, y: 2}, {x: 2, y: 3}, {x: 3, y: 3}, {x: 3, y: 2}],
+        [[0, 0], [10, 0], [10, 10], [0, 10]],
+        [[0, 0], [1, 1], [1, 0]],
+        [[2, 2], [2, 3], [3, 3], [3, 2]],
       ],
       multiPoly,
     )
@@ -54,16 +53,79 @@ describe('PolyIn', () => {
 })
 
 describe('MultiPolyIn', () => {
-  test('creation', () => {
+  test('creation with multipoly', () => {
     const multipoly = new MultiPolyIn([
-      [[{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }]],
+      [[[0, 0], [1, 1], [0, 1]]],
       [
-        [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 10 }],
-        [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 3, y: 2 }]
+        [[0, 0], [4, 0], [4, 9]],
+        [[2, 2], [3, 3], [3, 2]]
       ]
     ])
 
     expect(multipoly.polys.length).toBe(2)
     expect(multipoly.getSweepEvents().length).toBe(18)
+  })
+
+  test('creation with poly', () => {
+    const multipoly = new MultiPolyIn([
+      [[[0, 0], [1, 1], [0, 1], [0, 0]]],
+    ])
+
+    expect(multipoly.polys.length).toBe(1)
+    expect(multipoly.getSweepEvents().length).toBe(6)
+  })
+
+  test('third or more coordinates are ignored', () => {
+    const multipoly = new MultiPolyIn([
+      [[[0, 0, 42], [1, 1, 128], [0, 1, 84], [0, 0, 42]]],
+    ])
+
+    expect(multipoly.polys.length).toBe(1)
+    expect(multipoly.getSweepEvents().length).toBe(6)
+  })
+
+  test('creation with invalid input', () => {
+    expect(() => { new MultiPolyIn('not a geometry') })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with point', () => {
+    expect(() => { new MultiPolyIn([42, 43]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with ring', () => {
+    expect(() => { new MultiPolyIn([[0, 0], [0, 1], [1, 1]]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with empty polygon / ring ', () => {
+    expect(() => { new MultiPolyIn([[]]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with empty ring / point ', () => {
+    expect(() => { new MultiPolyIn([[[]]]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with polygon with invalid coordiante', () => {
+    expect(() => { new MultiPolyIn([[['not a number', 0], [0, 1], [1, 1]]]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with polygon with missing coordiante', () => {
+    expect(() => { new MultiPolyIn([[[0, 0], [1], [1, 1]]]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with multipolygon with invalid coordiante', () => {
+    expect(() => { new MultiPolyIn([[[[0, 0], [0, 1], [[], 0]]]]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
+  })
+
+  test('creation with multipolygon with missing coordiante', () => {
+    expect(() => { new MultiPolyIn([[[[0], [0, 1], [1, 0]]]]) })
+      .toThrowError(/not a valid Polygon or MultiPolygon/)
   })
 })

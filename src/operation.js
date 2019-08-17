@@ -1,6 +1,5 @@
 import SplayTree from 'splaytree'
 import { getBboxOverlap } from './bbox'
-import * as cleanInput from './clean-input'
 import * as geomIn from './geom-in'
 import * as geomOut from './geom-out'
 import rounder from './rounder'
@@ -12,19 +11,11 @@ export class Operation {
     operation.type = type
     rounder.reset()
 
-    /* Make a copy of the input geometry with rounded points as objects */
-    const geoms = [cleanInput.pointsAsObjects(geom)]
+    /* Convert inputs to MultiPoly objects */
+    const multipolys = [new geomIn.MultiPolyIn(geom, true)]
     for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-      geoms.push(cleanInput.pointsAsObjects(moreGeoms[i]))
+      multipolys.push(new geomIn.MultiPolyIn(moreGeoms[i], false))
     }
-
-    /* Convert inputs to MultiPoly objects, mark subject */
-    const multipolys = []
-    for (let i = 0, iMax = geoms.length; i < iMax; i++) {
-      cleanInput.forceMultiPoly(geoms[i])
-      multipolys.push(new geomIn.MultiPolyIn(geoms[i]))
-    }
-    multipolys[0].markAsSubject()
     operation.numMultiPolys = multipolys.length
 
     /* BBox optimization for difference operation
