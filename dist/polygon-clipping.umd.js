@@ -2,7 +2,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.polygonClipping = factory());
-}(this, function () { 'use strict';
+}(this, (function () { 'use strict';
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -27,7 +27,7 @@
   }
 
   /**
-   * splaytree v3.0.0
+   * splaytree v3.0.1
    * Fast Splay tree for Node and browser
    *
    * @author Alexander Milevski <info@w8r.name>
@@ -813,11 +813,8 @@
       if (-epsilon < b && b < epsilon) {
         return 0;
       }
-    } // check if one is positive and the other negative
+    } // check if they're flp equal
 
-
-    if (a < 0 && 0 < b) return -1;
-    if (b < 0 && 0 < a) return 1; // check if they're flp equal
 
     var ab = a - b;
 
@@ -827,165 +824,6 @@
 
 
     return a < b ? -1 : 1;
-  };
-
-  /* Cross Product of two vectors with first point at origin */
-
-  var crossProduct = function crossProduct(a, b) {
-    return a.x * b.y - a.y * b.x;
-  };
-  /* Dot Product of two vectors with first point at origin */
-
-  var dotProduct = function dotProduct(a, b) {
-    return a.x * b.x + a.y * b.y;
-  };
-  /* Comparator for two vectors with same starting point */
-
-  var compareVectorAngles = function compareVectorAngles(basePt, endPt1, endPt2) {
-    var v1 = {
-      x: endPt1.x - basePt.x,
-      y: endPt1.y - basePt.y
-    };
-    var v2 = {
-      x: endPt2.x - basePt.x,
-      y: endPt2.y - basePt.y
-    };
-    var kross = crossProduct(v1, v2);
-    return cmp(kross, 0);
-  };
-  var length = function length(v) {
-    return Math.sqrt(dotProduct(v, v));
-  };
-  /* Get the sine of the angle from pShared -> pAngle to pShaed -> pBase */
-
-  var sineOfAngle = function sineOfAngle(pShared, pBase, pAngle) {
-    var vBase = {
-      x: pBase.x - pShared.x,
-      y: pBase.y - pShared.y
-    };
-    var vAngle = {
-      x: pAngle.x - pShared.x,
-      y: pAngle.y - pShared.y
-    };
-    return crossProduct(vAngle, vBase) / length(vAngle) / length(vBase);
-  };
-  /* Get the cosine of the angle from pShared -> pAngle to pShaed -> pBase */
-
-  var cosineOfAngle = function cosineOfAngle(pShared, pBase, pAngle) {
-    var vBase = {
-      x: pBase.x - pShared.x,
-      y: pBase.y - pShared.y
-    };
-    var vAngle = {
-      x: pAngle.x - pShared.x,
-      y: pAngle.y - pShared.y
-    };
-    return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase);
-  };
-  /* Get the closest point on an line (defined by two points)
-   * to another point. */
-
-  var closestPoint = function closestPoint(ptA1, ptA2, ptB) {
-    if (ptA1.x === ptA2.x) return {
-      x: ptA1.x,
-      y: ptB.y // vertical vector
-
-    };
-    if (ptA1.y === ptA2.y) return {
-      x: ptB.x,
-      y: ptA1.y // horizontal vector
-      // determinne which point is further away
-      // we use the further point as our base in the calculation, so that the
-      // vectors are more parallel, providing more accurate dot product
-
-    };
-    var v1 = {
-      x: ptB.x - ptA1.x,
-      y: ptB.y - ptA1.y
-    };
-    var v2 = {
-      x: ptB.x - ptA2.x,
-      y: ptB.y - ptA2.y
-    };
-    var vFar, vA, farPt;
-
-    if (dotProduct(v1, v1) > dotProduct(v2, v2)) {
-      vFar = v1;
-      vA = {
-        x: ptA2.x - ptA1.x,
-        y: ptA2.y - ptA1.y
-      };
-      farPt = ptA1;
-    } else {
-      vFar = v2;
-      vA = {
-        x: ptA1.x - ptA2.x,
-        y: ptA1.y - ptA2.y
-      };
-      farPt = ptA2;
-    }
-
-    var dist = dotProduct(vA, vFar) / dotProduct(vA, vA);
-    return {
-      x: farPt.x + dist * vA.x,
-      y: farPt.y + dist * vA.y
-    };
-  };
-  /* Get the x coordinate where the given line (defined by a point and vector)
-   * crosses the horizontal line with the given y coordiante.
-   * In the case of parrallel lines (including overlapping ones) returns null. */
-
-  var horizontalIntersection = function horizontalIntersection(pt, v, y) {
-    if (v.y === 0) return null;
-    return {
-      x: pt.x + v.x / v.y * (y - pt.y),
-      y: y
-    };
-  };
-  /* Get the y coordinate where the given line (defined by a point and vector)
-   * crosses the vertical line with the given x coordiante.
-   * In the case of parrallel lines (including overlapping ones) returns null. */
-
-  var verticalIntersection = function verticalIntersection(pt, v, x) {
-    if (v.x === 0) return null;
-    return {
-      x: x,
-      y: pt.y + v.y / v.x * (x - pt.x)
-    };
-  };
-  /* Get the intersection of two lines, each defined by a base point and a vector.
-   * In the case of parrallel lines (including overlapping ones) returns null. */
-
-  var intersection = function intersection(pt1, v1, pt2, v2) {
-    // take some shortcuts for vertical and horizontal lines
-    // this also ensures we don't calculate an intersection and then discover
-    // it's actually outside the bounding box of the line
-    if (v1.x === 0) return verticalIntersection(pt2, v2, pt1.x);
-    if (v2.x === 0) return verticalIntersection(pt1, v1, pt2.x);
-    if (v1.y === 0) return horizontalIntersection(pt2, v2, pt1.y);
-    if (v2.y === 0) return horizontalIntersection(pt1, v1, pt2.y); // General case for non-overlapping segments.
-    // This algorithm is based on Schneider and Eberly.
-    // http://www.cimec.org.ar/~ncalvo/Schneider_Eberly.pdf - pg 244
-
-    var kross = crossProduct(v1, v2);
-    if (kross == 0) return null;
-    var ve = {
-      x: pt2.x - pt1.x,
-      y: pt2.y - pt1.y
-    };
-    var d1 = crossProduct(ve, v1) / kross;
-    var d2 = crossProduct(ve, v2) / kross; // take the average of the two calculations to minimize rounding error
-
-    var x1 = pt1.x + d2 * v1.x,
-        x2 = pt2.x + d1 * v2.x;
-    var y1 = pt1.y + d2 * v1.y,
-        y2 = pt2.y + d1 * v2.y;
-    var x = (x1 + x2) / 2;
-    var y = (y1 + y2) / 2;
-    return {
-      x: x,
-      y: y
-    };
   };
 
   /**
@@ -1075,150 +913,114 @@
 
   var rounder = new PtRounder();
 
-  /* Given input geometry as a standard array-of-arrays geojson-style
-   * geometry, return one that uses objects as points, for better perf */
+  /* Cross Product of two vectors with first point at origin */
 
-  var pointsAsObjects = function pointsAsObjects(geom) {
-    // we can handle well-formed multipolys and polys
-    var output = [];
-
-    if (!Array.isArray(geom)) {
-      throw new Error('Input is not a Polygon or MultiPolygon');
-    }
-
-    for (var i = 0, iMax = geom.length; i < iMax; i++) {
-      if (!Array.isArray(geom[i]) || geom[i].length == 0) {
-        throw new Error('Input is not a Polygon or MultiPolygon');
-      }
-
-      output.push([]);
-
-      for (var j = 0, jMax = geom[i].length; j < jMax; j++) {
-        if (!Array.isArray(geom[i][j]) || geom[i][j].length == 0) {
-          throw new Error('Input is not a Polygon or MultiPolygon');
-        }
-
-        if (Array.isArray(geom[i][j][0])) {
-          // multipolygon
-          output[i].push([]);
-
-          for (var k = 0, kMax = geom[i][j].length; k < kMax; k++) {
-            if (!Array.isArray(geom[i][j][k]) || geom[i][j][k].length < 2) {
-              throw new Error('Input is not a Polygon or MultiPolygon');
-            }
-
-            if (geom[i][j][k].length > 2) {
-              throw new Error('Input has more than two coordinates. ' + 'Only 2-dimensional polygons supported.');
-            }
-
-            output[i][j].push(rounder.round(geom[i][j][k][0], geom[i][j][k][1]));
-          }
-        } else {
-          // polygon
-          if (geom[i][j].length < 2) {
-            throw new Error('Input is not a Polygon or MultiPolygon');
-          }
-
-          if (geom[i][j].length > 2) {
-            throw new Error('Input has more than two coordinates. ' + 'Only 2-dimensional polygons supported.');
-          }
-
-          output[i].push(rounder.round(geom[i][j][0], geom[i][j][1]));
-        }
-      }
-    }
-
-    return output;
+  var crossProduct = function crossProduct(a, b) {
+    return a.x * b.y - a.y * b.x;
   };
-  /* WARN: input modified directly */
+  /* Dot Product of two vectors with first point at origin */
 
-  var forceMultiPoly = function forceMultiPoly(geom) {
-    if (Array.isArray(geom)) {
-      if (geom.length === 0) return; // allow empty multipolys
-
-      if (Array.isArray(geom[0])) {
-        if (Array.isArray(geom[0][0])) {
-          if (typeof geom[0][0][0].x === 'number' && typeof geom[0][0][0].y === 'number') {
-            // multipolygon
-            return;
-          }
-        }
-
-        if (typeof geom[0][0].x === 'number' && typeof geom[0][0].y === 'number') {
-          // polygon
-          geom.unshift(geom.splice(0));
-          return;
-        }
-      }
-    }
-
-    throw new Error('Unrecognized input - not a polygon nor multipolygon');
+  var dotProduct = function dotProduct(a, b) {
+    return a.x * b.x + a.y * b.y;
   };
-  /* WARN: input modified directly */
+  /* Comparator for two vectors with same starting point */
 
-  var cleanMultiPoly = function cleanMultiPoly(multipoly) {
-    var i = 0;
-
-    while (i < multipoly.length) {
-      var poly = multipoly[i];
-
-      if (poly.length === 0) {
-        multipoly.splice(i, 1);
-        continue;
-      }
-
-      var exteriorRing = poly[0];
-      cleanRing(exteriorRing); // poly is dropped if exteriorRing is degenerate
-
-      if (exteriorRing.length === 0) {
-        multipoly.splice(i, 1);
-        continue;
-      }
-
-      var j = 1;
-
-      while (j < poly.length) {
-        var interiorRing = poly[j];
-        cleanRing(interiorRing);
-        if (interiorRing.length === 0) poly.splice(j, 1);else j++;
-      }
-
-      i++;
-    }
-  };
-  /* Clean ring:
-   *  - remove duplicate points
-   *  - remove colinear points
-   *  - remove rings with no area (less than 3 distinct points)
-   *  - un-close rings (last point should not repeat first)
-   *
-   * WARN: input modified directly */
-
-  var cleanRing = function cleanRing(ring) {
-    if (ring.length === 0) return;
-    var firstPt = ring[0];
-    var lastPt = ring[ring.length - 1];
-    if (firstPt.x === lastPt.x && firstPt.y === lastPt.y) ring.pop();
-
-    var isPointUncessary = function isPointUncessary(prevPt, pt, nextPt) {
-      return prevPt.x === pt.x && prevPt.y === pt.y || nextPt.x === pt.x && nextPt.y === pt.y || compareVectorAngles(pt, prevPt, nextPt) === 0;
+  var compareVectorAngles = function compareVectorAngles(basePt, endPt1, endPt2) {
+    var v1 = {
+      x: endPt1.x - basePt.x,
+      y: endPt1.y - basePt.y
     };
+    var v2 = {
+      x: endPt2.x - basePt.x,
+      y: endPt2.y - basePt.y
+    };
+    var kross = crossProduct(v1, v2);
+    return cmp(kross, 0);
+  };
+  var length = function length(v) {
+    return Math.sqrt(dotProduct(v, v));
+  };
+  /* Get the sine of the angle from pShared -> pAngle to pShaed -> pBase */
 
-    var i = 0;
-    var prevPt, nextPt;
+  var sineOfAngle = function sineOfAngle(pShared, pBase, pAngle) {
+    var vBase = {
+      x: pBase.x - pShared.x,
+      y: pBase.y - pShared.y
+    };
+    var vAngle = {
+      x: pAngle.x - pShared.x,
+      y: pAngle.y - pShared.y
+    };
+    return crossProduct(vAngle, vBase) / length(vAngle) / length(vBase);
+  };
+  /* Get the cosine of the angle from pShared -> pAngle to pShaed -> pBase */
 
-    while (i < ring.length) {
-      prevPt = i === 0 ? ring[ring.length - 1] : ring[i - 1];
-      nextPt = i === ring.length - 1 ? ring[0] : ring[i + 1];
-      if (isPointUncessary(prevPt, ring[i], nextPt)) ring.splice(i, 1);else i++;
-    } // if our ring has less than 3 distinct points now (so is degenerate)
-    // shrink it down to the empty array to communicate to our caller to
-    // drop it
+  var cosineOfAngle = function cosineOfAngle(pShared, pBase, pAngle) {
+    var vBase = {
+      x: pBase.x - pShared.x,
+      y: pBase.y - pShared.y
+    };
+    var vAngle = {
+      x: pAngle.x - pShared.x,
+      y: pAngle.y - pShared.y
+    };
+    return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase);
+  };
+  /* Get the x coordinate where the given line (defined by a point and vector)
+   * crosses the horizontal line with the given y coordiante.
+   * In the case of parrallel lines (including overlapping ones) returns null. */
 
+  var horizontalIntersection = function horizontalIntersection(pt, v, y) {
+    if (v.y === 0) return null;
+    return {
+      x: pt.x + v.x / v.y * (y - pt.y),
+      y: y
+    };
+  };
+  /* Get the y coordinate where the given line (defined by a point and vector)
+   * crosses the vertical line with the given x coordiante.
+   * In the case of parrallel lines (including overlapping ones) returns null. */
 
-    while (ring.length < 3 && ring.length > 0) {
-      ring.pop();
-    }
+  var verticalIntersection = function verticalIntersection(pt, v, x) {
+    if (v.x === 0) return null;
+    return {
+      x: x,
+      y: pt.y + v.y / v.x * (x - pt.x)
+    };
+  };
+  /* Get the intersection of two lines, each defined by a base point and a vector.
+   * In the case of parrallel lines (including overlapping ones) returns null. */
+
+  var intersection = function intersection(pt1, v1, pt2, v2) {
+    // take some shortcuts for vertical and horizontal lines
+    // this also ensures we don't calculate an intersection and then discover
+    // it's actually outside the bounding box of the line
+    if (v1.x === 0) return verticalIntersection(pt2, v2, pt1.x);
+    if (v2.x === 0) return verticalIntersection(pt1, v1, pt2.x);
+    if (v1.y === 0) return horizontalIntersection(pt2, v2, pt1.y);
+    if (v2.y === 0) return horizontalIntersection(pt1, v1, pt2.y); // General case for non-overlapping segments.
+    // This algorithm is based on Schneider and Eberly.
+    // http://www.cimec.org.ar/~ncalvo/Schneider_Eberly.pdf - pg 244
+
+    var kross = crossProduct(v1, v2);
+    if (kross == 0) return null;
+    var ve = {
+      x: pt2.x - pt1.x,
+      y: pt2.y - pt1.y
+    };
+    var d1 = crossProduct(ve, v1) / kross;
+    var d2 = crossProduct(ve, v2) / kross; // take the average of the two calculations to minimize rounding error
+
+    var x1 = pt1.x + d2 * v1.x,
+        x2 = pt2.x + d1 * v2.x;
+    var y1 = pt1.y + d2 * v1.y,
+        y2 = pt2.y + d1 * v2.y;
+    var x = (x1 + x2) / 2;
+    var y = (y1 + y2) / 2;
+    return {
+      x: x,
+      y: y
+    };
   };
 
   var SweepEvent =
@@ -1559,56 +1361,44 @@
       value: function isAnEndpoint(pt) {
         return pt.x === this.leftSE.point.x && pt.y === this.leftSE.point.y || pt.x === this.rightSE.point.x && pt.y === this.rightSE.point.y;
       }
-      /* Compare this segment with a point. Return value indicates:
-       *     1: point lies above or to the left of segment
-       *     0: point is colinear to segment
-       *    -1: point is below or to the right of segment */
+      /* Compare this segment with a point.
+       *
+       * A point P is considered to be colinear to a segment if there
+       * exists a distance D such that if we travel along the segment
+       * from one * endpoint towards the other a distance D, we find
+       * ourselves at point P.
+       *
+       * Return value indicates:
+       *
+       *   1: point lies above the segment (to the left of vertical)
+       *   0: point is colinear to segment
+       *  -1: point lies below the segment (to the right of vertical)
+       */
 
     }, {
       key: "comparePoint",
       value: function comparePoint(point) {
         if (this.isAnEndpoint(point)) return 0;
-        var interPt = closestPoint(this.leftSE.point, this.rightSE.point, point); // use cmp() to do the same rounding as would apply in rounder.round
-        // but avoid using rounder.round for performance boost, and to avoid
-        // saving the result in the rounding trees
-        // also, there is a fair amount of rounding error introduced when computing
-        // the closestPoint to a nearly vertical or horizontal segment. Thus, we use
-        // the more accurate coordinate for comparison of the two points
+        var lPt = this.leftSE.point;
+        var rPt = this.rightSE.point;
+        var v = this.vector(); // Exactly vertical segments.
 
-        var lx = this.leftSE.point.x;
-        var ly = this.leftSE.point.y;
-        var rx = this.rightSE.point.x;
-        var ry = this.rightSE.point.y; // is the segment upward sloping?
-
-        if (ry >= ly) {
-          // is the segment more vertical?
-          if (ry - ly > rx - lx) {
-            // use the X coordinate
-            var cmpX = cmp(interPt.x, point.x);
-            if (cmpX != 0) return cmpX;
-          } else {
-            // segment is more horizontal, so use Y coord
-            var cmpY = cmp(point.y, interPt.y);
-            if (cmpY != 0) return cmpY;
-          }
-        } else {
-          // segment is more downward sloping
-          // is the segment more vertical?
-          if (ly - ry > rx - lx) {
-            // use the X coordinate
-            var _cmpX = cmp(point.x, interPt.x);
-
-            if (_cmpX != 0) return _cmpX;
-          } else {
-            // segment is more horizontal, so use the Y coordinate
-            var _cmpY = cmp(point.y, interPt.y);
-
-            if (_cmpY != 0) return _cmpY;
-          }
-        } // on the line
+        if (lPt.x === rPt.x) {
+          if (point.x === lPt.x) return 0;
+          return point.x < lPt.x ? 1 : -1;
+        } // Nearly vertical segments with an intersection.
+        // Check to see where a point on the line with matching Y coordinate is.
 
 
-        return 0;
+        var yDist = (point.y - lPt.y) / v.y;
+        var xFromYDist = lPt.x + yDist * v.x;
+        if (point.x === xFromYDist) return 0; // General case.
+        // Check to see where a point on the line with matching X coordinate is.
+
+        var xDist = (point.x - lPt.x) / v.x;
+        var yFromXDist = lPt.y + xDist * v.y;
+        if (point.y === yFromXDist) return 0;
+        return point.y < yFromXDist ? -1 : 1;
       }
       /**
        * Given another segment, returns the first non-trivial intersection
@@ -1990,32 +1780,51 @@
     function RingIn(geomRing, poly, isExterior) {
       _classCallCheck(this, RingIn);
 
+      if (!Array.isArray(geomRing) || geomRing.length === 0) {
+        throw new Error('Input geometry is not a valid Polygon or MultiPolygon');
+      }
+
       this.poly = poly;
       this.isExterior = isExterior;
       this.segments = [];
-      var prevPoint = geomRing[0];
+
+      if (typeof geomRing[0][0] !== 'number' || typeof geomRing[0][1] !== 'number') {
+        throw new Error('Input geometry is not a valid Polygon or MultiPolygon');
+      }
+
+      var firstPoint = rounder.round(geomRing[0][0], geomRing[0][1]);
       this.bbox = {
         ll: {
-          x: prevPoint.x,
-          y: prevPoint.y
+          x: firstPoint.x,
+          y: firstPoint.y
         },
         ur: {
-          x: prevPoint.x,
-          y: prevPoint.y
+          x: firstPoint.x,
+          y: firstPoint.y
         }
       };
+      var prevPoint = firstPoint;
 
       for (var i = 1, iMax = geomRing.length; i < iMax; i++) {
-        var point = geomRing[i];
+        if (typeof geomRing[i][0] !== 'number' || typeof geomRing[i][1] !== 'number') {
+          throw new Error('Input geometry is not a valid Polygon or MultiPolygon');
+        }
+
+        var point = rounder.round(geomRing[i][0], geomRing[i][1]); // skip repeated points
+
+        if (point.x === prevPoint.x && point.y === prevPoint.y) continue;
         this.segments.push(Segment.fromRing(prevPoint, point, this));
         if (point.x < this.bbox.ll.x) this.bbox.ll.x = point.x;
         if (point.y < this.bbox.ll.y) this.bbox.ll.y = point.y;
         if (point.x > this.bbox.ur.x) this.bbox.ur.x = point.x;
         if (point.y > this.bbox.ur.y) this.bbox.ur.y = point.y;
         prevPoint = point;
-      }
+      } // add segment from last to first if last is not the same as first
 
-      this.segments.push(Segment.fromRing(prevPoint, geomRing[0], this));
+
+      if (firstPoint.x !== prevPoint.x || firstPoint.y !== prevPoint.y) {
+        this.segments.push(Segment.fromRing(prevPoint, firstPoint, this));
+      }
     }
 
     _createClass(RingIn, [{
@@ -2040,6 +1849,10 @@
   function () {
     function PolyIn(geomPoly, multiPoly) {
       _classCallCheck(this, PolyIn);
+
+      if (!Array.isArray(geomPoly)) {
+        throw new Error('Input geometry is not a valid Polygon or MultiPolygon');
+      }
 
       this.exteriorRing = new RingIn(geomPoly[0], this, true); // copy by value
 
@@ -2089,8 +1902,19 @@
   var MultiPolyIn =
   /*#__PURE__*/
   function () {
-    function MultiPolyIn(geomMultiPoly) {
+    function MultiPolyIn(geom, isSubject) {
       _classCallCheck(this, MultiPolyIn);
+
+      if (!Array.isArray(geom)) {
+        throw new Error('Input geometry is not a valid Polygon or MultiPolygon');
+      }
+
+      try {
+        // if the input looks like a polygon, convert it to a multipolygon
+        if (typeof geom[0][0][0] === 'number') geom = [geom];
+      } catch (ex) {// The input is either malformed or has empty arrays.
+        // In either case, it will be handled later on.
+      }
 
       this.polys = [];
       this.bbox = {
@@ -2104,8 +1928,8 @@
         }
       };
 
-      for (var i = 0, iMax = geomMultiPoly.length; i < iMax; i++) {
-        var poly = new PolyIn(geomMultiPoly[i], this);
+      for (var i = 0, iMax = geom.length; i < iMax; i++) {
+        var poly = new PolyIn(geom[i], this);
         if (poly.bbox.ll.x < this.bbox.ll.x) this.bbox.ll.x = poly.bbox.ll.x;
         if (poly.bbox.ll.y < this.bbox.ll.y) this.bbox.ll.y = poly.bbox.ll.y;
         if (poly.bbox.ur.x > this.bbox.ur.x) this.bbox.ur.x = poly.bbox.ur.x;
@@ -2113,15 +1937,10 @@
         this.polys.push(poly);
       }
 
-      this.isSubject = false;
+      this.isSubject = isSubject;
     }
 
     _createClass(MultiPolyIn, [{
-      key: "markAsSubject",
-      value: function markAsSubject() {
-        this.isSubject = true;
-      }
-    }, {
       key: "getSweepEvents",
       value: function getSweepEvents() {
         var sweepEvents = [];
@@ -2520,10 +2339,7 @@
             var mySplitter = null;
             if (prevMySplitter === null) mySplitter = nextMySplitter;else if (nextMySplitter === null) mySplitter = prevMySplitter;else {
               var cmpSplitters = SweepEvent.comparePoints(prevMySplitter, nextMySplitter);
-              if (cmpSplitters < 0) mySplitter = prevMySplitter;
-              if (cmpSplitters > 0) mySplitter = nextMySplitter; // the two splitters are the exact same point
-
-              mySplitter = prevMySplitter;
+              mySplitter = cmpSplitters <= 0 ? prevMySplitter : nextMySplitter;
             } // Rounding errors can cause changes in ordering,
             // so remove afected segments and right sweep events before splitting
 
@@ -2615,30 +2431,14 @@
       value: function run(type, geom, moreGeoms) {
         operation.type = type;
         rounder.reset();
-        /* Make a copy of the input geometry with rounded points as objects */
+        /* Convert inputs to MultiPoly objects */
 
-        var geoms = [pointsAsObjects(geom)];
+        var multipolys = [new MultiPolyIn(geom, true)];
 
         for (var i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-          geoms.push(pointsAsObjects(moreGeoms[i]));
-        }
-        /* Clean inputs */
-
-
-        for (var _i = 0, _iMax = geoms.length; _i < _iMax; _i++) {
-          forceMultiPoly(geoms[_i]);
-          cleanMultiPoly(geoms[_i]);
-        }
-        /* Convert inputs to MultiPoly objects, mark subject */
-
-
-        var multipolys = [];
-
-        for (var _i2 = 0, _iMax2 = geoms.length; _i2 < _iMax2; _i2++) {
-          multipolys.push(new MultiPolyIn(geoms[_i2]));
+          multipolys.push(new MultiPolyIn(moreGeoms[i], false));
         }
 
-        multipolys[0].markAsSubject();
         operation.numMultiPolys = multipolys.length;
         /* BBox optimization for difference operation
          * If the bbox of a multipolygon that's part of the clipping doesn't
@@ -2648,10 +2448,10 @@
         if (operation.type === 'difference') {
           // in place removal
           var subject = multipolys[0];
-          var _i3 = 1;
+          var _i = 1;
 
-          while (_i3 < multipolys.length) {
-            if (getBboxOverlap(multipolys[_i3].bbox, subject.bbox) !== null) _i3++;else multipolys.splice(_i3, 1);
+          while (_i < multipolys.length) {
+            if (getBboxOverlap(multipolys[_i].bbox, subject.bbox) !== null) _i++;else multipolys.splice(_i, 1);
           }
         }
         /* BBox optimization for intersection operation
@@ -2662,10 +2462,10 @@
         if (operation.type === 'intersection') {
           // TODO: this is O(n^2) in number of polygons. By sorting the bboxes,
           //       it could be optimized to O(n * ln(n))
-          for (var _i4 = 0, _iMax3 = multipolys.length; _i4 < _iMax3; _i4++) {
-            var mpA = multipolys[_i4];
+          for (var _i2 = 0, _iMax = multipolys.length; _i2 < _iMax; _i2++) {
+            var mpA = multipolys[_i2];
 
-            for (var j = _i4 + 1, jMax = multipolys.length; j < jMax; j++) {
+            for (var j = _i2 + 1, jMax = multipolys.length; j < jMax; j++) {
               if (getBboxOverlap(mpA.bbox, multipolys[j].bbox) === null) return [];
             }
           }
@@ -2675,8 +2475,8 @@
 
         var queue = new Tree(SweepEvent.compare);
 
-        for (var _i5 = 0, _iMax4 = multipolys.length; _i5 < _iMax4; _i5++) {
-          var sweepEvents = multipolys[_i5].getSweepEvents();
+        for (var _i3 = 0, _iMax2 = multipolys.length; _i3 < _iMax2; _i3++) {
+          var sweepEvents = multipolys[_i3].getSweepEvents();
 
           for (var _j = 0, _jMax = sweepEvents.length; _j < _jMax; _j++) {
             queue.insert(sweepEvents[_j]);
@@ -2700,8 +2500,8 @@
 
           var newEvents = sweepLine.process(evt);
 
-          for (var _i6 = 0, _iMax5 = newEvents.length; _i6 < _iMax5; _i6++) {
-            var _evt = newEvents[_i6];
+          for (var _i4 = 0, _iMax3 = newEvents.length; _i4 < _iMax3; _i4++) {
+            var _evt = newEvents[_i4];
             if (_evt.consumedBy === undefined) queue.insert(_evt);
           }
 
@@ -2765,4 +2565,4 @@
 
   return index;
 
-}));
+})));
