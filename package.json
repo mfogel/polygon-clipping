@@ -44,22 +44,22 @@
   "author": "Mike Fogel <mike@fogel.ca>",
   "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
     "@turf/difference": "^5.1.5",
     "@turf/intersect": "^5.1.6",
     "@turf/union": "^5.1.5",
     "babel-jest": "^24.9.0",
     "benchmark": "^2.1.4",
-    "coveralls": "^3.0.6",
+    "coveralls": "^3.0.7",
     "eslint": "^5.16.0",
     "eslint-plugin-vue-libs": "^3.0.2",
     "jest": "^24.9.0",
     "load-json-file": "^5.3.0",
     "martinez-polygon-clipping": "^0.5.0",
     "npm-run-all": "^4.1.5",
-    "rollup": "^1.19.4",
+    "rollup": "^1.25.2",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-json": "^3.1.0",
@@ -70,6 +70,6 @@
     "vue-template-compiler": "^2.6.10"
   },
   "dependencies": {
-    "splaytree": "^3.0.0"
+    "splaytree": "^3.0.1"
   }
 }
