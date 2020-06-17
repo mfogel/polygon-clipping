@@ -72,6 +72,23 @@ export class Operation {
           'Please file a bug report.'
         )
       }
+
+      if (queue.size > 1000000) {
+        // prevents an infinite loop, an otherwise common manifestation of bugs
+        throw new Error(
+          'Infinite loop when passing sweep line over endpoints ' +
+          '(queue size too big). Please file a bug report.'
+        )
+      }
+
+      if (sweepLine.segments.length > 1000000) {
+        // prevents an infinite loop, an otherwise common manifestation of bugs
+        throw new Error(
+          'Infinite loop when passing sweep line over endpoints ' +
+          '(too many sweep line segments). Please file a bug report.'
+        )
+      }
+
       const newEvents = sweepLine.process(evt)
       for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
         const evt = newEvents[i]
