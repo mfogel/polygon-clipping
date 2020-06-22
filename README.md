@@ -69,6 +69,12 @@ The tests are broken up into unit tests and end-to-end tests. The end-to-end tes
 
 The Martinez-Rueda-Feito polygon clipping algorithm is used to compute the result in `O((n+k)*log(n))` time, where `n` is the total number of edges in all polygons involved and `k` is the number of intersections between edges.
 
+## Settings
+
+Global settings are set via environment variables.
+
+* **POLYGON_CLIPPING_MAX_QUEUE_SIZE** and **POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS**: Aims to prevent infinite loops - usually caused by floating-point math round-off errors. Defaults are 1,000,000.
+
 ## Changelog
 
 This project adheres to [Semantic Versioning](https://semver.org/).
