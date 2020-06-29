@@ -6,6 +6,10 @@ import rounder from './rounder'
 import SweepEvent from './sweep-event'
 import SweepLine from './sweep-line'
 
+// Limits on iterative processes to prevent infinite loops - usually caused by floating-point math round-off errors.
+const POLYGON_CLIPPING_MAX_QUEUE_SIZE = process.env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1000000
+const POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS = process.env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1000000
+
 export class Operation {
   run (type, geom, moreGeoms) {
     operation.type = type
@@ -52,6 +56,14 @@ export class Operation {
       const sweepEvents = multipolys[i].getSweepEvents()
       for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
         queue.insert(sweepEvents[j])
+
+        if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
+          // prevents an infinite loop, an otherwise common manifestation of bugs
+          throw new Error(
+            'Infinite loop when putting segment endpoints in a priority queue ' +
+            '(queue size too big). Please file a bug report.'
+          )
+        }
       }
     }
 
@@ -72,6 +84,23 @@ export class Operation {
           'Please file a bug report.'
         )
       }
+
+      if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
+        // prevents an infinite loop, an otherwise common manifestation of bugs
+        throw new Error(
+          'Infinite loop when passing sweep line over endpoints ' +
+          '(queue size too big). Please file a bug report.'
+        )
+      }
+
+      if (sweepLine.segments.length > POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS) {
+        // prevents an infinite loop, an otherwise common manifestation of bugs
+        throw new Error(
+          'Infinite loop when passing sweep line over endpoints ' +
+          '(too many sweep line segments). Please file a bug report.'
+        )
+      }
+
       const newEvents = sweepLine.process(evt)
       for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
         const evt = newEvents[i]
