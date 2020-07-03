@@ -100,9 +100,7 @@ var cmp = function cmp(a, b) {
  * stored in any data structures in the rest of this algorithm.
  */
 
-var PtRounder =
-/*#__PURE__*/
-function () {
+var PtRounder = /*#__PURE__*/function () {
   function PtRounder() {
     _classCallCheck(this, PtRounder);
 
@@ -128,9 +126,7 @@ function () {
   return PtRounder;
 }();
 
-var CoordRounder =
-/*#__PURE__*/
-function () {
+var CoordRounder = /*#__PURE__*/function () {
   function CoordRounder() {
     _classCallCheck(this, CoordRounder);
 
@@ -284,9 +280,7 @@ var intersection = function intersection(pt1, v1, pt2, v2) {
   };
 };
 
-var SweepEvent =
-/*#__PURE__*/
-function () {
+var SweepEvent = /*#__PURE__*/function () {
   _createClass(SweepEvent, null, [{
     key: "compare",
     // for ordering sweep events in the sweep event queue
@@ -448,9 +442,7 @@ function () {
 
 var segmentId = 0;
 
-var Segment =
-/*#__PURE__*/
-function () {
+var Segment = /*#__PURE__*/function () {
   _createClass(Segment, null, [{
     key: "compare",
 
@@ -1035,9 +1027,7 @@ function () {
   return Segment;
 }();
 
-var RingIn =
-/*#__PURE__*/
-function () {
+var RingIn = /*#__PURE__*/function () {
   function RingIn(geomRing, poly, isExterior) {
     _classCallCheck(this, RingIn);
 
@@ -1105,9 +1095,7 @@ function () {
 
   return RingIn;
 }();
-var PolyIn =
-/*#__PURE__*/
-function () {
+var PolyIn = /*#__PURE__*/function () {
   function PolyIn(geomPoly, multiPoly) {
     _classCallCheck(this, PolyIn);
 
@@ -1160,9 +1148,7 @@ function () {
 
   return PolyIn;
 }();
-var MultiPolyIn =
-/*#__PURE__*/
-function () {
+var MultiPolyIn = /*#__PURE__*/function () {
   function MultiPolyIn(geom, isSubject) {
     _classCallCheck(this, MultiPolyIn);
 
@@ -1221,9 +1207,7 @@ function () {
   return MultiPolyIn;
 }();
 
-var RingOut =
-/*#__PURE__*/
-function () {
+var RingOut = /*#__PURE__*/function () {
   _createClass(RingOut, null, [{
     key: "factory",
 
@@ -1417,9 +1401,7 @@ function () {
 
   return RingOut;
 }();
-var PolyOut =
-/*#__PURE__*/
-function () {
+var PolyOut = /*#__PURE__*/function () {
   function PolyOut(exteriorRing) {
     _classCallCheck(this, PolyOut);
 
@@ -1454,9 +1436,7 @@ function () {
 
   return PolyOut;
 }();
-var MultiPolyOut =
-/*#__PURE__*/
-function () {
+var MultiPolyOut = /*#__PURE__*/function () {
   function MultiPolyOut(rings) {
     _classCallCheck(this, MultiPolyOut);
 
@@ -1511,9 +1491,7 @@ function () {
  *        it sometimes does.)
  */
 
-var SweepLine =
-/*#__PURE__*/
-function () {
+var SweepLine = /*#__PURE__*/function () {
   function SweepLine(queue) {
     var comparator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Segment.compare;
 
@@ -1680,9 +1658,9 @@ function () {
   return SweepLine;
 }();
 
-var Operation =
-/*#__PURE__*/
-function () {
+var POLYGON_CLIPPING_MAX_QUEUE_SIZE = process.env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1000000;
+var POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS = process.env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1000000;
+var Operation = /*#__PURE__*/function () {
   function Operation() {
     _classCallCheck(this, Operation);
   }
@@ -1741,6 +1719,11 @@ function () {
 
         for (var _j = 0, _jMax = sweepEvents.length; _j < _jMax; _j++) {
           queue.insert(sweepEvents[_j]);
+
+          if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
+            // prevents an infinite loop, an otherwise common manifestation of bugs
+            throw new Error('Infinite loop when putting segment endpoints in a priority queue ' + '(queue size too big). Please file a bug report.');
+          }
         }
       }
       /* Pass the sweep line over those endpoints */
@@ -1757,6 +1740,16 @@ function () {
           // prevents an infinite loop, an otherwise common manifestation of bugs
           var seg = evt.segment;
           throw new Error("Unable to pop() ".concat(evt.isLeft ? 'left' : 'right', " SweepEvent ") + "[".concat(evt.point.x, ", ").concat(evt.point.y, "] from segment #").concat(seg.id, " ") + "[".concat(seg.leftSE.point.x, ", ").concat(seg.leftSE.point.y, "] -> ") + "[".concat(seg.rightSE.point.x, ", ").concat(seg.rightSE.point.y, "] from queue. ") + 'Please file a bug report.');
+        }
+
+        if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
+          // prevents an infinite loop, an otherwise common manifestation of bugs
+          throw new Error('Infinite loop when passing sweep line over endpoints ' + '(queue size too big). Please file a bug report.');
+        }
+
+        if (sweepLine.segments.length > POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS) {
+          // prevents an infinite loop, an otherwise common manifestation of bugs
+          throw new Error('Infinite loop when passing sweep line over endpoints ' + '(too many sweep line segments). Please file a bug report.');
         }
 
         var newEvents = sweepLine.process(evt);
