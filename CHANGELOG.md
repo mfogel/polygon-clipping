@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## vNext
+
+ * Limit data structure depth [#97](https://github.com/mfogel/polygon-clipping/issues/97)
+
 ## v0.14.3 (2019-10-26)
 
  * Bug fixes: [#78](https://github.com/mfogel/polygon-clipping/issues/78), [#79](https://github.com/mfogel/polygon-clipping/issues/79), [#80](https://github.com/mfogel/polygon-clipping/issues/80), [#81](https://github.com/mfogel/polygon-clipping/issues/81), [#82](https://github.com/mfogel/polygon-clipping/issues/82), [#85](https://github.com/mfogel/polygon-clipping/issues/85)
