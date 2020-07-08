@@ -2395,8 +2395,8 @@
     return SweepLine;
   }();
 
-  var POLYGON_CLIPPING_MAX_QUEUE_SIZE = process.env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1000000;
-  var POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS = process.env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1000000;
+  var POLYGON_CLIPPING_MAX_QUEUE_SIZE = typeof process !== 'undefined' && process.env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1000000;
+  var POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS = typeof process !== 'undefined' && process.env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1000000;
   var Operation = /*#__PURE__*/function () {
     function Operation() {
       _classCallCheck(this, Operation);
