@@ -1,8 +1,10 @@
 'use strict';
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+var SplayTree = require('splaytree');
 
-var SplayTree = _interopDefault(require('splaytree'));
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var SplayTree__default = /*#__PURE__*/_interopDefaultLegacy(SplayTree);
 
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -134,7 +136,7 @@ var CoordRounder = /*#__PURE__*/function () {
   function CoordRounder() {
     _classCallCheck(this, CoordRounder);
 
-    this.tree = new SplayTree(); // preseed with 0 so we don't end up with values < Number.EPSILON
+    this.tree = new SplayTree__default['default'](); // preseed with 0 so we don't end up with values < Number.EPSILON
 
     this.round(0);
   } // Note: this can rounds input values backwards or forwards.
@@ -1502,7 +1504,7 @@ var SweepLine = /*#__PURE__*/function () {
     _classCallCheck(this, SweepLine);
 
     this.queue = queue;
-    this.tree = new SplayTree(comparator);
+    this.tree = new SplayTree__default['default'](comparator);
     this.segments = [];
   }
 
@@ -1716,7 +1718,7 @@ var Operation = /*#__PURE__*/function () {
       /* Put segment endpoints in a priority queue */
 
 
-      var queue = new SplayTree(SweepEvent.compare);
+      var queue = new SplayTree__default['default'](SweepEvent.compare);
 
       for (var _i3 = 0, _iMax2 = multipolys.length; _i3 < _iMax2; _i3++) {
         var sweepEvents = multipolys[_i3].getSweepEvents();
