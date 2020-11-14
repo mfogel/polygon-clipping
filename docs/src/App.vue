@@ -3,23 +3,31 @@
     <div id="map">
       <div class="control leaflet-bar">
         <h4>Input Data</h4>
-        <select v-on:change="setInput">
+        <select @change="setInput">
           <option>Asia</option>
           <option>Almost Parallel Segments</option>
           <option>Saw & Cheese</option>
         </select>
         <br><br>
-        <div v-for="operation in operations">
-          <input type="radio" name="some" :value="operation" v-on:change="setOperation" v-model="selectedOperation"> {{operation}}
+        <div
+          v-for="operation in operations"
+          :key="operation"
+        >
+          <input
+            v-model="selectedOperation"
+            type="radio"
+            name="some"
+            :value="operation"
+            @change="setOperation"
+          > {{ operation }}
         </div>
 
         <h4>Performance</h4>
         <p>
-          polygon-clipping {{performance}} m/s<br>
-          martinez {{martinezPerf}} m/s<br>
-          jsts {{jstsPerf}} m/s<br>
+          polygon-clipping {{ performance }} m/s<br>
+          martinez {{ martinezPerf }} m/s<br>
+          jsts {{ jstsPerf }} m/s<br>
         </p>
-
       </div>
     </div>
   </div>
@@ -55,7 +63,7 @@ import parallel from '../geojson/parallel.json'
 import cheese from '../geojson/cheese.json'
 
 export default {
-  name: 'app',
+  name: 'App',
   data () {
     return {
       operations: ['Intersection', 'Union', 'Difference', 'XOR'],
@@ -64,6 +72,30 @@ export default {
       martinezPerf: '',
       jstsPerf: ''
     }
+  },
+  mounted () {
+    inData = asia
+    map = window.map = L.map('map', {
+      minZoom: 1,
+      maxZoom: 20,
+      center: [0, 0],
+      zoom: 2,
+      crs: L.CRS.Simple
+    })
+
+    inLayer = L.geoJson(asia).addTo(map)
+
+    map.fitBounds(inLayer.getBounds(), {
+      padding: [20, 20]
+    })
+    outLayer = L.geoJson({
+      type: 'FeatureCollection',
+      features: []
+    }, {
+      color: 'red'
+    }).addTo(map)
+
+    this.runOperation()
   },
   methods: {
     setInput (e) {
@@ -127,30 +159,6 @@ export default {
         this.jstsPerf = 'N/A'
       }
     }
-  },
-  mounted () {
-    inData = asia
-    map = window.map = L.map('map', {
-      minZoom: 1,
-      maxZoom: 20,
-      center: [0, 0],
-      zoom: 2,
-      crs: L.CRS.Simple
-    })
-
-    inLayer = L.geoJson(asia).addTo(map)
-
-    map.fitBounds(inLayer.getBounds(), {
-      padding: [20, 20]
-    })
-    outLayer = L.geoJson({
-      type: 'FeatureCollection',
-      features: []
-    }, {
-      color: 'red'
-    }).addTo(map)
-
-    this.runOperation()
   }
 }
 </script>

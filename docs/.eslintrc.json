@@ -1,5 +1,5 @@
 {
-  "extends": ["plugin:vue-libs/recommended"],
+  "extends": ["plugin:vue/vue3-recommended"],
   "globals": {
     "L": true
   }
