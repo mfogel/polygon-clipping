@@ -2,9 +2,9 @@
 
 Apply boolean Polygon clipping operations (`intersection`, `union`, `difference`, `xor`) to your Polygons & MultiPolygons.
 
-[![npm version](https://img.shields.io/npm/v/polygon-clipping.svg)](https://www.npmjs.com/package/polygon-clipping)
-[![build status](https://img.shields.io/travis/mfogel/polygon-clipping/master.svg)](https://travis-ci.org/mfogel/polygon-clipping)
-[![test coverage](https://img.shields.io/coveralls/mfogel/polygon-clipping/master.svg)](https://coveralls.io/r/mfogel/polygon-clipping)
+[![build](https://github.com/mfogel/polygon-clipping/workflows/build/badge.svg)](https://github.com/mfogel/polygon-clipping/actions?query=workflow%3Abuild)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![npm](https://img.shields.io/npm/v/polygon-clipping.svg)](https://www.npmjs.com/package/polygon-clipping)
 
 
 ## Quickstart

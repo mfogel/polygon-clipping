@@ -1,6 +1,0 @@
-language: node_js
-node_js:
-  - node
-  - lts/*
-after_success:
-  - coveralls < coverage/lcov.info
