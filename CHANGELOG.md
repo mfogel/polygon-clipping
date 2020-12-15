@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.15.2 (2020-12-15)
+
+ * Update dependencies [#109](https://github.com/mfogel/polygon-clipping/pull/109)
+
 ## v0.15.1 (2020-07-08)
 
  * Bug fix [#99](https://github.com/mfogel/polygon-clipping/issues/99)
