@@ -37,12 +37,12 @@
 
 import pc from '../..'
 
-// the martinez packaging is somewhat broken
-import martinezBool from 'martinez-polygon-clipping'
-var martinezUnion = (p1, p2) => martinezBool(p1, p2, 1)
-var martinezIntersection = (p1, p2) => martinezBool(p1, p2, 0)
-var martinezDifference = (p1, p2) => martinezBool(p1, p2, 2)
-var martinezXor = (p1, p2) => martinezBool(p1, p2, 3)
+import {
+  union as martinezUnion,
+  intersection as martinezIntersection,
+  diff as martinezDifference,
+  xor as martinezXor,
+} from 'martinez-polygon-clipping'
 
 // turf v5 runs off of jsts under the hood
 import jstsUnion from '@turf/union'
