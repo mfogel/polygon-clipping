@@ -13,7 +13,6 @@ import SplayTree from 'splaytree'
  * All points should be rounded by this class before being
  * stored in any data structures in the rest of this algorithm.
  */
-
 class PtRounder {
   constructor () {
     this.reset()
@@ -34,7 +33,7 @@ class PtRounder {
 
 class CoordRounder {
   constructor () {
-    this.tree = new SplayTree()
+    this.tree = new SplayTree(cmp)
     // preseed with 0 so we don't end up with values < Number.EPSILON
     this.round(0)
   }
@@ -48,20 +47,7 @@ class CoordRounder {
   //       angle for t-intersections).
   round (coord) {
     const node = this.tree.add(coord)
-
-    const prevNode = this.tree.prev(node)
-    if (prevNode !== null && cmp(node.key, prevNode.key) === 0) {
-      this.tree.remove(coord)
-      return prevNode.key
-    }
-
-    const nextNode = this.tree.next(node)
-    if (nextNode !== null && cmp(node.key, nextNode.key) === 0) {
-      this.tree.remove(coord)
-      return nextNode.key
-    }
-
-    return coord
+    return node.key
   }
 }
 
