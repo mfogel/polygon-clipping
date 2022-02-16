@@ -4,6 +4,7 @@ import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
 import { terser } from 'rollup-plugin-terser'
 import vue from 'rollup-plugin-vue'
+import css from 'rollup-plugin-postcss'
 
 export default {
   input: 'src/main.js',
@@ -18,12 +19,13 @@ export default {
   },
   plugins: [
     resolve(),
+    vue(),
     commonjs(),
     json(),
-    vue(),
+    css(),
     babel({
-      extensions: ['.js', '.vue'],
-      configFile: '../babel.config.js'
+      compact: true,
+      configFile: '../babel.config.js',
     }),
     terser()
   ],
