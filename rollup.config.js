@@ -1,5 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve'
-import babel from 'rollup-plugin-babel'
+import { babel } from '@rollup/plugin-babel'
 import { terser } from 'rollup-plugin-terser'
 import pkg from './package.json'
 
@@ -13,7 +13,7 @@ export default [
     },
     plugins: [
       resolve(),
-      babel(),
+      babel({ babelHelpers: 'bundled' }),
     ]
   },
   {
@@ -26,7 +26,7 @@ export default [
     },
     plugins: [
       resolve(),
-      babel(),
+      babel({ babelHelpers: 'bundled' }),
       terser(),
     ]
   },
@@ -44,6 +44,7 @@ export default [
     ],
     plugins: [
       babel({
+        babelHelpers: 'bundled',
         exclude: ['node_modules/**']
       }),
     ],
