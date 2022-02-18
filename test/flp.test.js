@@ -10,8 +10,12 @@ describe('compare', () => {
   })
 
   test('flp equal', () => {
-    const a = 1
-    const b = 1 + Number.EPSILON
+    let a = 1
+    let b = 1 + (Number.EPSILON * Number.EPSILON)
+    expect(cmp(a, b)).toBe(0)
+
+    a = 1
+    b = 1 - (Number.EPSILON * Number.EPSILON)
     expect(cmp(a, b)).toBe(0)
   })
 
@@ -48,6 +52,6 @@ describe('compare', () => {
   test('really close to zero', () => {
     const a = Number.EPSILON
     const b = Number.EPSILON + Number.EPSILON * Number.EPSILON * 2
-    expect(cmp(a, b)).toBe(-1)
+    expect(cmp(a, b)).toBe(0)
   })
 })
