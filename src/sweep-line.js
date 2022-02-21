@@ -1,6 +1,6 @@
-import SplayTree from 'splaytree'
-import Segment from './segment'
-import SweepEvent from './sweep-event'
+import SplayTree from "splaytree"
+import Segment from "./segment"
+import SweepEvent from "./sweep-event"
 
 /**
  * NOTE:  We must be careful not to change any segments while
@@ -14,13 +14,13 @@ import SweepEvent from './sweep-event'
  */
 
 export default class SweepLine {
-  constructor (queue, comparator = Segment.compare) {
+  constructor(queue, comparator = Segment.compare) {
     this.queue = queue
     this.tree = new SplayTree(comparator)
     this.segments = []
   }
 
-  process (event) {
+  process(event) {
     const segment = event.segment
     const newEvents = []
 
@@ -36,12 +36,13 @@ export default class SweepLine {
       ? this.tree.insert(segment)
       : this.tree.find(segment)
 
-    if (! node) throw new Error(
-      `Unable to find segment #${segment.id} ` +
-      `[${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> ` +
-      `[${segment.rightSE.point.x}, ${segment.rightSE.point.y}] ` +
-      'in SweepLine tree. Please submit a bug report.'
-    )
+    if (!node)
+      throw new Error(
+        `Unable to find segment #${segment.id} ` +
+          `[${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> ` +
+          `[${segment.rightSE.point.x}, ${segment.rightSE.point.y}] ` +
+          "in SweepLine tree. Please submit a bug report.",
+      )
 
     let prevNode = node
     let nextNode = node
@@ -63,7 +64,6 @@ export default class SweepLine {
     }
 
     if (event.isLeft) {
-
       // Check for intersections against the previous segment in the sweep line
       let prevMySplitter = null
       if (prevSeg) {
@@ -85,7 +85,7 @@ export default class SweepLine {
         const nextInter = nextSeg.getIntersection(segment)
         if (nextInter !== null) {
           if (!segment.isAnEndpoint(nextInter)) nextMySplitter = nextInter
-          if (!nextSeg.isAnEndpoint(nextInter))  {
+          if (!nextSeg.isAnEndpoint(nextInter)) {
             const newEventsFromSplit = this._splitSafely(nextSeg, nextInter)
             for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
               newEvents.push(newEventsFromSplit[i])
@@ -98,12 +98,14 @@ export default class SweepLine {
       // spilt on the 'earliest' (sweep-line style) of the intersections.
       // The other intersection will be handled in a future process().
       if (prevMySplitter !== null || nextMySplitter !== null) {
-
         let mySplitter = null
         if (prevMySplitter === null) mySplitter = nextMySplitter
         else if (nextMySplitter === null) mySplitter = prevMySplitter
         else {
-          const cmpSplitters = SweepEvent.comparePoints(prevMySplitter, nextMySplitter)
+          const cmpSplitters = SweepEvent.comparePoints(
+            prevMySplitter,
+            nextMySplitter,
+          )
           mySplitter = cmpSplitters <= 0 ? prevMySplitter : nextMySplitter
         }
 
@@ -124,13 +126,11 @@ export default class SweepLine {
         // use with the segment 'prev' pointers
         this.tree.remove(segment)
         newEvents.push(event)
-
       } else {
         // done with left event
         this.segments.push(segment)
         segment.prev = prevSeg
       }
-
     } else {
       // event.isRight
 
@@ -139,13 +139,13 @@ export default class SweepLine {
       if (prevSeg && nextSeg) {
         const inter = prevSeg.getIntersection(nextSeg)
         if (inter !== null) {
-          if (!prevSeg.isAnEndpoint(inter))  {
+          if (!prevSeg.isAnEndpoint(inter)) {
             const newEventsFromSplit = this._splitSafely(prevSeg, inter)
             for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
               newEvents.push(newEventsFromSplit[i])
             }
           }
-          if (!nextSeg.isAnEndpoint(inter))  {
+          if (!nextSeg.isAnEndpoint(inter)) {
             const newEventsFromSplit = this._splitSafely(nextSeg, inter)
             for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
               newEvents.push(newEventsFromSplit[i])

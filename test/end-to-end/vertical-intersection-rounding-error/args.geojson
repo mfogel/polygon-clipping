@@ -6,7 +6,16 @@
       "properties": null,
       "geometry": {
         "type": "MultiPolygon",
-        "coordinates": [[[[-0.1, 49], [0.1, 49], [-0.1, 50], [-0.1, 49]]]]
+        "coordinates": [
+          [
+            [
+              [-0.1, 49],
+              [0.1, 49],
+              [-0.1, 50],
+              [-0.1, 49]
+            ]
+          ]
+        ]
       }
     },
     {

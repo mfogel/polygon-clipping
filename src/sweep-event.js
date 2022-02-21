@@ -1,11 +1,9 @@
-import Segment from './segment'
-import { cosineOfAngle, sineOfAngle } from './vector'
+import Segment from "./segment"
+import { cosineOfAngle, sineOfAngle } from "./vector"
 
 export default class SweepEvent {
-
   // for ordering sweep events in the sweep event queue
-  static compare (a, b) {
-
+  static compare(a, b) {
     // favor event with a point that the sweep line hits first
     const ptCmp = SweepEvent.comparePoints(a.point, b.point)
     if (ptCmp !== 0) return ptCmp
@@ -22,7 +20,7 @@ export default class SweepEvent {
   }
 
   // for ordering points in sweep line order
-  static comparePoints (aPt, bPt) {
+  static comparePoints(aPt, bPt) {
     if (aPt.x < bPt.x) return -1
     if (aPt.x > bPt.x) return 1
 
@@ -33,7 +31,7 @@ export default class SweepEvent {
   }
 
   // Warning: 'point' input will be modified and re-used (for performance)
-  constructor (point, isLeft) {
+  constructor(point, isLeft) {
     if (point.events === undefined) point.events = [this]
     else point.events.push(this)
     this.point = point
@@ -41,9 +39,9 @@ export default class SweepEvent {
     // this.segment, this.otherSE set by factory
   }
 
-  link (other) {
+  link(other) {
     if (other.point === this.point) {
-      throw new Error('Tried to link already linked events')
+      throw new Error("Tried to link already linked events")
     }
     const otherEvents = other.point.events
     for (let i = 0, iMax = otherEvents.length; i < iMax; i++) {
@@ -56,7 +54,7 @@ export default class SweepEvent {
 
   /* Do a pass over our linked events and check to see if any pair
    * of segments match, and should be consumed. */
-  checkForConsuming () {
+  checkForConsuming() {
     // FIXME: The loops in this method run O(n^2) => no good.
     //        Maintain little ordered sweep event trees?
     //        Can we maintaining an ordering that avoids the need
@@ -76,7 +74,7 @@ export default class SweepEvent {
     }
   }
 
-  getAvailableLinkedEvents () {
+  getAvailableLinkedEvents() {
     // point.events is always of length 2 or greater
     const events = []
     for (let i = 0, iMax = this.point.events.length; i < iMax; i++) {
@@ -98,14 +96,14 @@ export default class SweepEvent {
    * The comparator function has a compute cache such that it avoids
    * re-computing already-computed values.
    */
-  getLeftmostComparator (baseEvent) {
+  getLeftmostComparator(baseEvent) {
     const cache = new Map()
 
-    const fillCache = linkedEvent => {
+    const fillCache = (linkedEvent) => {
       const nextEvent = linkedEvent.otherSE
       cache.set(linkedEvent, {
         sine: sineOfAngle(this.point, baseEvent.point, nextEvent.point),
-        cosine: cosineOfAngle(this.point, baseEvent.point, nextEvent.point)
+        cosine: cosineOfAngle(this.point, baseEvent.point, nextEvent.point),
       })
     }
 

@@ -6,7 +6,13 @@
       "properties": {},
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[2, -2], [1, -1], [0, -2]]]
+        "coordinates": [
+          [
+            [2, -2],
+            [1, -1],
+            [0, -2]
+          ]
+        ]
       }
     },
     {
@@ -14,7 +20,13 @@
       "properties": {},
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[1, -1], [0, -1], [0, -2]]]
+        "coordinates": [
+          [
+            [1, -1],
+            [0, -1],
+            [0, -2]
+          ]
+        ]
       }
     },
     {
@@ -22,7 +34,13 @@
       "properties": {},
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[2, -2], [2, 0], [1, -1]]]
+        "coordinates": [
+          [
+            [2, -2],
+            [2, 0],
+            [1, -1]
+          ]
+        ]
       }
     }
   ]

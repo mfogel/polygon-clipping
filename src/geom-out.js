@@ -1,10 +1,10 @@
-import { compareVectorAngles } from './vector'
-import SweepEvent from './sweep-event'
+import { compareVectorAngles } from "./vector"
+import SweepEvent from "./sweep-event"
 
 export class RingOut {
   /* Given the segments from the sweep line pass, compute & return a series
    * of closed rings from all the segments marked to be part of the result */
-  static factory (allSegments) {
+  static factory(allSegments) {
     const ringsOut = []
 
     for (let i = 0, iMax = allSegments.length; i < iMax; i++) {
@@ -39,7 +39,7 @@ export class RingOut {
             throw new Error(
               `Unable to complete output ring starting at [${firstPt.x},` +
                 ` ${firstPt.y}]. Last matching segment found ends at` +
-                ` [${lastPt.x}, ${lastPt.y}].`
+                ` [${lastPt.x}, ${lastPt.y}].`,
             )
           }
 
@@ -82,7 +82,7 @@ export class RingOut {
     return ringsOut
   }
 
-  constructor (events) {
+  constructor(events) {
     this.events = events
     for (let i = 0, iMax = events.length; i < iMax; i++) {
       events[i].segment.ringOut = this
@@ -90,7 +90,7 @@ export class RingOut {
     this.poly = null
   }
 
-  getGeom () {
+  getGeom() {
     // Remove superfluous points (ie extra points along a straight line),
     let prevPt = this.events[0].point
     const points = [prevPt]
@@ -115,19 +115,20 @@ export class RingOut {
     const iStart = this.isExteriorRing() ? 0 : points.length - 1
     const iEnd = this.isExteriorRing() ? points.length : -1
     const orderedPoints = []
-    for (let i = iStart; i != iEnd; i += step) orderedPoints.push([points[i].x, points[i].y])
+    for (let i = iStart; i != iEnd; i += step)
+      orderedPoints.push([points[i].x, points[i].y])
     return orderedPoints
   }
 
-  isExteriorRing () {
+  isExteriorRing() {
     if (this._isExteriorRing === undefined) {
       const enclosing = this.enclosingRing()
-      this._isExteriorRing = enclosing ? ! enclosing.isExteriorRing() : true
+      this._isExteriorRing = enclosing ? !enclosing.isExteriorRing() : true
     }
     return this._isExteriorRing
   }
 
-  enclosingRing () {
+  enclosingRing() {
     if (this._enclosingRing === undefined) {
       this._enclosingRing = this._calcEnclosingRing()
     }
@@ -135,7 +136,7 @@ export class RingOut {
   }
 
   /* Returns the ring that encloses this one, if any */
-  _calcEnclosingRing () {
+  _calcEnclosingRing() {
     // start with the ealier sweep line event so that the prevSeg
     // chain doesn't lead us inside of a loop of ours
     let leftMostEvt = this.events[0]
@@ -173,18 +174,18 @@ export class RingOut {
 }
 
 export class PolyOut {
-  constructor (exteriorRing) {
+  constructor(exteriorRing) {
     this.exteriorRing = exteriorRing
     exteriorRing.poly = this
     this.interiorRings = []
   }
 
-  addInterior (ring) {
+  addInterior(ring) {
     this.interiorRings.push(ring)
     ring.poly = this
   }
 
-  getGeom () {
+  getGeom() {
     const geom = [this.exteriorRing.getGeom()]
     // exterior ring was all (within rounding error of angle calc) colinear points
     if (geom[0] === null) return null
@@ -199,12 +200,12 @@ export class PolyOut {
 }
 
 export class MultiPolyOut {
-  constructor (rings) {
+  constructor(rings) {
     this.rings = rings
     this.polys = this._composePolys(rings)
   }
 
-  getGeom () {
+  getGeom() {
     const geom = []
     for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
       const polyGeom = this.polys[i].getGeom()
@@ -215,7 +216,7 @@ export class MultiPolyOut {
     return geom
   }
 
-  _composePolys (rings) {
+  _composePolys(rings) {
     const polys = []
     for (let i = 0, iMax = rings.length; i < iMax; i++) {
       const ring = rings[i]

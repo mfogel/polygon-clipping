@@ -1,4 +1,4 @@
-import { cmp } from './flp'
+import { cmp } from "./flp"
 
 /* Cross Product of two vectors with first point at origin */
 export const crossProduct = (a, b) => a.x * b.y - a.y * b.x
@@ -14,7 +14,7 @@ export const compareVectorAngles = (basePt, endPt1, endPt2) => {
   return cmp(kross, 0)
 }
 
-export const length = v => Math.sqrt(dotProduct(v, v))
+export const length = (v) => Math.sqrt(dotProduct(v, v))
 
 /* Get the sine of the angle from pShared -> pAngle to pShaed -> pBase */
 export const sineOfAngle = (pShared, pBase, pAngle) => {
@@ -46,8 +46,7 @@ export const closestPoint = (ptA1, ptA2, ptB) => {
     vFar = v1
     vA = { x: ptA2.x - ptA1.x, y: ptA2.y - ptA1.y }
     farPt = ptA1
-  }
-  else {
+  } else {
     vFar = v2
     vA = { x: ptA1.x - ptA2.x, y: ptA1.y - ptA2.y }
     farPt = ptA2
@@ -72,7 +71,7 @@ export const closestPoint = (ptA1, ptA2, ptB) => {
  * In the case of parrallel lines (including overlapping ones) returns null. */
 export const horizontalIntersection = (pt, v, y) => {
   if (v.y === 0) return null
-  return { x: pt.x + v.x / v.y * ( y - pt.y ), y: y }
+  return { x: pt.x + (v.x / v.y) * (y - pt.y), y: y }
 }
 
 /* Get the y coordinate where the given line (defined by a point and vector)
@@ -80,7 +79,7 @@ export const horizontalIntersection = (pt, v, y) => {
  * In the case of parrallel lines (including overlapping ones) returns null. */
 export const verticalIntersection = (pt, v, x) => {
   if (v.x === 0) return null
-  return { x: x, y: pt.y + v.y / v.x * ( x - pt.x ) }
+  return { x: x, y: pt.y + (v.y / v.x) * (x - pt.x) }
 }
 
 /* Get the intersection of two lines, each defined by a base point and a vector.
@@ -106,8 +105,10 @@ export const intersection = (pt1, v1, pt2, v2) => {
   const d2 = crossProduct(ve, v2) / kross
 
   // take the average of the two calculations to minimize rounding error
-  const x1 = pt1.x + d2 * v1.x, x2 = pt2.x + d1 * v2.x
-  const y1 = pt1.y + d2 * v1.y, y2 = pt2.y + d1 * v2.y
+  const x1 = pt1.x + d2 * v1.x,
+    x2 = pt2.x + d1 * v2.x
+  const y1 = pt1.y + d2 * v1.y,
+    y2 = pt2.y + d1 * v2.y
   const x = (x1 + x2) / 2
   const y = (y1 + y2) / 2
   return { x: x, y: y }

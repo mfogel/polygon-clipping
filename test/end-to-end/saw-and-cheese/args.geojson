@@ -27,7 +27,15 @@
       "properties": {},
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[1, 2], [3, 2], [3, 4], [1, 4], [1, 2]]]
+        "coordinates": [
+          [
+            [1, 2],
+            [3, 2],
+            [3, 4],
+            [1, 4],
+            [1, 2]
+          ]
+        ]
       }
     },
     {
@@ -35,7 +43,15 @@
       "properties": {},
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[5, 2], [7, 2], [7, 4], [5, 4], [5, 2]]]
+        "coordinates": [
+          [
+            [5, 2],
+            [7, 2],
+            [7, 4],
+            [5, 4],
+            [5, 2]
+          ]
+        ]
       }
     },
     {
@@ -43,7 +59,15 @@
       "properties": {},
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[9, 2], [11, 2], [11, 4], [9, 4], [9, 2]]]
+        "coordinates": [
+          [
+            [9, 2],
+            [11, 2],
+            [11, 4],
+            [9, 4],
+            [9, 2]
+          ]
+        ]
       }
     }
   ]

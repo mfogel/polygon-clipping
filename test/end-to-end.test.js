@@ -1,40 +1,48 @@
 /* eslint-env jest */
 
-import fs from 'fs'
-import path from 'path'
-import load from 'load-json-file'
-import polygonClipping from '../src'
+import fs from "fs"
+import path from "path"
+import load from "load-json-file"
+import polygonClipping from "../src"
 
 /** USE ME TO RUN ONLY ONE TEST **/
-const targetOnly = ''
-const opOnly = ''
+const targetOnly = ""
+const opOnly = ""
 
 /** USE ME TO SKIP TESTS **/
 const targetsSkip = []
 const opsSkip = []
 
-const endToEndDir = 'test/end-to-end'
+const endToEndDir = "test/end-to-end"
 
-describe('end to end', () => {
+describe("end to end", () => {
   const targets = fs.readdirSync(endToEndDir)
 
-  targets.forEach(target => {
+  targets.forEach((target) => {
     // ignore dotfiles like .DS_Store
-    if (target.startsWith('.')) return
+    if (target.startsWith(".")) return
 
     describe(target, () => {
       const targetDir = path.join(endToEndDir, target)
-      const argsGeojson = load.sync(path.join(targetDir, 'args.geojson'))
-      const args = argsGeojson.features.map(f => f.geometry.coordinates)
+      const argsGeojson = load.sync(path.join(targetDir, "args.geojson"))
+      const args = argsGeojson.features.map((f) => f.geometry.coordinates)
 
       const resultPathsAndOperationTypes = fs
         .readdirSync(targetDir)
-        .filter(fn => fn !== 'args.geojson' && fn.endsWith('.geojson'))
-        .map(fn => [fn.slice(0, -'.geojson'.length), path.join(targetDir, fn)])
+        .filter((fn) => fn !== "args.geojson" && fn.endsWith(".geojson"))
+        .map((fn) => [
+          fn.slice(0, -".geojson".length),
+          path.join(targetDir, fn),
+        ])
         .map(([opType, p]) =>
-          opType === 'all' ?
-            [['union', p], ['intersection', p], ['xor', p], ['difference', p]] :
-            [[opType, p]]
+          opType === "all"
+            ? [
+                ["union", p],
+                ["intersection", p],
+                ["xor", p],
+                ["difference", p],
+              ]
+            : [[opType, p]],
         )
         .reduce((acc, val) => acc.concat(val), []) // flatten equiv: .flat(1)
 
@@ -56,7 +64,7 @@ describe('end to end', () => {
           const operation = polygonClipping[operationType]
           if (!operation) {
             throw new Error(
-              `Unknown operation '${operationType}'. Mispelling in filename of ${resultPath} ?`
+              `Unknown operation '${operationType}'. Mispelling in filename of ${resultPath} ?`,
             )
           }
 

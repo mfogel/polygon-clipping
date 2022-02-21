@@ -6,7 +6,15 @@
       "properties": null,
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[1, 1], [6, 1], [6, 5], [1, 5], [1, 1]]]
+        "coordinates": [
+          [
+            [1, 1],
+            [6, 1],
+            [6, 5],
+            [1, 5],
+            [1, 1]
+          ]
+        ]
       }
     },
     {
@@ -14,7 +22,15 @@
       "properties": null,
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[4, 1], [9, 1], [9, 5], [4, 5], [4, 1]]]
+        "coordinates": [
+          [
+            [4, 1],
+            [9, 1],
+            [9, 5],
+            [4, 5],
+            [4, 1]
+          ]
+        ]
       }
     },
     {
@@ -22,7 +38,15 @@
       "properties": null,
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[2, 2], [6, 2], [6, 5], [2, 5], [2, 2]]]
+        "coordinates": [
+          [
+            [2, 2],
+            [6, 2],
+            [6, 5],
+            [2, 5],
+            [2, 2]
+          ]
+        ]
       }
     },
     {
@@ -30,7 +54,15 @@
       "properties": null,
       "geometry": {
         "type": "Polygon",
-        "coordinates": [[[4, 2], [8, 2], [8, 5], [4, 5], [4, 2]]]
+        "coordinates": [
+          [
+            [4, 2],
+            [8, 2],
+            [8, 5],
+            [4, 5],
+            [4, 2]
+          ]
+        ]
       }
     }
   ]

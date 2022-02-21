@@ -1,5 +1,5 @@
-import { cmp } from './flp'
-import SplayTree from 'splaytree'
+import { cmp } from "./flp"
+import SplayTree from "splaytree"
 
 /**
  * This class rounds incoming values sufficiently so that
@@ -15,16 +15,16 @@ import SplayTree from 'splaytree'
  */
 
 class PtRounder {
-  constructor () {
+  constructor() {
     this.reset()
   }
 
-  reset () {
+  reset() {
     this.xRounder = new CoordRounder()
     this.yRounder = new CoordRounder()
   }
 
-  round (x, y) {
+  round(x, y) {
     return {
       x: this.xRounder.round(x),
       y: this.yRounder.round(y),
@@ -33,7 +33,7 @@ class PtRounder {
 }
 
 class CoordRounder {
-  constructor () {
+  constructor() {
     this.tree = new SplayTree()
     // preseed with 0 so we don't end up with values < Number.EPSILON
     this.round(0)
@@ -46,7 +46,7 @@ class CoordRounder {
   //       right). No - it wouldn't, because we snap intersections
   //       to endpoints (to establish independence from the segment
   //       angle for t-intersections).
-  round (coord) {
+  round(coord) {
     const node = this.tree.add(coord)
 
     const prevNode = this.tree.prev(node)

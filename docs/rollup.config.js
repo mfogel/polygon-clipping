@@ -1,21 +1,21 @@
-import { babel } from '@rollup/plugin-babel'
-import commonjs from '@rollup/plugin-commonjs'
-import json from '@rollup/plugin-json'
-import resolve from '@rollup/plugin-node-resolve'
-import { terser } from 'rollup-plugin-terser'
-import vue from 'rollup-plugin-vue'
-import css from 'rollup-plugin-postcss'
+import { babel } from "@rollup/plugin-babel"
+import commonjs from "@rollup/plugin-commonjs"
+import json from "@rollup/plugin-json"
+import resolve from "@rollup/plugin-node-resolve"
+import { terser } from "rollup-plugin-terser"
+import vue from "rollup-plugin-vue"
+import css from "rollup-plugin-postcss"
 
 export default {
-  input: 'src/main.js',
+  input: "src/main.js",
   output: {
-    name: 'polygonClippingDocs',
-    file: 'dist/bundle.js',
-    format: 'iife',
+    name: "polygonClippingDocs",
+    file: "dist/bundle.js",
+    format: "iife",
     globals: {
-      vue: 'Vue'
+      vue: "Vue",
     },
-    sourcemap: true
+    sourcemap: true,
   },
   plugins: [
     resolve(),
@@ -24,11 +24,11 @@ export default {
     json(),
     css(),
     babel({
-      babelHelpers: 'bundled',
+      babelHelpers: "bundled",
       compact: true,
-      configFile: '../babel.config.js',
+      configFile: "../babel.config.js",
     }),
-    terser()
+    terser(),
   ],
-  external: ['vue']
+  external: ["vue"],
 }

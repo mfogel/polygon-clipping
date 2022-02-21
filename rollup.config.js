@@ -1,53 +1,46 @@
-import resolve from '@rollup/plugin-node-resolve'
-import { babel } from '@rollup/plugin-babel'
-import { terser } from 'rollup-plugin-terser'
-import pkg from './package.json'
+import resolve from "@rollup/plugin-node-resolve"
+import { babel } from "@rollup/plugin-babel"
+import { terser } from "rollup-plugin-terser"
+import pkg from "./package.json"
 
 export default [
   {
-    input: 'src/index.js',
+    input: "src/index.js",
     output: {
-      name: 'polygonClipping',
+      name: "polygonClipping",
       file: pkg.browser,
-      format: 'umd',
+      format: "umd",
     },
-    plugins: [
-      resolve(),
-      babel({ babelHelpers: 'bundled' }),
-    ]
+    plugins: [resolve(), babel({ babelHelpers: "bundled" })],
   },
   {
-    input: 'src/index.js',
+    input: "src/index.js",
     output: {
-      name: 'polygonClipping',
-      file: pkg.browser.replace(/.js$/, '.min.js'),
-      format: 'umd',
+      name: "polygonClipping",
+      file: pkg.browser.replace(/.js$/, ".min.js"),
+      format: "umd",
       sourcemap: true,
     },
-    plugins: [
-      resolve(),
-      babel({ babelHelpers: 'bundled' }),
-      terser(),
-    ]
+    plugins: [resolve(), babel({ babelHelpers: "bundled" }), terser()],
   },
   {
-    input: 'src/index.js',
+    input: "src/index.js",
     output: [
       {
         file: pkg.main,
-        format: 'cjs',
+        format: "cjs",
       },
       {
         file: pkg.module,
-        format: 'es',
+        format: "es",
       },
     ],
     plugins: [
       babel({
-        babelHelpers: 'bundled',
-        exclude: ['node_modules/**']
+        babelHelpers: "bundled",
+        exclude: ["node_modules/**"],
       }),
     ],
-    external: ['splaytree'],
-  }
+    external: ["splaytree"],
+  },
 ]

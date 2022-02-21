@@ -1,23 +1,23 @@
-import SplayTree from 'splaytree'
-import { getBboxOverlap } from './bbox'
-import * as geomIn from './geom-in'
-import * as geomOut from './geom-out'
-import rounder from './rounder'
-import SweepEvent from './sweep-event'
-import SweepLine from './sweep-line'
+import SplayTree from "splaytree"
+import { getBboxOverlap } from "./bbox"
+import * as geomIn from "./geom-in"
+import * as geomOut from "./geom-out"
+import rounder from "./rounder"
+import SweepEvent from "./sweep-event"
+import SweepLine from "./sweep-line"
 
 // Limits on iterative processes to prevent infinite loops - usually caused by floating-point math round-off errors.
 const POLYGON_CLIPPING_MAX_QUEUE_SIZE =
-  (typeof process !== 'undefined' &&
+  (typeof process !== "undefined" &&
     process.env.POLYGON_CLIPPING_MAX_QUEUE_SIZE) ||
   1000000
 const POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS =
-  (typeof process !== 'undefined' &&
+  (typeof process !== "undefined" &&
     process.env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS) ||
   1000000
 
 export class Operation {
-  run (type, geom, moreGeoms) {
+  run(type, geom, moreGeoms) {
     operation.type = type
     rounder.reset()
 
@@ -32,7 +32,7 @@ export class Operation {
      * If the bbox of a multipolygon that's part of the clipping doesn't
      * intersect the bbox of the subject at all, we can just drop that
      * multiploygon. */
-    if (operation.type === 'difference') {
+    if (operation.type === "difference") {
       // in place removal
       const subject = multipolys[0]
       let i = 1
@@ -45,7 +45,7 @@ export class Operation {
     /* BBox optimization for intersection operation
      * If we can find any pair of multipolygons whose bbox does not overlap,
      * then the result will be empty. */
-    if (operation.type === 'intersection') {
+    if (operation.type === "intersection") {
       // TODO: this is O(n^2) in number of polygons. By sorting the bboxes,
       //       it could be optimized to O(n * ln(n))
       for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
@@ -66,8 +66,8 @@ export class Operation {
         if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
           // prevents an infinite loop, an otherwise common manifestation of bugs
           throw new Error(
-            'Infinite loop when putting segment endpoints in a priority queue ' +
-            '(queue size too big). Please file a bug report.'
+            "Infinite loop when putting segment endpoints in a priority queue " +
+              "(queue size too big). Please file a bug report.",
           )
         }
       }
@@ -83,27 +83,27 @@ export class Operation {
         // prevents an infinite loop, an otherwise common manifestation of bugs
         const seg = evt.segment
         throw new Error(
-          `Unable to pop() ${evt.isLeft ? 'left' : 'right'} SweepEvent ` +
-          `[${evt.point.x}, ${evt.point.y}] from segment #${seg.id} ` +
-          `[${seg.leftSE.point.x}, ${seg.leftSE.point.y}] -> ` +
-          `[${seg.rightSE.point.x}, ${seg.rightSE.point.y}] from queue. ` +
-          'Please file a bug report.'
+          `Unable to pop() ${evt.isLeft ? "left" : "right"} SweepEvent ` +
+            `[${evt.point.x}, ${evt.point.y}] from segment #${seg.id} ` +
+            `[${seg.leftSE.point.x}, ${seg.leftSE.point.y}] -> ` +
+            `[${seg.rightSE.point.x}, ${seg.rightSE.point.y}] from queue. ` +
+            "Please file a bug report.",
         )
       }
 
       if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
         // prevents an infinite loop, an otherwise common manifestation of bugs
         throw new Error(
-          'Infinite loop when passing sweep line over endpoints ' +
-          '(queue size too big). Please file a bug report.'
+          "Infinite loop when passing sweep line over endpoints " +
+            "(queue size too big). Please file a bug report.",
         )
       }
 
       if (sweepLine.segments.length > POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS) {
         // prevents an infinite loop, an otherwise common manifestation of bugs
         throw new Error(
-          'Infinite loop when passing sweep line over endpoints ' +
-          '(too many sweep line segments). Please file a bug report.'
+          "Infinite loop when passing sweep line over endpoints " +
+            "(too many sweep line segments). Please file a bug report.",
         )
       }
 

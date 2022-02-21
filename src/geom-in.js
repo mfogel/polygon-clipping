@@ -1,18 +1,21 @@
-import rounder from './rounder'
-import Segment from './segment'
+import rounder from "./rounder"
+import Segment from "./segment"
 
 export class RingIn {
-  constructor (geomRing, poly, isExterior) {
+  constructor(geomRing, poly, isExterior) {
     if (!Array.isArray(geomRing) || geomRing.length === 0) {
-      throw new Error('Input geometry is not a valid Polygon or MultiPolygon')
+      throw new Error("Input geometry is not a valid Polygon or MultiPolygon")
     }
 
     this.poly = poly
     this.isExterior = isExterior
     this.segments = []
 
-    if (typeof geomRing[0][0] !== 'number' || typeof geomRing[0][1] !== 'number') {
-      throw new Error('Input geometry is not a valid Polygon or MultiPolygon')
+    if (
+      typeof geomRing[0][0] !== "number" ||
+      typeof geomRing[0][1] !== "number"
+    ) {
+      throw new Error("Input geometry is not a valid Polygon or MultiPolygon")
     }
 
     const firstPoint = rounder.round(geomRing[0][0], geomRing[0][1])
@@ -23,8 +26,11 @@ export class RingIn {
 
     let prevPoint = firstPoint
     for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
-      if (typeof geomRing[i][0] !== 'number' || typeof geomRing[i][1] !== 'number') {
-        throw new Error('Input geometry is not a valid Polygon or MultiPolygon')
+      if (
+        typeof geomRing[i][0] !== "number" ||
+        typeof geomRing[i][1] !== "number"
+      ) {
+        throw new Error("Input geometry is not a valid Polygon or MultiPolygon")
       }
       let point = rounder.round(geomRing[i][0], geomRing[i][1])
       // skip repeated points
@@ -42,7 +48,7 @@ export class RingIn {
     }
   }
 
-  getSweepEvents () {
+  getSweepEvents() {
     const sweepEvents = []
     for (let i = 0, iMax = this.segments.length; i < iMax; i++) {
       const segment = this.segments[i]
@@ -54,9 +60,9 @@ export class RingIn {
 }
 
 export class PolyIn {
-  constructor (geomPoly, multiPoly) {
+  constructor(geomPoly, multiPoly) {
     if (!Array.isArray(geomPoly)) {
-      throw new Error('Input geometry is not a valid Polygon or MultiPolygon')
+      throw new Error("Input geometry is not a valid Polygon or MultiPolygon")
     }
     this.exteriorRing = new RingIn(geomPoly[0], this, true)
     // copy by value
@@ -76,7 +82,7 @@ export class PolyIn {
     this.multiPoly = multiPoly
   }
 
-  getSweepEvents () {
+  getSweepEvents() {
     const sweepEvents = this.exteriorRing.getSweepEvents()
     for (let i = 0, iMax = this.interiorRings.length; i < iMax; i++) {
       const ringSweepEvents = this.interiorRings[i].getSweepEvents()
@@ -89,14 +95,14 @@ export class PolyIn {
 }
 
 export class MultiPolyIn {
-  constructor (geom, isSubject) {
+  constructor(geom, isSubject) {
     if (!Array.isArray(geom)) {
-      throw new Error('Input geometry is not a valid Polygon or MultiPolygon')
+      throw new Error("Input geometry is not a valid Polygon or MultiPolygon")
     }
 
     try {
       // if the input looks like a polygon, convert it to a multipolygon
-      if (typeof geom[0][0][0] === 'number') geom = [geom]
+      if (typeof geom[0][0][0] === "number") geom = [geom]
     } catch (ex) {
       // The input is either malformed or has empty arrays.
       // In either case, it will be handled later on.
@@ -118,7 +124,7 @@ export class MultiPolyIn {
     this.isSubject = isSubject
   }
 
-  getSweepEvents () {
+  getSweepEvents() {
     const sweepEvents = []
     for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
       const polySweepEvents = this.polys[i].getSweepEvents()
