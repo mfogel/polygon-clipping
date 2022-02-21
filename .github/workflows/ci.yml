@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Load cached node_modules
+        id: cached-node-modules-dependencies
+        uses: actions/cache@v2
+        with:
+          path: "node_modules"
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cached-node-modules-dependencies.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Load cached node_modules
+        id: cached-node-modules-dependencies
+        uses: actions/cache@v2
+        with:
+          path: "node_modules"
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cached-node-modules-dependencies.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Test
+        run: npm run test -- --coverage
+
+      - name: Upload coverage report to codecov
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Load cached node_modules
+        id: cached-node-modules-dependencies
+        uses: actions/cache@v2
+        with:
+          path: "node_modules"
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cached-node-modules-dependencies.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Build docs
+        run: npm run docs:build
