@@ -2,9 +2,9 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## vNext
+## v1.0 (unreleased!)
 
-- [BREAKING] Use named exports instead of default export for [interchangeablity](https://rollupjs.org/guide/en/#outputexports)
+- [BREAKING] Use named exports instead of default export for [interchangeability](https://rollupjs.org/guide/en/#outputexports)
 
 ## v0.15.3 (2021-04-20)
 
