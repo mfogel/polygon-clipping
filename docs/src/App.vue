@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import pc from "../.."
+import * as pc from "../.."
 
 import {
   union as martinezUnion,
