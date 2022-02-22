@@ -8,34 +8,29 @@ Apply boolean Polygon clipping operations (`intersection`, `union`, `difference`
 
 <!-- prettier-ignore-start -->
 ```javascript
-const polygonClipping = require('polygon-clipping')
+// esm or cjs
+import * as pc from "polygon-clipping"
+const pc = require("polygon-clipping")
 
-const poly1 = [[[0,0],[2,0],[0,2],[0,0]]]
-const poly2 = [[[-1,0],[1,0],[0,1],[-1,0]]]
+// polygons or multipolygons geometries accepted
+const geom1 = [[[0,0],[2,0],[0,2],[0,0]]]
+const geom2 = [[[-1,0],[1,0],[0,1],[-1,0]]]
 
-polygonClipping.union       (poly1, poly2 /* , poly3, ... */)
-polygonClipping.intersection(poly1, poly2 /* , poly3, ... */)
-polygonClipping.xor         (poly1, poly2 /* , poly3, ... */)
-polygonClipping.difference  (poly1, poly2 /* , poly3, ... */)
+// exports four boolean operations, all with identical function signatures
+//  - input: two or more polygon or multipolygon geometries
+//  - output: one multipolygon geometry
+pc.union       (geom1, geom2 /* , geom3, ... */)
+pc.intersection(geom1, geom2 /* , geom3, ... */)
+pc.xor         (geom1, geom2 /* , geom3, ... */)
+pc.difference  (geom1, geom2 /* , geom3, ... */)  // will subtract geom2+ from geom1
 ```
 <!-- prettier-ignore-end -->
 
 ## API
 
-```javascript
-/* All functions take one or more [multi]polygon(s) as input */
-
-polygonClipping.union       (<geom>, ...<geoms>)
-polygonClipping.intersection(<geom>, ...<geoms>)
-polygonClipping.xor         (<geom>, ...<geoms>)
-
-/* The clipGeoms will be subtracted from the subjectGeom */
-polygonClipping.difference(<subjectGeom>, ...<clipGeoms>)
-```
-
 ### Input
 
-Each positional argument (`<geom>`) may be either a Polygon or a MultiPolygon. The [GeoJSON spec](https://tools.ietf.org/html/rfc7946#section-3.1) is followed, with the following notes/modifications:
+Each positional argument may be either a Polygon or a MultiPolygon. The [GeoJSON geometry object spec](https://tools.ietf.org/html/rfc7946#section-3.1) is followed, with the following notes/modifications:
 
 - MultiPolygons may contain touching or overlapping Polygons.
 - rings are not required to be self-closing.
@@ -79,8 +74,6 @@ Global settings are set via environment variables.
 ## Changelog
 
 This project adheres to [Semantic Versioning](https://semver.org/).
-
-<!-- prettier-ignore-end -->
 
 The full changelog is available at [CHANGELOG.md](https://github.com/mfogel/polygon-clipping/blob/master/CHANGELOG.md).
 

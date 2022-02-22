@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## vNext
+
+- [BREAKING] Use named exports instead of default export for [interchangeablity](https://rollupjs.org/guide/en/#outputexports)
+
 ## v0.15.3 (2021-04-20)
 
 - Update dependencies [#110](https://github.com/mfogel/polygon-clipping/pull/110), [#113](https://github.com/mfogel/polygon-clipping/pull/113), [#114](https://github.com/mfogel/polygon-clipping/pull/114)

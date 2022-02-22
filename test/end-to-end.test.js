@@ -3,7 +3,7 @@
 import fs from "fs"
 import path from "path"
 import load from "load-json-file"
-import polygonClipping from "../src"
+import * as polygonClipping from "../src"
 
 /** USE ME TO RUN ONLY ONE TEST **/
 const targetOnly = ""
