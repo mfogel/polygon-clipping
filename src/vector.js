@@ -1,4 +1,4 @@
-import { cmp } from "./flp"
+import { orient2d } from "robust-predicates/umd/orient2d"
 
 /* Cross Product of two vectors with first point at origin */
 export const crossProduct = (a, b) => a.x * b.y - a.y * b.x
@@ -8,10 +8,10 @@ export const dotProduct = (a, b) => a.x * b.x + a.y * b.y
 
 /* Comparator for two vectors with same starting point */
 export const compareVectorAngles = (basePt, endPt1, endPt2) => {
-  const v1 = { x: endPt1.x - basePt.x, y: endPt1.y - basePt.y }
-  const v2 = { x: endPt2.x - basePt.x, y: endPt2.y - basePt.y }
-  const kross = crossProduct(v1, v2)
-  return cmp(kross, 0)
+  const res = orient2d(basePt.x, basePt.y, endPt1.x, endPt1.y, endPt2.x, endPt2.y)
+  if (res > 0) return -1
+  if (res < 0) return 1
+  return 0
 }
 
 export const length = (v) => Math.sqrt(dotProduct(v, v))
