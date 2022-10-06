@@ -8,7 +8,14 @@ export const dotProduct = (a, b) => a.x * b.x + a.y * b.y
 
 /* Comparator for two vectors with same starting point */
 export const compareVectorAngles = (basePt, endPt1, endPt2) => {
-  const res = orient2d(basePt.x, basePt.y, endPt1.x, endPt1.y, endPt2.x, endPt2.y)
+  const res = orient2d(
+    basePt.x,
+    basePt.y,
+    endPt1.x,
+    endPt1.y,
+    endPt2.x,
+    endPt2.y,
+  )
   if (res > 0) return -1
   if (res < 0) return 1
   return 0
