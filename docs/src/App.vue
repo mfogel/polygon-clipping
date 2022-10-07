@@ -108,7 +108,11 @@ export default {
         const resp = await fetch(hashString)
         data = await resp.json()
       } else {
-        data = await import(`../../test/end-to-end/${hashString}/args.geojson`)
+        try {
+          data = await import(`../../test/end-to-end/${hashString}/args.geojson`)          
+        } catch {
+          data = asia
+        }
       }
       this.useData = false
       inData = data
