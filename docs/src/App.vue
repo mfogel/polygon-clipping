@@ -109,7 +109,9 @@ export default {
         data = await resp.json()
       } else {
         try {
-          data = await import(`../../test/end-to-end/${hashString}/args.geojson`)          
+          data = await import(
+            `../../test/end-to-end/${hashString}/args.geojson`
+          )
         } catch {
           data = asia
         }
