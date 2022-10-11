@@ -2,7 +2,7 @@
   <div id="map">
     <div class="control leaflet-bar">
       <h4>Input Data</h4>
-      <select @change="setInput" :disabled="!useData">
+      <select :disabled="!useData" @change="setInput">
         <option>Asia</option>
         <option>Almost Parallel Segments</option>
         <option>Saw & Cheese</option>
@@ -86,7 +86,7 @@ export default {
           name: "XOR",
           pcOperation: pc.xor,
           martinezOperation: martinezXor,
-          jstsOperation: null,
+          jstsOperation: jstsXor,
         },
       ],
       selectedOperationName: "Intersection",
