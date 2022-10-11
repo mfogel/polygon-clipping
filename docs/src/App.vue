@@ -1,38 +1,39 @@
 <template>
-  <div id="app">
-    <div id="map">
-      <div class="control leaflet-bar">
-        <h4>Input Data</h4>
-        <select @change="setInput">
-          <option>Asia</option>
-          <option>Almost Parallel Segments</option>
-          <option>Saw & Cheese</option>
-        </select>
-        <br /><br />
-        <div v-for="operation in operations" :key="operation">
-          <input
-            v-model="selectedOperation"
-            type="radio"
-            name="some"
-            :value="operation"
-            @change="setOperation"
-          />
-          {{ operation }}
-        </div>
-
-        <h4>Performance</h4>
-        <p>
-          polygon-clipping {{ performance }} m/s<br />
-          martinez {{ martinezPerf }} m/s<br />
-          jsts {{ jstsPerf }} m/s<br />
-        </p>
+  <div id="map">
+    <div class="control leaflet-bar">
+      <h4>Input Data</h4>
+      <select :disabled="!useData" @change="setInput">
+        <option>Asia</option>
+        <option>Almost Parallel Segments</option>
+        <option>Saw & Cheese</option>
+      </select>
+      <br /><br />
+      <div v-for="operation in operations" :key="operation">
+        <input
+          :checked="operation.name === selectedOperationName"
+          type="radio"
+          name="operation.name"
+          :value="operation.name"
+          @change="setOperation"
+        />
+        {{ operation.name }}
       </div>
+
+      <h4>Performance</h4>
+      <p>
+        polygon-clipping {{ performance }} m/s<br />
+        martinez {{ martinezPerf }} m/s<br />
+        jsts {{ jstsPerf }} m/s<br />
+      </p>
     </div>
   </div>
 </template>
 
 <script>
-import pc from "../.."
+import pc from "../../src/index"
+import { geomEach } from "@turf/meta"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
 
 import {
   union as martinezUnion,
@@ -47,31 +48,80 @@ import jstsIntersection from "@turf/intersect"
 import jstsDifference from "@turf/difference"
 var jstsXor = null
 
-var operation = pc.intersection
-var martinezOp = martinezUnion
-var jstsOp = jstsUnion
 var inData = null
 var inLayer = null
 var outLayer = null
 var map = null
+var jstsOp = null
 
-import asia from "../geojson/asia-with-poly.json"
-import parallel from "../geojson/parallel.json"
-import cheese from "../geojson/cheese.json"
+import asia from "./assets/asia-with-poly.json"
+import cheese from "./assets/cheese.json"
+import parallel from "./assets/parallel.json"
 
 export default {
   name: "App",
   data() {
     return {
-      operations: ["Intersection", "Union", "Difference", "XOR"],
-      selectedOperation: "Intersection",
+      useData: true,
+      operations: [
+        {
+          name: "Intersection",
+          pcOperation: pc.intersection,
+          martinezOperation: martinezIntersection,
+          jstsOperation: jstsIntersection,
+        },
+        {
+          name: "Union",
+          pcOperation: pc.union,
+          martinezOperation: martinezUnion,
+          jstsOperation: jstsUnion,
+        },
+        {
+          name: "Difference",
+          pcOperation: pc.difference,
+          martinezOperation: martinezDifference,
+          jstsOperation: jstsDifference,
+        },
+        {
+          name: "XOR",
+          pcOperation: pc.xor,
+          martinezOperation: martinezXor,
+          jstsOperation: jstsXor,
+        },
+      ],
+      selectedOperationName: "Intersection",
       performance: "",
       martinezPerf: "",
       jstsPerf: "",
     }
   },
-  mounted() {
-    inData = asia
+  computed: {
+    selectedOperation() {
+      return this.operations.find((o) => o.name === this.selectedOperationName)
+    },
+  },
+  async mounted() {
+    if (window.location.hash !== "") {
+      const hashString = window.location.hash.replace("#", "")
+      let data = null
+      if (hashString.indexOf("http") > -1) {
+        const resp = await fetch(hashString)
+        data = await resp.json()
+      } else {
+        try {
+          data = await import(
+            `../../test/end-to-end/${hashString}/args.geojson`
+          )
+        } catch {
+          data = asia
+        }
+      }
+      this.useData = false
+      inData = data
+    } else {
+      inData = asia
+    }
+
     map = window.map = L.map("map", {
       minZoom: 1,
       maxZoom: 20,
@@ -80,7 +130,7 @@ export default {
       crs: L.CRS.Simple,
     })
 
-    inLayer = L.geoJson(asia).addTo(map)
+    inLayer = L.geoJson(inData).addTo(map)
 
     map.fitBounds(inLayer.getBounds(), {
       padding: [20, 20],
@@ -111,37 +161,20 @@ export default {
       this.runOperation()
     },
     setOperation(e) {
-      this.selectedOperation = e.target.value
+      this.selectedOperationName = e.target.value
       outLayer.clearLayers()
-
-      if (this.selectedOperation === "Union") {
-        operation = pc.union
-        martinezOp = martinezUnion
-        jstsOp = jstsUnion
-      }
-      if (this.selectedOperation === "Intersection") {
-        operation = pc.intersection
-        martinezOp = martinezIntersection
-        jstsOp = jstsIntersection
-      }
-      if (this.selectedOperation === "XOR") {
-        operation = pc.xor
-        martinezOp = martinezXor
-        jstsOp = jstsXor
-      }
-      if (this.selectedOperation === "Difference") {
-        operation = pc.difference
-        martinezOp = martinezDifference
-        jstsOp = jstsDifference
-      }
-
       this.runOperation()
     },
     runOperation() {
       var t0 = performance.now()
-      var outData = operation(
-        inData.features[0].geometry.coordinates,
-        inData.features[1].geometry.coordinates,
+
+      const geoms = []
+      geomEach(inData, (geom) => {
+        geoms.push(geom.coordinates)
+      })
+      var outData = this.selectedOperation.pcOperation(
+        geoms[0],
+        ...geoms.slice(1),
       )
       this.performance = (performance.now() - t0).toFixed(2)
 
@@ -153,7 +186,7 @@ export default {
         .addTo(map)
 
       var m0 = performance.now()
-      martinezOp(
+      this.selectedOperation.martinezOperation(
         inData.features[0].geometry.coordinates,
         inData.features[1].geometry.coordinates,
       )
@@ -161,7 +194,10 @@ export default {
 
       if (jstsOp !== null) {
         var j0 = performance.now()
-        jstsOp(inData.features[0], inData.features[1])
+        this.selectedOperation.jstsOperation(
+          inData.features[0],
+          inData.features[1],
+        )
         this.jstsPerf = (performance.now() - j0).toFixed(2)
       } else {
         this.jstsPerf = "N/A"
