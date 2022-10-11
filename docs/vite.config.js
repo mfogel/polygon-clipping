@@ -4,5 +4,10 @@ import gj from "./gj"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue(), gj()],
+  plugins: [
+    vue(),
+    gj({
+      include: ["**/*.geojson"],
+    }),
+  ],
 })

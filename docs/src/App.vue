@@ -112,7 +112,8 @@ export default {
           data = await import(
             `../../test/end-to-end/${hashString}/args.geojson`
           )
-        } catch {
+        } catch (err) {
+          console.log(err)
           data = asia
         }
       }
