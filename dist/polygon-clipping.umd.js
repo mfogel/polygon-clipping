@@ -291,9 +291,7 @@
       var node = this._root;
 
       if (node) {
-        while (node.left) {
-          node = node.left;
-        }
+        while (node.left) node = node.left;
 
         this._root = splay(node.key, this._root, this._comparator);
         this._root = this._remove(node.key, this._root, this._comparator);
@@ -438,9 +436,7 @@
         t = this._root;
       }
 
-      if (t) while (t.left) {
-        t = t.left;
-      }
+      if (t) while (t.left) t = t.left;
       return t;
     };
 
@@ -449,9 +445,7 @@
         t = this._root;
       }
 
-      if (t) while (t.right) {
-        t = t.right;
-      }
+      if (t) while (t.right) t = t.right;
       return t;
     };
     /**
@@ -489,9 +483,7 @@
       if (d.right) {
         successor = d.right;
 
-        while (successor.left) {
-          successor = successor.left;
-        }
+        while (successor.left) successor = successor.left;
 
         return successor;
       }
@@ -516,9 +508,7 @@
       if (d.left !== null) {
         predecessor = d.left;
 
-        while (predecessor.right) {
-          predecessor = predecessor.right;
-        }
+        while (predecessor.right) predecessor = predecessor.right;
 
         return predecessor;
       }
@@ -585,14 +575,14 @@
     };
 
     Object.defineProperty(Tree.prototype, "size", {
-      get: function get() {
+      get: function () {
         return this._size;
       },
       enumerable: true,
       configurable: true
     });
     Object.defineProperty(Tree.prototype, "root", {
-      get: function get() {
+      get: function () {
         return this._root;
       },
       enumerable: true,
@@ -601,7 +591,7 @@
 
     Tree.prototype.toString = function (printNode) {
       if (printNode === void 0) {
-        printNode = function printNode(n) {
+        printNode = function (n) {
           return String(n.key);
         };
       }
@@ -739,13 +729,9 @@
     var j = right + 1;
 
     while (true) {
-      do {
-        i++;
-      } while (compare(keys[i], pivot) < 0);
+      do i++; while (compare(keys[i], pivot) < 0);
 
-      do {
-        j--;
-      } while (compare(keys[j], pivot) > 0);
+      do j--; while (compare(keys[j], pivot) > 0);
 
       if (i >= j) break;
       var tmp = keys[i];
@@ -908,16 +894,16 @@
 
   var rounder = new PtRounder();
 
-  var epsilon = 1.1102230246251565e-16;
-  var splitter = 134217729;
-  var resulterrbound = (3 + 8 * epsilon) * epsilon; // fast_expansion_sum_zeroelim routine from oritinal code
+  const epsilon = 1.1102230246251565e-16;
+  const splitter = 134217729;
+  const resulterrbound = (3 + 8 * epsilon) * epsilon; // fast_expansion_sum_zeroelim routine from oritinal code
 
   function sum(elen, e, flen, f, h) {
-    var Q, Qnew, hh, bvirt;
-    var enow = e[0];
-    var fnow = f[0];
-    var eindex = 0;
-    var findex = 0;
+    let Q, Qnew, hh, bvirt;
+    let enow = e[0];
+    let fnow = f[0];
+    let eindex = 0;
+    let findex = 0;
 
     if (fnow > enow === fnow > -enow) {
       Q = enow;
@@ -927,7 +913,7 @@
       fnow = f[++findex];
     }
 
-    var hindex = 0;
+    let hindex = 0;
 
     if (eindex < elen && findex < flen) {
       if (fnow > enow === fnow > -enow) {
@@ -998,11 +984,9 @@
     return hindex;
   }
   function estimate(elen, e) {
-    var Q = e[0];
+    let Q = e[0];
 
-    for (var i = 1; i < elen; i++) {
-      Q += e[i];
-    }
+    for (let i = 1; i < elen; i++) Q += e[i];
 
     return Q;
   }
@@ -1010,24 +994,24 @@
     return new Float64Array(n);
   }
 
-  var ccwerrboundA = (3 + 16 * epsilon) * epsilon;
-  var ccwerrboundB = (2 + 12 * epsilon) * epsilon;
-  var ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
-  var B = vec(4);
-  var C1 = vec(8);
-  var C2 = vec(12);
-  var D = vec(16);
-  var u = vec(4);
+  const ccwerrboundA = (3 + 16 * epsilon) * epsilon;
+  const ccwerrboundB = (2 + 12 * epsilon) * epsilon;
+  const ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
+  const B = vec(4);
+  const C1 = vec(8);
+  const C2 = vec(12);
+  const D = vec(16);
+  const u = vec(4);
 
   function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
-    var acxtail, acytail, bcxtail, bcytail;
+    let acxtail, acytail, bcxtail, bcytail;
 
-    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
+    let bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
 
-    var acx = ax - cx;
-    var bcx = bx - cx;
-    var acy = ay - cy;
-    var bcy = by - cy;
+    const acx = ax - cx;
+    const bcx = bx - cx;
+    const acy = ay - cy;
+    const bcy = by - cy;
     s1 = acx * bcy;
     c = splitter * acx;
     ahi = c - (c - acx);
@@ -1057,8 +1041,8 @@
     bvirt = u3 - _j;
     B[2] = _j - (u3 - bvirt) + (_i - bvirt);
     B[3] = u3;
-    var det = estimate(4, B);
-    var errbound = ccwerrboundB * detsum;
+    let det = estimate(4, B);
+    let errbound = ccwerrboundB * detsum;
 
     if (det >= errbound || -det >= errbound) {
       return det;
@@ -1109,7 +1093,7 @@
     bvirt = u3 - _j;
     u[2] = _j - (u3 - bvirt) + (_i - bvirt);
     u[3] = u3;
-    var C1len = sum(4, B, 4, u, C1);
+    const C1len = sum(4, B, 4, u, C1);
     s1 = acx * bcytail;
     c = splitter * acx;
     ahi = c - (c - acx);
@@ -1139,7 +1123,7 @@
     bvirt = u3 - _j;
     u[2] = _j - (u3 - bvirt) + (_i - bvirt);
     u[3] = u3;
-    var C2len = sum(C1len, C1, 4, u, C2);
+    const C2len = sum(C1len, C1, 4, u, C2);
     s1 = acxtail * bcytail;
     c = splitter * acxtail;
     ahi = c - (c - acxtail);
@@ -1169,16 +1153,16 @@
     bvirt = u3 - _j;
     u[2] = _j - (u3 - bvirt) + (_i - bvirt);
     u[3] = u3;
-    var Dlen = sum(C2len, C2, 4, u, D);
+    const Dlen = sum(C2len, C2, 4, u, D);
     return D[Dlen - 1];
   }
 
   function orient2d(ax, ay, bx, by, cx, cy) {
-    var detleft = (ay - cy) * (bx - cx);
-    var detright = (ax - cx) * (by - cy);
-    var det = detleft - detright;
+    const detleft = (ay - cy) * (bx - cx);
+    const detright = (ax - cx) * (by - cy);
+    const det = detleft - detright;
     if (detleft === 0 || detright === 0 || detleft > 0 !== detright > 0) return det;
-    var detsum = Math.abs(detleft + detright);
+    const detsum = Math.abs(detleft + detright);
     if (Math.abs(det) >= ccwerrboundA * detsum) return det;
     return -orient2dadapt(ax, ay, bx, by, cx, cy, detsum);
   }
