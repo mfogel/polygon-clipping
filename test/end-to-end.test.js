@@ -21,6 +21,7 @@ describe("end to end", () => {
   targets.forEach((target) => {
     // ignore dotfiles like .DS_Store
     if (target.startsWith(".")) return
+    if (target.startsWith("broken-")) return
 
     describe(target, () => {
       const targetDir = path.join(endToEndDir, target)
