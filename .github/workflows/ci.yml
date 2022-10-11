@@ -11,17 +11,23 @@ jobs:
 
     steps:
       - name: Git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Load cached node_modules
-        id: cached-node-modules-dependencies
-        uses: actions/cache@v2
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+
+      - name: Restore npm cache
+        uses: actions/cache@v3
+        id: npm-cache
         with:
-          path: "node_modules"
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        if: steps.cached-node-modules-dependencies.outputs.cache-hit != 'true'
         run: npm install
 
       - name: Lint
@@ -33,24 +39,30 @@ jobs:
 
     steps:
       - name: Git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Load cached node_modules
-        id: cached-node-modules-dependencies
-        uses: actions/cache@v2
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+
+      - name: Restore npm cache
+        uses: actions/cache@v3
+        id: npm-cache
         with:
-          path: "node_modules"
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        if: steps.cached-node-modules-dependencies.outputs.cache-hit != 'true'
         run: npm install
 
       - name: Test
         run: npm run test -- --coverage
 
       - name: Upload coverage report to codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
 
@@ -60,17 +72,23 @@ jobs:
 
     steps:
       - name: Git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Load cached node_modules
-        id: cached-node-modules-dependencies
-        uses: actions/cache@v2
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+
+      - name: Restore npm cache
+        uses: actions/cache@v3
+        id: npm-cache
         with:
-          path: "node_modules"
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        if: steps.cached-node-modules-dependencies.outputs.cache-hit != 'true'
         run: npm install
 
       - name: Build
