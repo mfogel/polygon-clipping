@@ -1,4 +1,4 @@
-import { orient2d } from "robust-predicates/umd/orient2d"
+import { orient2d } from "robust-predicates"
 
 /* Cross Product of two vectors with first point at origin */
 export const crossProduct = (a, b) => a.x * b.y - a.y * b.x
