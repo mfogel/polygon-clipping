@@ -67,7 +67,7 @@ export class Operation {
           // prevents an infinite loop, an otherwise common manifestation of bugs
           throw new Error(
             "Infinite loop when putting segment endpoints in a priority queue " +
-              "(queue size too big). Please file a bug report.",
+              "(queue size too big).",
           )
         }
       }
@@ -86,8 +86,7 @@ export class Operation {
           `Unable to pop() ${evt.isLeft ? "left" : "right"} SweepEvent ` +
             `[${evt.point.x}, ${evt.point.y}] from segment #${seg.id} ` +
             `[${seg.leftSE.point.x}, ${seg.leftSE.point.y}] -> ` +
-            `[${seg.rightSE.point.x}, ${seg.rightSE.point.y}] from queue. ` +
-            "Please file a bug report.",
+            `[${seg.rightSE.point.x}, ${seg.rightSE.point.y}] from queue.`,
         )
       }
 
@@ -95,7 +94,7 @@ export class Operation {
         // prevents an infinite loop, an otherwise common manifestation of bugs
         throw new Error(
           "Infinite loop when passing sweep line over endpoints " +
-            "(queue size too big). Please file a bug report.",
+            "(queue size too big).",
         )
       }
 
@@ -103,7 +102,7 @@ export class Operation {
         // prevents an infinite loop, an otherwise common manifestation of bugs
         throw new Error(
           "Infinite loop when passing sweep line over endpoints " +
-            "(too many sweep line segments). Please file a bug report.",
+            "(too many sweep line segments).",
         )
       }
 

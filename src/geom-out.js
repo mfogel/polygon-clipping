@@ -31,8 +31,8 @@ export class RingOut {
         while (true) {
           const availableLEs = event.getAvailableLinkedEvents()
 
-          /* Did we hit a dead end? This shouldn't happen. Indicates some earlier
-           * part of the algorithm malfunctioned... please file a bug report. */
+          /* Did we hit a dead end? This shouldn't happen.
+           * Indicates some earlier part of the algorithm malfunctioned. */
           if (availableLEs.length === 0) {
             const firstPt = events[0].point
             const lastPt = events[events.length - 1].point

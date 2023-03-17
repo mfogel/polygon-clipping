@@ -39,7 +39,7 @@ export default class SweepLine {
         `Unable to find segment #${segment.id} ` +
           `[${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> ` +
           `[${segment.rightSE.point.x}, ${segment.rightSE.point.y}] ` +
-          "in SweepLine tree. Please submit a bug report.",
+          "in SweepLine tree.",
       )
 
     let prevNode = node
