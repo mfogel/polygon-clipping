@@ -32,9 +32,7 @@ export default class SweepLine {
       return newEvents
     }
 
-    const node = event.isLeft
-      ? this.tree.add(segment)
-      : this.tree.find(segment)
+    const node = event.isLeft ? this.tree.add(segment) : this.tree.find(segment)
 
     if (!node)
       throw new Error(
