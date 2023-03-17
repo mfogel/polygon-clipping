@@ -32,9 +32,7 @@ export default class SweepLine {
       return newEvents
     }
 
-    const node = event.isLeft
-      ? this.tree.insert(segment)
-      : this.tree.find(segment)
+    const node = event.isLeft ? this.tree.add(segment) : this.tree.find(segment)
 
     if (!node)
       throw new Error(
@@ -173,7 +171,7 @@ export default class SweepLine {
     const newEvents = seg.split(pt)
     newEvents.push(rightSE)
     // splitting can trigger consumption
-    if (seg.consumedBy === undefined) this.tree.insert(seg)
+    if (seg.consumedBy === undefined) this.tree.add(seg)
     return newEvents
   }
 }
