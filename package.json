@@ -18,7 +18,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "bench": "node bench/bench.js",
-    "prepublishOnly": "npm-run-all --serial lint docs:lint test build docs:build bench"
+    "prepublishOnly": "npm-run-all --serial lint test build docs:build bench"
   },
   "files": [
     "dist"
