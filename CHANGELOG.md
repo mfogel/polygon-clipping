@@ -2,7 +2,7 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## main (unreleased)
+## v0.15.4 (2023-12-16)
 
 - Fix error in some circumstances due to duplicate keys in splay tree [#136](https://github.com/mfogel/polygon-clipping/pull/136)
 - Update dependencies [#158](https://github.com/mfogel/polygon-clipping/pull/158)
