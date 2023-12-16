@@ -1,10 +1,10 @@
 /* eslint no-console: "off" */
 
-const load = require("load-json-file")
-const Benchmark = require("benchmark")
-const jstsUnion = require("@turf/union")
-const w8r = require("martinez-polygon-clipping")
-const mfogel = require("..")
+import { default as load } from "load-json-file"
+import { default as Benchmark } from "benchmark"
+import { default as jstsUnion } from "@turf/union"
+import { default as w8r } from "martinez-polygon-clipping"
+import { default as mfogel } from "../dist/polygon-clipping.esm.js"
 
 /**
  * Benchmark results ( c9b02e5 )
