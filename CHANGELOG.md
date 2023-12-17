@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## main (unreleased)
 
-- IN PROGRESS: fix the packaging issues with v0.15.4
+- fix the packaging issues with v0.15.4
 
 ## v0.15.5 (2023-12-16)
 

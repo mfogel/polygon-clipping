@@ -2,7 +2,6 @@
   "name": "polygon-clipping",
   "version": "0.15.5",
   "description": "Apply boolean Polygon clipping operations (intersection, union, difference, xor) to your Polygons & MultiPolygons.",
-  "type": "module",
   "main": "dist/polygon-clipping.cjs.js",
   "module": "dist/polygon-clipping.esm.js",
   "browser": "dist/polygon-clipping.umd.js",
@@ -17,7 +16,7 @@
     "lint:prettier": "prettier --check ./* ./.eslintrc.cjs ./.github",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
-    "bench": "node bench/bench.js",
+    "bench": "cd bench && npm install && node bench.js",
     "prepublishOnly": "npm-run-all --serial lint test build docs:build bench"
   },
   "files": [

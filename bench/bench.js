@@ -4,7 +4,7 @@ import { default as load } from "load-json-file"
 import { default as Benchmark } from "benchmark"
 import { default as jstsUnion } from "@turf/union"
 import { default as w8r } from "martinez-polygon-clipping"
-import { default as mfogel } from "../dist/polygon-clipping.esm.js"
+import { default as mfogel } from "polygon-clipping"
 
 /**
  * Benchmark results ( c9b02e5 )
@@ -43,7 +43,7 @@ const options = {
   },
 }
 
-const holeHole = load.sync("./bench/fixtures/hole_hole.geojson")
+const holeHole = load.sync("./fixtures/hole_hole.geojson")
 new Benchmark.Suite("Hole_Hole", options)
   .add("mfogel", () => {
     mfogel.union(
@@ -62,8 +62,8 @@ new Benchmark.Suite("Hole_Hole", options)
   })
   .run()
 
-const asia = load.sync("./bench/fixtures/asia.geojson")
-const unionPoly = load.sync("./bench/fixtures/asia_unionPoly.geojson")
+const asia = load.sync("./fixtures/asia.geojson")
+const unionPoly = load.sync("./fixtures/asia_unionPoly.geojson")
 new Benchmark.Suite("Asia union", options)
   .add("mfogel", () => {
     mfogel.union(
@@ -80,7 +80,7 @@ new Benchmark.Suite("Asia union", options)
   .add("JSTS", () => jstsUnion(asia.features[0], unionPoly))
   .run()
 
-const states = load.sync("./bench/fixtures/states_source.geojson")
+const states = load.sync("./fixtures/states_source.geojson")
 new Benchmark.Suite("States clip", options)
   .add("mfogel", () => {
     mfogel.union(
