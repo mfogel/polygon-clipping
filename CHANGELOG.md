@@ -2,9 +2,9 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## main (unreleased)
+## v0.15.6 (2023-12-17)
 
-- fix the packaging issues with v0.15.4
+- re-release v0.15.4, with the packaging issues fixed
 
 ## v0.15.5 (2023-12-16)
 
