@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "dependencies": {
+    "polygon-clipping": "file:.."
+  }
+}
