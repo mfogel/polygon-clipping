@@ -2,13 +2,17 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.15.7 (2023-12-18)
+
+- fix packaging issues with v0.15.6
+
 ## v0.15.6 (2023-12-17)
 
 - re-release v0.15.4, with the packaging issues fixed
 
 ## v0.15.5 (2023-12-16)
 
-- Revert to v0.15.3 to broken deployed package
+- Revert to v0.15.3 to avoid packaging issues in v0.15.4
 
 ## v0.15.4 (2023-12-16)
 
