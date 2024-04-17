@@ -7,9 +7,14 @@ import SweepEvent from "./sweep-event"
 import SweepLine from "./sweep-line"
 
 // Limits on iterative processes to prevent infinite loops - usually caused by floating-point math round-off errors.
-const env = (typeof process !== "undefined" && typeof process.env !== "undefined") ? process.env : {}
-const POLYGON_CLIPPING_MAX_QUEUE_SIZE = env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1000000
-const POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS = env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1000000
+const env =
+  typeof process !== "undefined" && typeof process.env !== "undefined"
+    ? process.env
+    : {}
+const POLYGON_CLIPPING_MAX_QUEUE_SIZE =
+  env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1000000
+const POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS =
+  env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1000000
 
 export class Operation {
   run(type, geom, moreGeoms) {
